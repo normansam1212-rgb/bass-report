@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Bass Report">
-<meta name="theme-color" content="#080e18">
+<meta name="theme-color" content="#2B4F6E">
 <title>Bass Report</title>
 <link rel="icon" type="image/png" href="icon-64.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -15,19 +15,19 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root {
-  --bg:      #080e18;
-  --bg2:     #0b1520;
-  --card:    #0d1a28;
-  --card2:   #112030;
-  --border:  #1c2f42;
-  --accent:  #00e676;
-  --adim:    rgba(0,230,118,0.10);
-  --text:    #e2e8f0;
-  --mid:     #94a3b8;
-  --dim:     #4a6070;
-  --good:    #00e676;
-  --ok:      #f59e0b;
-  --bad:     #ef4444;
+  --bg:      #2B4F6E;
+  --bg2:     #244562;
+  --card:    #4A6B85;
+  --card2:   #3d6178;
+  --border:  #9E8B7A;
+  --accent:  #E8DDD0;
+  --adim:    rgba(232,221,208,0.12);
+  --text:    #E8DDD0;
+  --mid:     #9E8B7A;
+  --dim:     #5a7a8f;
+  --good:    #E8DDD0;
+  --ok:      #9E8B7A;
+  --bad:     #7a5050;
   --radius:  18px;
   --tabh:    66px;
   --st:      env(safe-area-inset-top, 20px);
@@ -136,7 +136,7 @@ header {
 /* ── Hero best bet ── */
 .hero-card {
   margin: 10px 16px 0;
-  background: linear-gradient(140deg,#0d2a1a,#091828 60%,#0a1020);
+  background: linear-gradient(140deg,#2B4F6E,#244562 60%,#1e3a54);
   border: 1px solid rgba(0,230,118,.2); border-radius: var(--radius);
   padding: 16px 16px 14px; position: relative; overflow: hidden;
 }
@@ -265,8 +265,8 @@ svg[style*="width"] { width: auto; height: auto; }
   min-height: 400px;
   height: calc(100dvh - var(--tabh) - var(--st) - var(--sb) - 70px);
 }
-.leaflet-popup-content-wrapper { background:#0d1a28!important; color:#e2e8f0!important; border-radius:16px!important; border:1px solid #1c2f42!important; box-shadow:0 20px 60px rgba(0,0,0,.8)!important; }
-.leaflet-popup-tip { background:#0d1a28!important; }
+.leaflet-popup-content-wrapper { background:#2B4F6E!important; color:var(--text)!important; border-radius:16px!important; border:1px solid #3d6178!important; box-shadow:0 20px 60px rgba(0,0,0,.6)!important; }
+.leaflet-popup-tip { background:#2B4F6E!important; }
 .leaflet-popup-close-button { color:#4a6070!important; font-size:20px!important; top:6px!important; right:8px!important; }
 .leaflet-popup-content { margin:15px!important; font-family:-apple-system,sans-serif!important; font-size:13px!important; line-height:1.5!important; }
 .popup-name  { font-size:15px; font-weight:800; margin-bottom:4px; }
@@ -274,14 +274,14 @@ svg[style*="width"] { width: auto; height: auto; }
 .popup-meta  { color:#4a6070; font-size:11px; margin-bottom:7px; }
 .popup-tags  { display:flex; flex-wrap:wrap; gap:4px; }
 .ptag        { padding:2px 6px; border-radius:5px; font-size:10px; font-weight:700; }
-.map-legend.leaflet-control { background:rgba(13,26,40,.96)!important; backdrop-filter:blur(10px); border-radius:13px!important; padding:11px 13px!important; border:1px solid #1c2f42!important; box-shadow:0 4px 20px rgba(0,0,0,.5)!important; }
+.map-legend.leaflet-control { background:rgba(43,79,110,.96)!important; backdrop-filter:blur(10px); border-radius:13px!important; padding:11px 13px!important; border:1px solid #3d6178!important; box-shadow:0 4px 20px rgba(0,0,0,.5)!important; }
 .map-legend h4 { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#4a6070; margin-bottom:7px; }
 .leg-item  { display:flex; align-items:center; gap:6px; margin-bottom:4px; font-size:11px; color:#94a3b8; }
 .leg-item:last-child { margin-bottom:0; }
 .leg-dot   { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
 .marker-label { background:transparent!important; border:none!important; box-shadow:none!important; color:#fff!important; font-size:10px!important; font-weight:900!important; padding:0!important; text-shadow:0 1px 3px rgba(0,0,0,1); }
 .marker-label:before { display:none!important; }
-.leaflet-control-zoom a { background:rgba(13,26,40,.95)!important; color:#e2e8f0!important; border:1px solid #1c2f42!important; border-radius:8px!important; }
+.leaflet-control-zoom a { background:rgba(43,79,110,.95)!important; color:var(--text)!important; border:1px solid #3d6178!important; border-radius:8px!important; }
 .leaflet-control-zoom a:hover { background:#112030!important; }
 
 /* ── Tab bar ── */
@@ -321,7 +321,7 @@ img[src^="icons/"] {
 .nearby-hdr span { font-size:11px; color:var(--dim); }
 .nearby-gps-btn {
   width:100%; padding:14px; border-radius:var(--radius);
-  background: linear-gradient(135deg,#0d2a1a,#091828);
+  background: linear-gradient(135deg,#2B4F6E,#244562);
   border:1px solid rgba(0,230,118,.25); color:var(--accent);
   font-size:15px; font-weight:700; cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:10px;
@@ -396,7 +396,7 @@ footer { padding:16px 16px 6px; text-align:center; font-size:10px; color:var(--d
 /* Top info block */
 .detail-top {
   padding: calc(var(--st) + 14px) 16px 0;
-  background: linear-gradient(180deg, #080e18 70%, transparent);
+  background: linear-gradient(180deg, #2B4F6E 70%, transparent);
   position: relative;
 }
 .detail-close {
@@ -500,11 +500,11 @@ footer { padding:16px 16px 6px; text-align:center; font-size:10px; color:var(--d
 }
 .dir-btn:active { opacity: .7; transform: scale(.97); }
 .dir-apple {
-  background: linear-gradient(135deg,#1a1a2e,#16213e);
-  border: 1px solid rgba(255,255,255,.12); color: #fff;
+  background: linear-gradient(135deg,#3d6178,#2B4F6E);
+  border: 1px solid rgba(232,221,208,.20); color: var(--text);
 }
 .dir-google {
-  background: linear-gradient(135deg,#1a2a1a,#0d1f0d);
+  background: linear-gradient(135deg,#2B4F6E,#244562);
   border: 1px solid rgba(0,230,118,.2); color: var(--accent);
 }
 
@@ -1020,7 +1020,7 @@ function parseSunTime(str) {
 // SCORING ENGINE
 // ═══════════════════════════════════════════
 function scoreColor(s){ return s>=7?"var(--good)":s>=5?"var(--ok)":"var(--bad)"; }
-function scoreHex(s)  { return s>=7?"#00e676":s>=5?"#f59e0b":"#ef4444"; }
+function scoreHex(s)  { return s>=7?"#E8DDD0":s>=5?"#9E8B7A":"#7a5050"; }
 
 // Water-type × conditions interaction.
 // The same weather affects different waters differently — this is what
@@ -1521,9 +1521,9 @@ function initMap() {
   var Leg=L.Control.extend({options:{position:"topright"},onAdd:function(){
     var d=L.DomUtil.create("div","map-legend");
     d.innerHTML='<h4>Score</h4>'+
-      '<div class="leg-item"><div class="leg-dot" style="background:#00e676"></div>Hot (7-10)</div>'+
-      '<div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>OK (5-6)</div>'+
-      '<div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Cold (1-4)</div>';
+      '<div class="leg-item"><div class="leg-dot" style="background:#E8DDD0"></div>Hot (7-10)</div>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#9E8B7A"></div>OK (5-6)</div>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#7a5050"></div>Cold (1-4)</div>';
     return d;
   }});
   map.addControl(new Leg());
@@ -1542,7 +1542,7 @@ function renderMapMarkers() {
     var hex=scoreHex(res.score);
     var r=7+res.score*1.1;
     var circle=L.circleMarker([lake.lat,lake.lon],{
-      radius:r,fillColor:hex,color:"#080e18",weight:2,opacity:1,fillOpacity:res.score>=7?0.9:0.65
+      radius:r,fillColor:hex,color:"#1e3a54",weight:2,opacity:1,fillOpacity:res.score>=7?0.9:0.65
     }).addTo(map);
     circle.bindTooltip(res.score.toString(),{permanent:true,direction:"center",className:"marker-label",offset:[0,0]});
     var dist=userLat?haversine(userLat,userLon,lake.lat,lake.lon):null;
@@ -2143,8 +2143,8 @@ function initDetailMap(lat, lon, name, hex, score) {
   var pinIcon = L.divIcon({
     className: "",
     html: '<div style="width:44px;height:44px;border-radius:50%;background:' + hex +
-      ';border:3px solid #080e18;display:flex;align-items:center;justify-content:center;' +
-      'font-size:16px;font-weight:900;color:#080e18;box-shadow:0 0 0 3px ' + hex + '44">' +
+      ';border:3px solid #1e3a54;display:flex;align-items:center;justify-content:center;' +
+      'font-size:16px;font-weight:900;color:#1e3a54;box-shadow:0 0 0 3px ' + hex + '44">' +
       score + '</div>',
     iconSize: [44, 44], iconAnchor: [22, 22]
   });
