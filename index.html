@@ -1,0 +1,2322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bass Report">
+<meta name="theme-color" content="#080e18">
+<title>Bass Report</title>
+<link rel="icon" type="image/png" href="icon-64.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --bg:      #080e18;
+  --bg2:     #0b1520;
+  --card:    #0d1a28;
+  --card2:   #112030;
+  --border:  #1c2f42;
+  --accent:  #00e676;
+  --adim:    rgba(0,230,118,0.10);
+  --text:    #e2e8f0;
+  --mid:     #94a3b8;
+  --dim:     #4a6070;
+  --good:    #00e676;
+  --ok:      #f59e0b;
+  --bad:     #ef4444;
+  --radius:  18px;
+  --tabh:    66px;
+  --st:      env(safe-area-inset-top, 20px);
+  --sb:      env(safe-area-inset-bottom, 20px);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system,'SF Pro Display','Helvetica Neue',sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100dvh;
+  padding-top: calc(var(--st) + 6px);
+  padding-bottom: calc(var(--tabh) + var(--sb) + 8px);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* ── Header ── */
+header {
+  padding: 8px 16px 10px;
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(8,14,24,0.92);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 300;
+}
+.hdr-title  { font-size: 20px; font-weight: 800; letter-spacing: -.5px; flex: 1; }
+.hdr-title span { color: var(--accent); }
+.hdr-sub    { font-size: 10px; color: var(--dim); margin-top: 1px; }
+.geo-btn {
+  width: 38px; height: 38px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--card2);
+  color: var(--accent); font-size: 16px; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.geo-btn:active { opacity: .6; transform: scale(.92); }
+
+/* ── Search bar ── */
+.search-wrap {
+  padding: 10px 16px 0;
+  position: relative;
+}
+.search-inner {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 0 12px; height: 44px;
+  transition: border-color .2s;
+}
+.search-inner:focus-within { border-color: var(--accent); }
+.search-icon { font-size: 15px; color: var(--dim); flex-shrink: 0; }
+.search-inner input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-size: 15px; font-weight: 500;
+}
+.search-inner input::placeholder { color: var(--dim); }
+.search-clear {
+  background: none; border: none; color: var(--dim);
+  font-size: 17px; cursor: pointer; padding: 2px 0; line-height: 1;
+  display: none;
+}
+.search-clear.visible { display: block; }
+
+/* Search dropdown */
+.search-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 16px; right: 16px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden; z-index: 500;
+  box-shadow: 0 12px 40px rgba(0,0,0,.6);
+  display: none;
+}
+.search-dropdown.open { display: block; }
+.search-result {
+  padding: 12px 14px; cursor: pointer; border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.search-result:last-child { border-bottom: none; }
+.search-result:active { background: var(--card); }
+.sr-name  { font-size: 14px; font-weight: 600; }
+.sr-sub   { font-size: 11px; color: var(--dim); margin-top: 2px; }
+.search-loading { padding: 14px; text-align: center; color: var(--dim); font-size: 13px; }
+.search-none    { padding: 14px; text-align: center; color: var(--dim); font-size: 13px; }
+
+/* ── Location context pill ── */
+.loc-pill {
+  margin: 8px 16px 0;
+  display: none; align-items: center; gap: 6px;
+  background: var(--adim); border: 1px solid rgba(0,230,118,.18);
+  border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 600;
+  color: var(--good);
+}
+.loc-pill.visible { display: flex; }
+.loc-dist { color: var(--dim); font-size: 11px; margin-left: auto; }
+
+/* ── Conditions Grid ── */
+.cond-grid {
+  margin: 10px 16px 0;
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
+}
+.cond-cell {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 13px; padding: 10px 4px; text-align: center;
+}
+.c-lbl { font-size: 8px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 700; }
+.c-val { font-size: 14px; font-weight: 800; line-height: 1; margin-bottom: 2px; }
+.c-sub { font-size: 9px; color: var(--mid); }
+
+/* ── Hero best bet ── */
+.hero-card {
+  margin: 10px 16px 0;
+  background: linear-gradient(140deg,#0d2a1a,#091828 60%,#0a1020);
+  border: 1px solid rgba(0,230,118,.2); border-radius: var(--radius);
+  padding: 16px 16px 14px; position: relative; overflow: hidden;
+}
+.hero-card::after {
+  content:''; position:absolute; top:-40px; right:-40px;
+  width:160px; height:160px;
+  background: radial-gradient(circle,rgba(0,230,118,.07),transparent 70%);
+  pointer-events: none;
+}
+.hero-lbl {
+  font-size: 9px; font-weight: 800; letter-spacing: 2px;
+  color: var(--accent); text-transform: uppercase; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 5px;
+}
+.hero-body  { display: flex; align-items: center; gap: 12px; }
+.hero-info  { flex: 1; min-width: 0; }
+.hero-name  { font-size: 20px; font-weight: 800; letter-spacing: -.4px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero-sub   { font-size: 12px; color: var(--mid); margin-top: 4px; }
+.hero-baits { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.hero-chip  { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: rgba(0,230,118,.1); color: var(--good); border: 1px solid rgba(0,230,118,.2); }
+
+/* ── Baits strip ── */
+.baits-strip {
+  margin: 8px 16px 0; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px; display: none;
+}
+.baits-hdr  { font-size: 9px; font-weight: 800; letter-spacing: 1.5px; color: var(--dim); text-transform: uppercase; margin-bottom: 8px; }
+.baits-row  { display: flex; flex-wrap: wrap; gap: 5px; }
+.bait-chip  { display: flex; align-items: baseline; gap: 4px; padding: 5px 9px; border-radius: 20px; background: rgba(0,230,118,.07); border: 1px solid rgba(0,230,118,.18); font-size: 11px; font-weight: 700; color: var(--good); }
+.bait-why   { font-size: 9px; color: var(--dim); font-weight: 500; }
+
+/* ── Refresh ── */
+.refresh-bar { padding: 10px 16px 0; text-align: center; }
+.refresh-btn {
+  background: var(--adim); border: 1px solid rgba(0,230,118,.22);
+  color: var(--accent); font-size: 13px; font-weight: 700; cursor: pointer;
+  padding: 8px 20px; border-radius: 20px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.refresh-btn:active { transform: scale(.95); }
+.ri { display: inline-block; }
+.refresh-btn.loading .ri { animation: spin .7s linear infinite; }
+
+/* Inline SVG icons */
+svg { display: inline-block; vertical-align: middle; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; width: 18px; height: 18px; }
+svg[style*="width"] { width: auto; height: auto; }
+.ri, .ti, .sr-icon svg { width: auto; height: auto; }
+.ri { width: 18px; height: 18px; }
+.ti { width: 22px; height: 22px; }
+.sr-icon svg { width: 20px; height: 20px; }
+.icon-accent { color: var(--accent); }
+.icon-dim { color: var(--dim); }
+/* ── Section label ── */
+.section-lbl {
+  padding: 12px 16px 6px;
+  font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+  color: var(--dim); text-transform: uppercase; display: none;
+}
+/* ── Lake Cards ── */
+.lakes-list { padding: 0 16px 12px; display: flex; flex-direction: column; gap: 7px; }
+/* Filter bar */
+.filter-bar {
+  display: flex; gap: 6px; padding: 8px 16px; overflow-x: auto;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; letter-spacing: .3px;
+  background: var(--card); border: 1.5px solid var(--border);
+  color: #aaa; cursor: pointer; transition: all .2s;
+  white-space: nowrap; -webkit-tap-highlight-color: transparent;
+}
+.filter-chip.active {
+  background: var(--accent); border-color: var(--accent);
+  color: #000; font-weight: 700;
+}
+.filter-chip:active { transform: scale(.95); }
+.filter-sort-row {
+  display: flex; align-items: center; gap: 6px; padding: 4px 16px 2px;
+}
+.filter-sort-row select {
+  background: var(--card); color: #ccc; border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 5px 10px; font-size: 12px;
+  -webkit-appearance: none; appearance: none;
+}
+.filter-count {
+  font-size: 11px; color: #666; margin-left: auto; padding-right: 4px;
+}
+
+.lake-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); display: flex; overflow: hidden;
+  animation: fadeUp .3s ease both;
+}
+.lake-card:active { opacity: .75; }
+.card-bar   { width: 4px; flex-shrink: 0; }
+.card-body  { flex: 1; padding: 12px 12px 11px; min-width: 0; }
+.card-top   { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; }
+.card-info  { flex: 1; min-width: 0; }
+.card-name  { font-size: 14px; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-meta  { font-size: 11px; color: var(--mid); }
+.card-right { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+.card-trend { font-size: 11px; font-weight: 800; }
+.score-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 7px; }
+.stag       { padding: 2px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; }
+.stag.pos   { background: rgba(0,230,118,.1); color: var(--good); }
+.stag.neg   { background: rgba(239,68,68,.1);  color: var(--bad);  }
+.stag.neu   { background: rgba(74,96,112,.1);   color: var(--mid);  }
+.card-baits { display: flex; flex-wrap: wrap; gap: 3px; }
+.mini-chip  { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 9px; background: rgba(0,230,118,.06); color: var(--accent); border: 1px solid rgba(0,230,118,.14); }
+
+/* ── No-nearby warning ── */
+.no-nearby {
+  margin: 0 16px 8px; padding: 12px 14px;
+  background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.25);
+  border-radius: 14px; font-size: 12px; color: var(--ok); line-height: 1.5;
+}
+
+/* ── Map ── */
+.map-view { display: none; flex-direction: column; padding: 10px 16px; }
+.map-view.active { display: flex; }
+.map-hdr  { margin-bottom: 8px; font-size: 11px; font-weight: 800; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+#map {
+  flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
+  min-height: 400px;
+  height: calc(100dvh - var(--tabh) - var(--st) - var(--sb) - 70px);
+}
+.leaflet-popup-content-wrapper { background:#0d1a28!important; color:#e2e8f0!important; border-radius:16px!important; border:1px solid #1c2f42!important; box-shadow:0 20px 60px rgba(0,0,0,.8)!important; }
+.leaflet-popup-tip { background:#0d1a28!important; }
+.leaflet-popup-close-button { color:#4a6070!important; font-size:20px!important; top:6px!important; right:8px!important; }
+.leaflet-popup-content { margin:15px!important; font-family:-apple-system,sans-serif!important; font-size:13px!important; line-height:1.5!important; }
+.popup-name  { font-size:15px; font-weight:800; margin-bottom:4px; }
+.popup-score { display:inline-block; padding:2px 10px; border-radius:20px; font-weight:800; font-size:13px; margin:3px 0 7px; }
+.popup-meta  { color:#4a6070; font-size:11px; margin-bottom:7px; }
+.popup-tags  { display:flex; flex-wrap:wrap; gap:4px; }
+.ptag        { padding:2px 6px; border-radius:5px; font-size:10px; font-weight:700; }
+.map-legend.leaflet-control { background:rgba(13,26,40,.96)!important; backdrop-filter:blur(10px); border-radius:13px!important; padding:11px 13px!important; border:1px solid #1c2f42!important; box-shadow:0 4px 20px rgba(0,0,0,.5)!important; }
+.map-legend h4 { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#4a6070; margin-bottom:7px; }
+.leg-item  { display:flex; align-items:center; gap:6px; margin-bottom:4px; font-size:11px; color:#94a3b8; }
+.leg-item:last-child { margin-bottom:0; }
+.leg-dot   { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+.marker-label { background:transparent!important; border:none!important; box-shadow:none!important; color:#fff!important; font-size:10px!important; font-weight:900!important; padding:0!important; text-shadow:0 1px 3px rgba(0,0,0,1); }
+.marker-label:before { display:none!important; }
+.leaflet-control-zoom a { background:rgba(13,26,40,.95)!important; color:#e2e8f0!important; border:1px solid #1c2f42!important; border-radius:8px!important; }
+.leaflet-control-zoom a:hover { background:#112030!important; }
+
+/* ── Tab bar ── */
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: calc(var(--tabh) + var(--sb)); padding-bottom: var(--sb);
+  background: rgba(8,14,24,.94);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--border);
+  display: flex; z-index: 300;
+}
+.tab-btn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  border: none; background: none; color: var(--dim); cursor: pointer;
+  font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  transition: color .2s;
+}
+.tab-btn .ti { font-size: 22px; line-height: 1; transition: transform .2s; }
+.tab-btn.active { color: var(--accent); }
+.tab-btn.active .ti { transform: scale(1.1); }
+.tab-btn:active { opacity: .6; }
+
+/* ── Nearby view ── */
+.nearby-view { display:none; flex-direction:column; padding:10px 16px; }
+.nearby-view.active { display:flex; flex-direction:column; }
+.nearby-hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:10px;
+}
+.nearby-hdr h3 { font-size:13px; font-weight:800; color:var(--text); }
+.nearby-hdr span { font-size:11px; color:var(--dim); }
+.nearby-gps-btn {
+  width:100%; padding:14px; border-radius:var(--radius);
+  background: linear-gradient(135deg,#0d2a1a,#091828);
+  border:1px solid rgba(0,230,118,.25); color:var(--accent);
+  font-size:15px; font-weight:700; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  margin-bottom:10px;
+}
+.nearby-gps-btn:active { opacity:.7; transform:scale(.98); }
+.nearby-gps-btn.locating { color:var(--ok); border-color:rgba(245,158,11,.3); }
+.nearby-radius-row {
+  display:flex; gap:6px; margin-bottom:10px;
+}
+.radius-chip {
+  flex:1; padding:8px 4px; border-radius:10px; text-align:center;
+  background:var(--card); border:1px solid var(--border);
+  font-size:12px; font-weight:700; color:var(--dim); cursor:pointer;
+}
+.radius-chip.active { background:var(--adim); border-color:rgba(0,230,118,.3); color:var(--accent); }
+.radius-chip:active { opacity:.6; }
+.nearby-list { display:flex; flex-direction:column; gap:7px; }
+.nearby-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); display:flex; overflow:hidden;
+  animation:fadeUp .3s ease both;
+}
+.nearby-card:active { opacity:.75; }
+.nc-bar  { width:4px; flex-shrink:0; }
+.nc-body { flex:1; padding:12px 12px 11px; min-width:0; }
+.nc-top  { display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; }
+.nc-info { flex:1; min-width:0; }
+.nc-name { font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+.nc-meta { font-size:11px; color:var(--mid); }
+.nc-right{ display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; }
+.nc-dist { font-size:11px; font-weight:800; }
+.nc-tags { display:flex; flex-wrap:wrap; gap:3px; margin-bottom:6px; }
+.nc-baits{ display:flex; flex-wrap:wrap; gap:3px; }
+.nc-note {
+  margin-top:8px; padding:10px 12px;
+  background:rgba(245,158,11,.06); border:1px solid rgba(245,158,11,.18);
+  border-radius:10px; font-size:11px; color:var(--ok); line-height:1.5;
+}
+.nearby-empty {
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; padding:48px 20px; gap:12px;
+  text-align:center;
+}
+.nearby-empty .ne-icon { font-size:44px; }
+.nearby-empty p { font-size:14px; color:var(--mid); line-height:1.6; }
+.nearby-empty small { font-size:11px; color:var(--dim); }
+
+/* ── Loading / Error ── */
+.loading-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; gap:14px; color:var(--dim); font-size:14px; }
+.spinner { width:34px; height:34px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+.error-msg { margin:16px; padding:16px; background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.22); border-radius:var(--radius); color:var(--bad); font-size:13px; text-align:center; line-height:1.6; }
+footer { padding:16px 16px 6px; text-align:center; font-size:10px; color:var(--dim); line-height:1.8; }
+
+/* ── Detail Panel ── */
+.detail-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  background: var(--bg);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  display: none; flex-direction: column;
+  animation: fadeIn .18s ease;
+}
+.detail-overlay.open { display: flex; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+.detail-sheet {
+  display: flex; flex-direction: column;
+  min-height: 100%;
+  padding-bottom: calc(var(--sb) + 24px);
+}
+
+/* Top info block */
+.detail-top {
+  padding: calc(var(--st) + 14px) 16px 0;
+  background: linear-gradient(180deg, #080e18 70%, transparent);
+  position: relative;
+}
+.detail-close {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: none;
+  color: var(--accent); font-size: 15px; font-weight: 700;
+  cursor: pointer; padding: 6px 0 14px; letter-spacing: -.2px;
+}
+.detail-close:active { opacity: .5; }
+.detail-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 800; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+}
+.detail-name {
+  font-size: 26px; font-weight: 900; letter-spacing: -.6px;
+  line-height: 1.1; margin-bottom: 6px;
+}
+.detail-meta {
+  font-size: 13px; color: var(--mid); margin-bottom: 14px;
+}
+.detail-score-row {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+}
+.detail-ring { flex-shrink: 0; }
+.detail-score-info { flex: 1; }
+.detail-score-label {
+  font-size: 11px; font-weight: 700; color: var(--dim);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+}
+.detail-score-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+/* Map strip */
+.detail-map-strip {
+  width: 100%; height: 300px; flex-shrink: 0;
+  position: relative;
+}
+#detailMap { width: 100%; height: 100%; }
+
+.detail-photos {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.detail-photos img {
+  width: 100%; height: 130px; object-fit: cover;
+  border-radius: 10px; display: block;
+  background: var(--card-bg);
+}
+.detail-photo-placeholder {
+  grid-column: 1 / -1;
+  height: 60px; display: flex; align-items: center; justify-content: center;
+  color: var(--dim); font-size: 12px; font-weight: 600;
+}
+.detail-photo-credit {
+  grid-column: 1 / -1;
+  font-size: 9px; color: var(--dim); text-align: right; padding-right: 2px;
+}
+/* Bottom info block */
+.detail-bottom {
+  background: var(--bg); padding: 16px 16px 0; flex: 1;
+}
+.detail-section-title {
+  font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 10px;
+}
+
+/* Strategy block */
+.strategy-block {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px; margin-bottom: 12px;
+}
+.strategy-row {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.strategy-row:last-child { border-bottom: none; padding-bottom: 0; }
+.strategy-row:first-child { padding-top: 0; }
+.sr-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.sr-body { flex: 1; min-width: 0; }
+.sr-label { font-size: 11px; font-weight: 800; color: var(--mid); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 2px; }
+.sr-text  { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+/* Bait chips */
+.detail-baits { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.detail-bait-chip {
+  display: flex; align-items: baseline; gap: 5px;
+  padding: 7px 11px; border-radius: 20px;
+  background: rgba(0,230,118,.08); border: 1px solid rgba(0,230,118,.2);
+  font-size: 12px; font-weight: 700; color: var(--good);
+}
+.dbc-why { font-size: 10px; color: var(--dim); font-weight: 500; }
+
+/* Direction buttons */
+.directions-row {
+  display: flex; gap: 8px; margin-bottom: 6px;
+}
+.dir-btn {
+  flex: 1; padding: 13px 8px;
+  border-radius: 14px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.dir-btn:active { opacity: .7; transform: scale(.97); }
+.dir-apple {
+  background: linear-gradient(135deg,#1a1a2e,#16213e);
+  border: 1px solid rgba(255,255,255,.12); color: #fff;
+}
+.dir-google {
+  background: linear-gradient(135deg,#1a2a1a,#0d1f0d);
+  border: 1px solid rgba(0,230,118,.2); color: var(--accent);
+}
+
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes fadeUp  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.lake-card:nth-child(1){animation-delay:0ms}
+.lake-card:nth-child(2){animation-delay:30ms}
+.lake-card:nth-child(3){animation-delay:60ms}
+.lake-card:nth-child(4){animation-delay:90ms}
+.lake-card:nth-child(5){animation-delay:120ms}
+.lake-card:nth-child(n+6){animation-delay:150ms}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left" style="flex:1">
+    <div class="hdr-title"><img src="icon-64.png" alt="Bass" style="width:28px;height:28px;vertical-align:middle;margin-right:6px;border-radius:6px;object-fit:contain;background:var(--card);padding:2px"><span>Bass</span> Report</div>
+    <div class="hdr-sub" id="statusText">Loading…</div>
+  </div>
+  <button class="geo-btn" onclick="useMyLocation()" title="Use GPS location"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></button>
+</header>
+
+<div id="listView">
+
+  <!-- Search bar -->
+  <div class="search-wrap" id="searchWrap">
+    <div class="search-inner">
+      <span class="search-icon"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg></span>
+      <input id="searchInput" type="text"
+        placeholder="Search any city, lake, or town…"
+        autocomplete="off" autocorrect="off" spellcheck="false"
+        oninput="onSearchInput(this.value)"
+        onblur="onSearchBlur()">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+    </div>
+    <div class="search-dropdown" id="searchDropdown"></div>
+  </div>
+
+  <!-- Location context pill -->
+  <div class="loc-pill" id="locPill">
+    <svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg><span id="locPillName">–</span>
+    <span class="loc-dist" id="locPillDist"></span>
+  </div>
+
+  <!-- Conditions -->
+  <div class="cond-grid">
+    <div class="cond-cell">
+      <div class="c-lbl">Temp</div>
+      <div class="c-val" id="condTemp">--</div>
+      <div class="c-sub" id="condHum">--%</div>
+    </div>
+    <div class="cond-cell">
+      <div class="c-lbl">Pressure</div>
+      <div class="c-val" id="condPres">--</div>
+      <div class="c-sub" id="condTrend">→</div>
+    </div>
+    <div class="cond-cell">
+      <div class="c-lbl">Wind</div>
+      <div class="c-val" id="condWind">--</div>
+      <div class="c-sub" id="condDir">--</div>
+    </div>
+    <div class="cond-cell">
+      <div class="c-lbl">Moon</div>
+      <div class="c-val" id="condMoon"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+      <div class="c-sub" id="condMoonSub">--</div>
+    </div>
+  </div>
+
+  <!-- Hero card -->
+  <div class="hero-card" id="heroCard" style="display:none"></div>
+
+  <!-- Bait suggestions -->
+  <div class="baits-strip" id="baitsStrip"></div>
+
+  <!-- Refresh -->
+  <div class="refresh-bar">
+    <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
+      <span class="ri">↻</span> Refresh Conditions
+    </button>
+  </div>
+
+  <div class="section-lbl" id="sectionLbl">Waters Ranked by Score</div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar" id="filterBar" style="display:none">
+    <span class="filter-chip active" data-filter="all">All</span>
+    <span class="filter-chip" data-filter="score-hot"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 22c4-3 8-7 8-12a8 8 0 0 0-16 0c0 5 4 9 8 12z"/></svg> Hot (7+)</span>
+    <span class="filter-chip" data-filter="score-ok"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Fair (5-7)</span>
+    <span class="filter-chip" data-filter="score-cold"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 2v20m-8-8h16"/><circle cx="12" cy="12" r="2"/></svg> Cold (&lt;5)</span>
+    <span class="filter-chip" data-filter="close"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> &lt;30mi</span>
+    <span class="filter-chip" data-filter="mid"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M5 17h14v-5l-2-5H7L5 12v5z"/><circle cx="7.5" cy="17" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="17" r="1.5" fill="currentColor" stroke="none"/></svg> 30-60mi</span>
+    <span class="filter-chip" data-filter="far"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/></svg> 60mi+</span>
+    <span class="filter-chip" data-filter="lake"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M3 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg> Lakes</span>
+    <span class="filter-chip" data-filter="reservoir"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M4 20V10l8-7 8 7v10"/><path d="M9 20v-6h6v6"/></svg> Reservoirs</span>
+  </div>
+  <div class="filter-sort-row" id="filterSortRow" style="display:none">
+    <select id="sortSelect">
+      <option value="score">Sort: Best Score</option>
+      <option value="distance">Sort: Closest</option>
+      <option value="name">Sort: A–Z</option>
+      <option value="temp">Sort: Water Temp</option>
+    </select>
+    <span class="filter-count" id="filterCount"></span>
+  </div>
+
+  <div id="noNearby" class="no-nearby" style="display:none"></div>
+  <div class="lakes-list" id="lakesList"></div>
+
+  <footer>Weather: Open-Meteo · Sun: SunriseSunset.io · Geo: OpenStreetMap · Built for SmokeLasher</footer>
+</div>
+
+<!-- Map -->
+<div class="map-view" id="mapView">
+  <div class="map-hdr"><svg viewBox="0 0 24 24" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;color:var(--accent);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 12c-2-4-6-7-11-7S3 9 3 12s3 7 7 7 9-3 11-7z"/><circle cx="10" cy="11" r="1.5" fill="currentColor" stroke="none"/><path d="M18 12l3-3v6z"/></svg> Texas Hot Spots — Statewide</div>
+  <div id="map"></div>
+</div>
+
+<!-- Nearby -->
+<div class="nearby-view" id="nearbyView">
+  <div class="nearby-hdr">
+    <h3><svg viewBox="0 0 24 24" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M2 20h20"/><path d="M6 16v4m4-8v8m4-12v12m4-16v16"/></svg> Nearest Water to Me</h3>
+    <span id="nearbyCount"></span>
+  </div>
+  <button class="nearby-gps-btn" id="nearbyGpsBtn" onclick="nearbyLocate()">
+    <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg><span id="nearbyBtnText">Find Water Near Me</span>
+  </button>
+  <div class="nearby-radius-row" id="radiusRow" style="display:none">
+    <div class="radius-chip active" onclick="setRadius(5)"    id="r5">5mi</div>
+    <div class="radius-chip"       onclick="setRadius(10)"   id="r10">10mi</div>
+    <div class="radius-chip"       onclick="setRadius(25)"   id="r25">25mi</div>
+    <div class="radius-chip"       onclick="setRadius(50)"   id="r50">50mi</div>
+  </div>
+  <div class="nearby-list" id="nearbyList">
+    <div class="nearby-empty">
+      <div class="ne-icon"><svg viewBox="0 0 24 24" style="width:48px;height:48px;color:var(--accent);fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="M2 20h20"/><path d="M6 16v4m4-8v8m4-12v12m4-16v16"/></svg></div>
+      <p>Tap the button above to find<br>any water body near you</p>
+      <small>Uses OpenStreetMap live data — finds lakes,<br>ponds, rivers, creeks & reservoirs</small>
+    </div>
+  </div>
+</div>
+
+<!-- Tab bar -->
+<nav class="tab-bar">
+  <button class="tab-btn active" id="tabList" onclick="switchView('list')">
+    <svg viewBox="0 0 24 24" class="ti"><path d="M8 6h13m-13 6h13m-13 6h13"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/></svg>Report
+  </button>
+  <button class="tab-btn" id="tabMap" onclick="switchView('map')">
+    <svg viewBox="0 0 24 24" class="ti"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16m8-12v16"/></svg>Map
+  </button>
+  <button class="tab-btn" id="tabNearby" onclick="switchView('nearby')">
+    <svg viewBox="0 0 24 24" class="ti"><path d="M2 20h20"/><path d="M6 16v4m4-8v8m4-12v12m4-16v16"/></svg>Nearby
+  </button>
+</nav>
+
+<!-- ── Detail Panel Overlay ── -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-sheet" id="detailSheet">
+
+    <!-- TOP: name, score, breakdown -->
+    <div class="detail-top" id="detailTop">
+      <button class="detail-close" onclick="closeDetail()">‹ Back</button>
+      <div class="detail-badge" id="detailBadge"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M2 20h20"/><path d="M5 16v4m4-8v8m4-12v12m4-16v16"/></svg>Water Detail</div>
+      <div class="detail-name" id="detailName">–</div>
+      <div class="detail-meta" id="detailMeta">–</div>
+      <div class="detail-score-row">
+        <div class="detail-ring" id="detailRing"></div>
+        <div class="detail-score-info">
+          <div class="detail-score-label">Fishing Score</div>
+          <div class="detail-score-tags" id="detailTags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP STRIP -->
+    <div class="detail-map-strip">
+      <div id="detailMap"></div>
+    </div>
+
+    <!-- PHOTOS -->
+    <div class="detail-bottom">
+      <div class="detail-section-title">Photos</div>
+      <div class="detail-photos" id="detailPhotos">
+        <div class="detail-photo-placeholder" id="detailPhotoPlaceholder">Loading…</div>
+      </div>
+    </div>
+
+    <!-- BOTTOM: strategy + baits + directions -->
+    <div class="detail-bottom">
+
+      <div class="detail-section-title">Fishing Strategy</div>
+      <div class="strategy-block" id="detailStrategy"></div>
+
+      <div class="detail-section-title" style="margin-top:14px">Recommended Baits</div>
+      <div class="detail-baits" id="detailBaits"></div>
+
+      <div class="detail-section-title" style="margin-top:2px">Get Directions</div>
+      <div class="directions-row">
+        <button class="dir-btn dir-apple" id="dirApple" onclick="openAppleMaps()">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/></svg> Apple Maps
+        </button>
+        <button class="dir-btn dir-google" id="dirGoogle" onclick="openGoogleMaps()">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> Google Maps
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// TEXAS BASS WATERS — statewide database
+// ═══════════════════════════════════════════
+var ALL_LAKES = [
+  // PANHANDLE / WEST TEXAS
+  { name:"Lake Meredith",           lat:35.63,  lon:-101.84, type:"Reservoir", region:"Amarillo"     },
+  { name:"Lake Mackenzie",          lat:34.18,  lon:-101.06, type:"Reservoir", region:"Silverton"    },
+  { name:"White River Lake",        lat:33.36,  lon:-100.94, type:"Reservoir", region:"Crosbyton"    },
+  { name:"Lake Alan Henry",         lat:33.02,  lon:-101.02, type:"Reservoir", region:"Lubbock"      },
+  { name:"OC Fisher Lake",          lat:31.44,  lon:-100.53, type:"Reservoir", region:"San Angelo"   },
+  { name:"Twin Buttes Reservoir",   lat:31.39,  lon:-100.57, type:"Reservoir", region:"San Angelo"   },
+  { name:"Lake Nasworthy",          lat:31.41,  lon:-100.50, type:"Reservoir", region:"San Angelo"   },
+  // NORTH CENTRAL / ABILENE
+  { name:"Lake Stamford",           lat:33.00,  lon:-99.47,  type:"Reservoir", region:"Haskell"      },
+  { name:"Lake Fort Phantom Hill",  lat:32.57,  lon:-99.72,  type:"Reservoir", region:"Abilene"      },
+  { name:"Lake Kirby",              lat:32.34,  lon:-99.83,  type:"Reservoir", region:"Abilene"      },
+  { name:"Lake Brownwood",          lat:31.87,  lon:-99.01,  type:"Reservoir", region:"Brownwood"    },
+  { name:"Lake Coleman",            lat:31.84,  lon:-99.40,  type:"Reservoir", region:"Coleman"      },
+  { name:"Lake Proctor",            lat:31.97,  lon:-98.44,  type:"Reservoir", region:"Comanche"     },
+  { name:"Possum Kingdom Lake",     lat:32.87,  lon:-98.52,  type:"Reservoir", region:"Mineral Wells"},
+  // NORTH TEXAS / DFW
+  { name:"Lake Texoma",             lat:33.80,  lon:-96.60,  type:"Reservoir", region:"Sherman"      },
+  { name:"Lake Ray Roberts",        lat:33.37,  lon:-97.05,  type:"Reservoir", region:"Denton"       },
+  { name:"Lake Lewisville",         lat:33.04,  lon:-96.87,  type:"Reservoir", region:"Dallas"       },
+  { name:"Lavon Lake",              lat:33.02,  lon:-96.42,  type:"Reservoir", region:"Dallas"       },
+  { name:"Lake Ray Hubbard",        lat:32.84,  lon:-96.54,  type:"Reservoir", region:"Dallas"       },
+  { name:"Lake Tawakoni",           lat:32.85,  lon:-95.95,  type:"Reservoir", region:"Greenville"   },
+  { name:"Lake Grapevine",          lat:32.97,  lon:-97.07,  type:"Reservoir", region:"Dallas"       },
+  { name:"Eagle Mountain Lake",     lat:32.92,  lon:-97.46,  type:"Reservoir", region:"Fort Worth"   },
+  { name:"Lake Worth",              lat:32.83,  lon:-97.44,  type:"Reservoir", region:"Fort Worth"   },
+  { name:"Benbrook Lake",           lat:32.64,  lon:-97.47,  type:"Reservoir", region:"Fort Worth"   },
+  { name:"Lake Weatherford",        lat:32.72,  lon:-97.76,  type:"Reservoir", region:"Weatherford"  },
+  { name:"Lake Granbury",           lat:32.41,  lon:-97.77,  type:"Reservoir", region:"Granbury"     },
+  { name:"White Rock Lake",         lat:32.83,  lon:-96.71,  type:"Reservoir", region:"Dallas"       },
+  { name:"Squaw Creek Reservoir",   lat:32.47,  lon:-97.87,  type:"Reservoir", region:"Glen Rose"    },
+  { name:"Lake Whitney",            lat:31.86,  lon:-97.36,  type:"Reservoir", region:"Whitney"      },
+  { name:"Waco Lake",               lat:31.61,  lon:-97.26,  type:"Reservoir", region:"Waco"         },
+  // EAST TEXAS
+  { name:"Lake Fork",               lat:32.89,  lon:-95.57,  type:"Reservoir", region:"Quitman"      },
+  { name:"Lake Bob Sandlin",        lat:33.07,  lon:-95.12,  type:"Reservoir", region:"Mt Pleasant"  },
+  { name:"Lake Cypress Springs",    lat:33.01,  lon:-95.30,  type:"Reservoir", region:"Mt Vernon"    },
+  { name:"Lake O the Pines",        lat:32.74,  lon:-94.62,  type:"Reservoir", region:"Jefferson"    },
+  { name:"Caddo Lake",              lat:32.69,  lon:-94.18,  type:"Lake",      region:"Marshall"     },
+  { name:"Lake Cherokee",           lat:32.45,  lon:-94.72,  type:"Reservoir", region:"Longview"     },
+  { name:"Martin Creek Lake",       lat:32.26,  lon:-94.57,  type:"Reservoir", region:"Longview"     },
+  { name:"Lake Murvaul",            lat:31.91,  lon:-94.20,  type:"Reservoir", region:"Carthage"     },
+  { name:"Lake Palestine",          lat:31.93,  lon:-95.62,  type:"Reservoir", region:"Tyler"        },
+  { name:"Lake Tyler East",         lat:32.27,  lon:-95.35,  type:"Reservoir", region:"Tyler"        },
+  { name:"Lake Nacogdoches",        lat:31.57,  lon:-94.63,  type:"Reservoir", region:"Nacogdoches"  },
+  { name:"Lake Striker",            lat:31.88,  lon:-95.13,  type:"Reservoir", region:"Rusk"         },
+  { name:"Sam Rayburn Reservoir",   lat:31.07,  lon:-94.11,  type:"Reservoir", region:"Jasper"       },
+  { name:"Toledo Bend Reservoir",   lat:31.18,  lon:-93.57,  type:"Reservoir", region:"Jasper"       },
+  { name:"Lake Limestone",          lat:31.40,  lon:-96.35,  type:"Reservoir", region:"Groesbeck"    },
+  { name:"Lake Mexia",              lat:31.64,  lon:-96.56,  type:"Reservoir", region:"Mexia"        },
+  // HOUSTON METRO
+  { name:"Lake Conroe",             lat:30.33,  lon:-95.42,  type:"Reservoir", region:"Houston"      },
+  { name:"Lake Houston",            lat:29.91,  lon:-95.17,  type:"Reservoir", region:"Houston"      },
+  { name:"Lake Livingston",         lat:30.62,  lon:-94.94,  type:"Reservoir", region:"Huntsville"   },
+  { name:"Somerville Lake",         lat:30.35,  lon:-96.50,  type:"Reservoir", region:"Bryan"        },
+  { name:"Lake Bryan",              lat:30.72,  lon:-96.40,  type:"Reservoir", region:"Bryan"        },
+  { name:"Gibbons Creek Reservoir", lat:30.55,  lon:-96.13,  type:"Reservoir", region:"Navasota"     },
+  // CENTRAL TEXAS / AUSTIN
+  { name:"Lake Travis",             lat:30.38,  lon:-98.00,  type:"Reservoir", region:"Austin"       },
+  { name:"Lake Austin",             lat:30.26,  lon:-97.83,  type:"Reservoir", region:"Austin"       },
+  { name:"Lady Bird Lake",          lat:30.25,  lon:-97.81,  type:"Reservoir", region:"Austin"       },
+  { name:"Walter E. Long Lake",     lat:30.35,  lon:-97.63,  type:"Reservoir", region:"Austin"       },
+  { name:"Lake Buchanan",           lat:30.85,  lon:-98.43,  type:"Reservoir", region:"Llano"        },
+  { name:"Inks Lake",               lat:30.74,  lon:-98.37,  type:"Reservoir", region:"Burnet"       },
+  { name:"Lake LBJ",                lat:30.62,  lon:-98.37,  type:"Reservoir", region:"Kingsland"    },
+  { name:"Lake Marble Falls",       lat:30.58,  lon:-98.28,  type:"Reservoir", region:"Marble Falls" },
+  { name:"Canyon Lake",             lat:29.88,  lon:-98.20,  type:"Reservoir", region:"New Braunfels"},
+  { name:"Stillhouse Hollow Lake",  lat:30.98,  lon:-97.52,  type:"Reservoir", region:"Belton"       },
+  { name:"Belton Lake",             lat:31.12,  lon:-97.52,  type:"Reservoir", region:"Belton"       },
+  // SAN ANTONIO AREA
+  { name:"Medina Lake",             lat:29.55,  lon:-98.93,  type:"Reservoir", region:"San Antonio"  },
+  { name:"Calaveras Lake",          lat:29.33,  lon:-98.26,  type:"Reservoir", region:"San Antonio"  },
+  { name:"Braunig Lake",            lat:29.27,  lon:-98.30,  type:"Reservoir", region:"San Antonio"  },
+  // SOUTH / COASTAL TEXAS
+  { name:"Coleto Creek Reservoir",  lat:28.73,  lon:-97.17,  type:"Reservoir", region:"Victoria"     },
+  { name:"Lake Texana",             lat:29.00,  lon:-96.75,  type:"Reservoir", region:"Edna"         },
+  { name:"Choke Canyon Reservoir",  lat:28.47,  lon:-98.25,  type:"Reservoir", region:"Three Rivers" },
+  { name:"Lake Corpus Christi",     lat:27.89,  lon:-97.87,  type:"Reservoir", region:"Corpus Christi"},
+  // SOUTH TEXAS / RIO GRANDE
+  { name:"Falcon Reservoir",        lat:26.57,  lon:-99.15,  type:"Reservoir", region:"Laredo"       },
+  { name:"Lake Casa Blanca",        lat:27.57,  lon:-99.42,  type:"Reservoir", region:"Laredo"       },
+  { name:"Amistad Reservoir",       lat:29.45,  lon:-101.07, type:"Reservoir", region:"Del Rio"      },
+];
+
+// Weather grid — 10 points spread across Texas for map scoring
+var GRID = [
+  { key:"amarillo",   lat:35.22, lon:-101.83 },
+  { key:"lubbock",    lat:33.57, lon:-101.85 },
+  { key:"abilene",    lat:32.45, lon:-99.73  },
+  { key:"dallas",     lat:32.78, lon:-96.80  },
+  { key:"tyler",      lat:32.35, lon:-95.30  },
+  { key:"waco",       lat:31.55, lon:-97.15  },
+  { key:"austin",     lat:30.27, lon:-97.74  },
+  { key:"sanantonio", lat:29.42, lon:-98.49  },
+  { key:"houston",    lat:29.76, lon:-95.37  },
+  { key:"laredo",     lat:27.50, lon:-99.50  },
+];
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+var userLat = null, userLon = null;
+var userLabel = null;
+var weatherData = null, pressureTrend = null, sunData = null;
+var gridWeather = {};
+var currentView = "list";
+var map = null, mapMarkers = [];
+var searchTimer = null;
+var MAX_SHOWN = 15;
+
+// ═══════════════════════════════════════════
+// SEARCH — Nominatim (OpenStreetMap)
+// ═══════════════════════════════════════════
+function onSearchInput(val) {
+  var clear = document.getElementById("searchClear");
+  clear.classList.toggle("visible", val.length > 0);
+  clearTimeout(searchTimer);
+  if (val.length < 2) { closeDropdown(); return; }
+  searchTimer = setTimeout(function(){ doSearch(val); }, 400);
+}
+
+function doSearch(q) {
+  var dd = document.getElementById("searchDropdown");
+  dd.innerHTML = '<div class="search-loading"><svg viewBox="0 0 24 24" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg> Searching…</div>';
+  dd.classList.add("open");
+
+  var url = "https://nominatim.openstreetmap.org/search?q="
+    + encodeURIComponent(q + " Texas")
+    + "&format=json&limit=6&countrycodes=us&addressdetails=1";
+
+  fetch(url, { headers: { "Accept-Language":"en", "User-Agent":"BassReportPWA/1.0" }})
+    .then(function(r){ return r.json(); })
+    .then(function(results) {
+      if (!results.length) {
+        dd.innerHTML = '<div class="search-none">No results — try a different location</div>';
+        return;
+      }
+      dd.innerHTML = "";
+      results.forEach(function(r) {
+        var name  = r.name || r.display_name.split(",")[0];
+        var sub   = r.display_name.split(",").slice(1, 3).join(",").trim();
+        var lat   = parseFloat(r.lat);
+        var lon   = parseFloat(r.lon);
+        var div   = document.createElement("div");
+        div.className = "search-result";
+        div.innerHTML = '<div class="sr-name">' + name + '</div><div class="sr-sub">' + sub + '</div>';
+        div.addEventListener("mousedown", function(e){ e.preventDefault(); });
+        div.addEventListener("click", function() { selectLocation(lat, lon, name); });
+        dd.appendChild(div);
+      });
+    })
+    .catch(function(){ dd.innerHTML = '<div class="search-none">Search failed — check connection</div>'; });
+}
+
+function onSearchBlur() {
+  setTimeout(closeDropdown, 200);
+}
+
+function closeDropdown() {
+  document.getElementById("searchDropdown").classList.remove("open");
+}
+
+function clearSearch() {
+  document.getElementById("searchInput").value = "";
+  document.getElementById("searchClear").classList.remove("visible");
+  closeDropdown();
+}
+
+function selectLocation(lat, lon, name) {
+  userLat = lat; userLon = lon; userLabel = name;
+  document.getElementById("searchInput").value = name;
+  document.getElementById("searchClear").classList.add("visible");
+  closeDropdown();
+  // Save for next visit
+  try { localStorage.setItem("bass-loc", JSON.stringify({lat:lat,lon:lon,label:name})); } catch(e){}
+  loadReport();
+}
+
+// ═══════════════════════════════════════════
+// GPS
+// ═══════════════════════════════════════════
+function useMyLocation() {
+  if (!navigator.geolocation) { showError("Geolocation not supported."); return; }
+  showLoading();
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+      userLabel = "My Location";
+      document.getElementById("searchInput").value = "My Location";
+      document.getElementById("searchClear").classList.add("visible");
+      try { localStorage.setItem("bass-loc", JSON.stringify({lat:userLat,lon:userLon,label:userLabel})); } catch(e){}
+      loadReport();
+    },
+    function(){ showError("Location access denied. Search for a city above."); },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+}
+
+// ═══════════════════════════════════════════
+// HAVERSINE
+// ═══════════════════════════════════════════
+function haversine(lat1, lon1, lat2, lon2) {
+  var R = 3959;
+  var dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+  var a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// Find nearest grid point
+function nearestGrid(lat, lon) {
+  var best = GRID[0], bestD = Infinity;
+  GRID.forEach(function(g){ var d=haversine(lat,lon,g.lat,g.lon); if(d<bestD){bestD=d;best=g;} });
+  return best;
+}
+
+// ═══════════════════════════════════════════
+// MOON
+// ═══════════════════════════════════════════
+function getMoon() {
+  var now = new Date(), y=now.getFullYear(), m=now.getMonth()+1, d=now.getDate();
+  if(m<3){y--;m+=12;}
+  var A=Math.floor(y/100), B=2-A+Math.floor(A/4);
+  var JD=Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5;
+  var age=(JD-2451549.5)%29.53058867; if(age<0)age+=29.53058867;
+  var ph=age/29.53058867;
+  if(ph<0.03||ph>0.97) return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="9"/></svg>',name:"New Moon",     score:3,age:Math.round(age)};
+  if(ph<0.22)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',name:"Waxing Crescent",score:1,age:Math.round(age)};
+  if(ph<0.28)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 3a9 9 0 0 0 0 18"/><path d="M12 3a9 9 0 0 1 0 18"/></svg>',name:"First Quarter",  score:2,age:Math.round(age)};
+  if(ph<0.47)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 12a9 9 0 0 1-18 0 9 9 0 0 1 18 0"/><path d="M12 3a9 9 0 0 0 0 18"/></svg>',name:"Waxing Gibbous", score:2,age:Math.round(age)};
+  if(ph<0.53)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="9"/></svg>',name:"Full Moon",      score:3,age:Math.round(age)};
+  if(ph<0.72)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M3 12a9 9 0 0 1 18 0 9 9 0 0 1-18 0"/><path d="M12 3a9 9 0 0 0 0 18"/></svg>',name:"Waning Gibbous", score:2,age:Math.round(age)};
+  if(ph<0.78)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 3a9 9 0 0 1 0 18"/><path d="M12 3a9 9 0 0 0 0 18"/></svg>',name:"Last Quarter",   score:2,age:Math.round(age)};
+  return                      {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M3 12.79A9 9 0 1 0 12.79 21 7 7 0 0 1 3 12.79z"/></svg>',name:"Waning Crescent",score:1,age:Math.round(age)};
+}
+
+// ═══════════════════════════════════════════
+// BAITS
+// ═══════════════════════════════════════════
+function getBaits(weather, trend, waterTemp, moon, hour, srH, ssH) {
+  var baits=[], wind=weather.wind_speed_mph, clouds=weather.cloud_cover_pct;
+  var isNight=hour<srH||hour>ssH;
+  var isDawn=hour>=srH-1&&hour<=srH+1;
+  var isDusk=hour>=ssH-1&&hour<=ssH+1;
+  var tr=trend.trend||"stable";
+  if(isDawn||isDusk||isNight){ baits.push({name:"Topwater Popper",why:"low light"}); baits.push({name:"Buzzbait",why:"surface aggression"}); }
+  if(clouds>=50&&wind>=5){ baits.push({name:"Spinnerbait",why:"cloud+chop"}); baits.push({name:"Chatterbait",why:"stained water"}); }
+  if(clouds<30&&wind<5){ baits.push({name:"Ned Rig",why:"clear/calm"}); baits.push({name:"Drop Shot",why:"pressured fish"}); }
+  if(tr.indexOf("falling")!==-1){ baits.push({name:"Crankbait",why:"falling baro"}); baits.push({name:"Jerkbait",why:"pre-front active"}); }
+  if(tr.indexOf("rising")!==-1){ baits.push({name:"Shaky Head",why:"post-front"}); baits.push({name:"Swimbait (slow)",why:"suspended fish"}); }
+  if(waterTemp>=65&&waterTemp<=80){ baits.push({name:"Frog",why:"warm shallow"}); baits.push({name:"Lipless Crank",why:"active summer"}); }
+  if(waterTemp<60){ baits.push({name:"Jig (slow)",why:"cold bottom"}); baits.push({name:"Jigging Spoon",why:"deep cold fish"}); }
+  if(moon.score===3) baits.push({name:"Big Swimbait",why:"peak lunar"});
+  if(baits.length<3){ baits.push({name:"Texas Rig",why:"universal"}); baits.push({name:"Wacky Senko",why:"finesse"}); baits.push({name:"Ned Rig",why:"versatile"}); }
+  return baits.slice(0,5);
+}
+
+// ═══════════════════════════════════════════
+// SCORE HISTORY
+// ═══════════════════════════════════════════
+var HKEY = "bass-score-history-v2";
+function saveHistory(scores) {
+  try {
+    var h=JSON.parse(localStorage.getItem(HKEY)||"{}");
+    var now=Date.now();
+    scores.forEach(function(s){
+      if(!h[s.name])h[s.name]=[];
+      h[s.name].push({t:now,s:s.score});
+      if(h[s.name].length>12)h[s.name]=h[s.name].slice(-12);
+    });
+    localStorage.setItem(HKEY,JSON.stringify(h));
+  } catch(e){}
+}
+function getTrend(name) {
+  try {
+    var h=JSON.parse(localStorage.getItem(HKEY)||"{}");
+    var arr=h[name]; if(!arr||arr.length<2)return null;
+    var r=arr.slice(-3), d=r[r.length-1].s-r[0].s;
+    if(d>=2)  return{arrow:"↑↑",color:"var(--good)"};
+    if(d===1) return{arrow:"↑", color:"var(--good)"};
+    if(d===0) return{arrow:"→", color:"var(--dim)"};
+    if(d===-1)return{arrow:"↓", color:"var(--ok)"};
+    return          {arrow:"↓↓",color:"var(--bad)"};
+  } catch(e){return null;}
+}
+
+// ═══════════════════════════════════════════
+// SUNRISE PARSER  ("6:18:15 AM" → 6)
+// ═══════════════════════════════════════════
+function parseSunTime(str) {
+  if(!str)return null;
+  if(str.indexOf("T")!==-1)return parseInt(str.substring(11,13));
+  var p=str.split(":"), h=parseInt(p[0]), ap=str.slice(-2).toUpperCase();
+  if(ap==="PM"&&h!==12)h+=12;
+  if(ap==="AM"&&h===12)h=0;
+  return isNaN(h)?null:h;
+}
+
+// ═══════════════════════════════════════════
+// SCORING ENGINE
+// ═══════════════════════════════════════════
+function scoreColor(s){ return s>=7?"var(--good)":s>=5?"var(--ok)":"var(--bad)"; }
+function scoreHex(s)  { return s>=7?"#00e676":s>=5?"#f59e0b":"#ef4444"; }
+
+// Water-type × conditions interaction.
+// The same weather affects different waters differently — this is what
+// differentiates two waters in the same town pulling identical weather.
+function waterModifier(lake, weather, trend) {
+  var type = (lake.type||"").toLowerCase();
+  var ws   = weather.wind_speed_mph;
+  var pl   = trend.trend || "stable";
+  var mods = [];
+
+  var isPond  = type.indexOf("pond")>=0;
+  var isRiver = type.indexOf("river")>=0 || type.indexOf("creek")>=0 ||
+                type.indexOf("stream")>=0 || type.indexOf("bayou")>=0 ||
+                type.indexOf("canal")>=0;
+  var isRes   = type.indexOf("reservoir")>=0;
+  var isLake  = type.indexOf("lake")>=0 && !isRes;
+  var big     = isRes || isLake;
+
+  // ── Wind × water size ──
+  if (ws >= 13) {
+    if (big)        mods.push({l:"Big Water", d:"handles wind chop",    m: 1});
+    else if (isPond)mods.push({l:"Small Pond",d:"wind muddies shallows",m:-2});
+    else if (isRiver)mods.push({l:"River",    d:"current buffers wind",  m: 0});
+  } else if (ws >= 5 && ws <= 12) {
+    if (big)        mods.push({l:"Big Water", d:"chop positions bait",   m: 1});
+  } else { // calm
+    if (isPond)     mods.push({l:"Small Pond",d:"calm favors ponds",    m: 1});
+    else if (big)   mods.push({l:"Big Water", d:"slick water tougher",   m:-1});
+  }
+
+  // ── Barometric × thermal mass (shallow reacts fast, current resists) ──
+  if (pl.indexOf("falling") >= 0) {
+    if (isPond)      mods.push({l:"Shallow",  d:"reacts fast to drop",  m: 1});
+    else if (isRiver)mods.push({l:"River",    d:"steady current bite",   m: 0});
+  } else if (pl.indexOf("rising") >= 0) {
+    if (isPond)      mods.push({l:"Shallow",  d:"post-front shutdown",   m:-1});
+    else if (isRiver)mods.push({l:"River",    d:"current resists front", m: 1});
+  }
+
+  // ── Baseline fishery quality by type (largemouth habitat) ──
+  if (isRes)        mods.push({l:"Reservoir",d:"prime bass structure",  m: 1});
+  else if (isRiver) mods.push({l:"Flowing",  d:"variable largemouth",   m:-1});
+
+  return mods;
+}
+
+// ═══ Intrinsic water attributes (Texas-specific knowledge) ═══
+// q: reputation (2 trophy, 1 good, 0 average, -1 pressured/marginal)
+// c: clarity (clear / stained / muddy)   d: depth (deep / mod / shallow)
+var KNOWN_WATERS = {
+  "Lake Fork":{q:2,c:"stained",d:"mod"},
+  "Sam Rayburn Reservoir":{q:2,c:"stained",d:"mod"},
+  "Toledo Bend Reservoir":{q:2,c:"stained",d:"mod"},
+  "Falcon Reservoir":{q:2,c:"clear",d:"mod"},
+  "Choke Canyon Reservoir":{q:2,c:"stained",d:"shallow"},
+  "Lake Travis":{q:1,c:"clear",d:"deep"},
+  "Lake Austin":{q:1,c:"clear",d:"mod"},
+  "Caddo Lake":{q:1,c:"muddy",d:"shallow"},
+  "Lake Conroe":{q:1,c:"stained",d:"mod"},
+  "Lake Palestine":{q:1,c:"stained",d:"mod"},
+  "Amistad Reservoir":{q:1,c:"clear",d:"deep"},
+  "Lake Buchanan":{q:1,c:"clear",d:"deep"},
+  "Canyon Lake":{q:1,c:"clear",d:"deep"},
+  "Possum Kingdom Lake":{q:1,c:"clear",d:"deep"},
+  "Lake Ray Roberts":{q:1,c:"stained",d:"mod"},
+  "Lake Texoma":{q:1,c:"stained",d:"mod"},
+  "Lake O the Pines":{q:1,c:"stained",d:"shallow"},
+  "Lake Bob Sandlin":{q:1,c:"stained",d:"mod"},
+  "Lake Cypress Springs":{q:1,c:"clear",d:"deep"},
+  "Lake Nacogdoches":{q:1,c:"stained",d:"mod"},
+  "Lake Whitney":{q:0,c:"clear",d:"deep"},
+  "Lake LBJ":{q:0,c:"clear",d:"mod"},
+  "Inks Lake":{q:0,c:"clear",d:"mod"},
+  "Medina Lake":{q:0,c:"clear",d:"deep"},
+  "Lake Tawakoni":{q:0,c:"stained",d:"shallow"},
+  "Lake Ray Hubbard":{q:0,c:"stained",d:"shallow"},
+  "Lake Lewisville":{q:0,c:"stained",d:"mod"},
+  "Lavon Lake":{q:0,c:"muddy",d:"shallow"},
+  "White Rock Lake":{q:-1,c:"muddy",d:"shallow"}
+};
+var EAST_REGIONS  = ["Quitman","Jasper","Tyler","Longview","Marshall","Carthage","Mt Pleasant","Mt Vernon","Jefferson","Nacogdoches","Rusk","Groesbeck","Mexia","Greenville","Sherman"];
+var CLEAR_REGIONS = ["Austin","Llano","Burnet","Kingsland","Marble Falls","New Braunfels","Del Rio","San Angelo","Lubbock","Amarillo","Silverton","Crosbyton"];
+
+function waterAttributes(lake) {
+  var k = KNOWN_WATERS[lake.name];
+  if (k) return k;
+  var type = (lake.type||"").toLowerCase();
+  var reg  = lake.region || "";
+  // Clarity from region
+  var c = "stained";
+  if (CLEAR_REGIONS.indexOf(reg) >= 0) c = "clear";
+  else if (EAST_REGIONS.indexOf(reg) >= 0) c = "stained";
+  else c = "stained";
+  // Depth from type
+  var d = "mod";
+  if (type.indexOf("pond")>=0 || type.indexOf("creek")>=0 || type.indexOf("stream")>=0) d = "shallow";
+  else if (type.indexOf("river")>=0 || type.indexOf("bayou")>=0) d = "shallow";
+  // Quality default
+  var q = 0;
+  if (type.indexOf("pond")>=0) q = -1;
+  return { q:q, c:c, d:d };
+}
+
+// Deterministic shoreline bearing for a water (stable per-lake)
+function lakeBearing(lake) {
+  var h = Math.abs(Math.sin(lake.lat*73.13 + lake.lon*129.7));
+  return Math.floor(h*360);
+}
+
+// Solunar major feeding window (moon overhead/underfoot ±1.5h)
+function inSolunarMajor(moonAge, hour) {
+  var upper = (12 + (moonAge/29.53)*24) % 24;
+  var lower = (upper + 12) % 24;
+  function near(t){ var d=Math.abs(hour-t); d=Math.min(d,24-d); return d<=1.5; }
+  return near(upper) || near(lower);
+}
+
+// Smooth compression so strong days still spread out (no hard clamp pileup).
+// Raw scores commonly run 4–16; this maps them into ~3–10 with the top end
+// progressively compressed so per-water nuance stays visible.
+function softScore(x) {
+  if (x > 6) x = 6 + (x - 6) * 0.42;
+  return Math.max(1, Math.min(10, x));
+}
+
+function scoreLake(lake, weather, trend, sun, moon) {
+  var sc=5, bd=[], now=new Date(), month=now.getMonth()+1, hour=now.getHours();
+
+  var pl=trend.trend||"stable";
+  if(pl==="stable"||pl==="slowly falling")  {sc+=2;bd.push({l:"Baro",  d:pl,           m:2});}
+  else if(pl==="rapidly falling")           {sc+=1;bd.push({l:"Baro",  d:pl,           m:1});}
+  else if(pl.indexOf("rising")!==-1)        {sc-=3;bd.push({l:"Baro",  d:pl,           m:-3});}
+  else                                      {      bd.push({l:"Baro",  d:"steady",      m:0});}
+
+  var ws=weather.wind_speed_mph;
+  if(ws>=5&&ws<=12)  {sc+=2;bd.push({l:"Wind",d:ws+"mph (ideal)",m:2});}
+  else if(ws<5)      {sc-=1;bd.push({l:"Wind",d:ws+"mph (calm)", m:-1});}
+  else if(ws>=15)    {sc-=2;bd.push({l:"Wind",d:ws+"mph (high)", m:-2});}
+  else               {      bd.push({l:"Wind",d:ws+"mph",         m:0});}
+
+  var air=weather.temperature_f, wt;
+  if(month>=3&&month<=5)wt=air-7.5; else if(month>=6&&month<=8)wt=air-10;
+  else if(month>=9&&month<=11)wt=air-5.5; else wt=air+2.5;
+  // Latitude-localized: southern TX waters run warmer, panhandle cooler
+  wt += (31.5 - lake.lat) * 1.1;
+  wt=Math.round(wt);
+  if(wt>=60&&wt<=75){sc+=2;bd.push({l:"Water",d:wt+"°F (ideal)",m:2});}
+  else if(wt>=55&&wt<60){sc+=1;bd.push({l:"Water",d:wt+"°F (good)",m:1});}
+  else if(wt>75&&wt<=82){sc+=0.5;bd.push({l:"Water",d:wt+"°F (warm)",m:0.5});}
+  else               {      bd.push({l:"Water",d:wt+"°F",         m:0});}
+
+  var srH=parseSunTime(sun.sunrise)??6, ssH=parseSunTime(sun.sunset)??20;
+  var tl="daytime";
+  if(hour>=srH-1&&hour<=srH+1)     {sc+=1;tl="dawn";  bd.push({l:"Time",d:tl,m:1});}
+  else if(hour>=ssH-1&&hour<=ssH+1){sc+=1;tl="dusk";  bd.push({l:"Time",d:tl,m:1});}
+  else if(hour>=10&&hour<=15)       {sc-=1;tl="midday";bd.push({l:"Time",d:tl,m:-1});}
+  else                              {                   bd.push({l:"Time",d:tl,m:0});}
+
+  var cl=weather.cloud_cover_pct, night=hour<srH||hour>ssH;
+  if(cl>=30||night){sc+=1;bd.push({l:"Clouds",d:night?"night":cl+"%",m:1});}
+  else             {sc-=1;bd.push({l:"Clouds",d:cl+"%",             m:-1});}
+
+  if(moon){
+    if(moon.score===3)     {sc+=2;bd.push({l:"Moon",d:moon.name+" +2",m:2});}
+    else if(moon.score===2){sc+=1;bd.push({l:"Moon",d:moon.name+" +1",m:1});}
+    else                   {      bd.push({l:"Moon",d:moon.name+" 0", m:0});}
+  }
+
+  // ── Water-type interaction (differentiates same-area waters) ──
+  var wmods = waterModifier(lake, weather, trend);
+  wmods.forEach(function(wm){ sc += wm.m; bd.push(wm); });
+
+  // ═══ Intrinsic & localized factors (make each water distinct) ═══
+  var attr = waterAttributes(lake);
+  var type = (lake.type||"").toLowerCase();
+  var isPond  = type.indexOf("pond")>=0;
+  var isRiver = type.indexOf("river")>=0||type.indexOf("creek")>=0||type.indexOf("stream")>=0||type.indexOf("bayou")>=0;
+  var bright  = cl < 30 && !night;
+
+  // Fishery reputation
+  if(attr.q===2)      {sc+=1.5; bd.push({l:"Fishery",d:"trophy water",   m:1.5});}
+  else if(attr.q===1) {sc+=0.8; bd.push({l:"Fishery",d:"strong fishery", m:0.8});}
+  else if(attr.q===-1){sc-=1;   bd.push({l:"Fishery",d:"pressured/marginal",m:-1});}
+
+  // Clarity × light: clear water spooky in bright sun, stained forgiving
+  if(attr.c==="clear"){
+    if(bright)        {sc-=1;   bd.push({l:"Clarity",d:"clear+bright tough",m:-1});}
+    else if(cl>=60||night){sc+=0.7;bd.push({l:"Clarity",d:"clear+low light",m:0.7});}
+  } else if(attr.c==="muddy"){
+    if(bright)        {sc+=0.5; bd.push({l:"Clarity",d:"muddy hides sun", m:0.5});}
+    else              {sc-=0.5; bd.push({l:"Clarity",d:"muddy+low light",m:-0.5});}
+  }
+
+  // Depth × season: shallow shines spring/fall, deep wins summer/winter
+  var spawn = month>=3&&month<=5, summer=month>=6&&month<=8, winter=month===12||month<=2;
+  if(attr.d==="shallow"){
+    if(spawn)         {sc+=1;   bd.push({l:"Depth",d:"shallow spring spawn",m:1});}
+    else if(summer)   {sc-=0.8; bd.push({l:"Depth",d:"shallow summer heat",m:-0.8});}
+    else if(winter)   {sc-=0.8; bd.push({l:"Depth",d:"shallow winter cold",m:-0.8});}
+  } else if(attr.d==="deep"){
+    if(summer)        {sc+=0.8; bd.push({l:"Depth",d:"deep summer refuge",m:0.8});}
+    else if(winter)   {sc+=0.6; bd.push({l:"Depth",d:"deep winter stability",m:0.6});}
+    else if(spawn)    {sc-=0.5; bd.push({l:"Depth",d:"deep slow spring",m:-0.5});}
+  }
+
+  // Fishing pressure: close to a metro = more pressured (skip rivers/ponds)
+  if(typeof userLat==="number" && !isRiver){
+    var metros=[[32.78,-96.80],[29.76,-95.37],[30.27,-97.74],[29.42,-98.49],[32.75,-97.33]];
+    var nearMetro=metros.some(function(m){return haversine(lake.lat,lake.lon,m[0],m[1])<25;});
+    if(nearMetro)     {sc-=0.6; bd.push({l:"Pressure",d:"urban-heavy traffic",m:-0.6});}
+    else if(metros.every(function(m){return haversine(lake.lat,lake.lon,m[0],m[1])>70;}))
+                      {sc+=0.6; bd.push({l:"Seclusion",d:"low fishing pressure",m:0.6});}
+  }
+
+  // Windward bank: does this lake's shoreline face into today's wind?
+  if(ws>=6 && typeof weather.wind_direction_deg==="number"){
+    var bearing=lakeBearing(lake);
+    var diff=Math.abs(((weather.wind_direction_deg-bearing+540)%360)-180);
+    if(diff<45)       {sc+=0.7; bd.push({l:"Windward",d:"bank stacks bait",m:0.7});}
+    else if(diff>135) {sc-=0.4; bd.push({l:"Leeward",d:"wind off the bank",m:-0.4});}
+  }
+
+  // Solunar major feeding window (time-based, shared)
+  if(moon && inSolunarMajor(moon.age||0, hour)){
+    sc+=0.8; bd.push({l:"Solunar",d:"major feed window",m:0.8});
+  }
+
+  var finalScore = softScore(sc);
+  return {score:Math.round(finalScore*10)/10,bd:bd,wt:wt,srH:srH,ssH:ssH};
+}
+// ═══════════════════════════════════════════
+// API FETCHING
+// ═══════════════════════════════════════════
+function fetchWeather(lat, lon) {
+  return fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon
+    +"&current=pressure_msl,wind_speed_10m,wind_direction_10m,cloud_cover,temperature_2m,relative_humidity_2m"
+    +"&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto")
+    .then(function(r){if(!r.ok)throw new Error("Weather failed");return r.json();})
+    .then(function(d){
+      var c=d.current;
+      return {pressure_hpa:c.pressure_msl,
+              pressure_inhg:Math.round(c.pressure_msl/33.8639*100)/100,
+              wind_speed_mph:Math.round(c.wind_speed_10m*10)/10,
+              wind_direction_deg:c.wind_direction_10m,
+              cloud_cover_pct:c.cloud_cover,
+              temperature_f:Math.round(c.temperature_2m*10)/10,
+              humidity_pct:c.relative_humidity_2m};
+    });
+}
+
+function fetchTrend(lat, lon) {
+  return fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon
+    +"&hourly=pressure_msl&timezone=auto&forecast_hours=6")
+    .then(function(r){if(!r.ok)throw new Error("Trend failed");return r.json();})
+    .then(function(d){
+      var p=d.hourly.pressure_msl;
+      if(p.length<2)return{trend:"unknown",delta:0};
+      var delta=p[p.length-1]-p[0], trend="stable";
+      if(delta<=-2)trend="rapidly falling"; else if(delta<=-0.5)trend="slowly falling";
+      else if(delta>=2)trend="rapidly rising"; else if(delta>=0.5)trend="slowly rising";
+      return{trend:trend,delta:Math.round(delta*100)/100};
+    });
+}
+
+function fetchSun(lat, lon) {
+  return fetch("https://api.sunrisesunset.io/json?lat="+lat+"&lng="+lon)
+    .then(function(r){if(!r.ok)throw new Error("Sun failed");return r.json();})
+    .then(function(d){return d.results;});
+}
+
+function windDir(deg) {
+  var d=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+  return d[Math.round(deg/22.5)%16];
+}
+
+// ═══════════════════════════════════════════
+// RENDERING — CONDITIONS
+// ═══════════════════════════════════════════
+function renderConditions(w, trend, sun, moon) {
+  document.getElementById("condTemp").textContent  = w.temperature_f+"°F";
+  document.getElementById("condHum").textContent   = w.humidity_pct+"% RH";
+  document.getElementById("condPres").textContent  = w.pressure_inhg+" in";
+
+  var tMap={"stable":"→ stable","slowly falling":"↓ slow","rapidly falling":"↓↓ fast",
+            "slowly rising":"↑ slow","rapidly rising":"↑↑ fast"};
+  var tEl=document.getElementById("condTrend");
+  tEl.textContent=tMap[trend.trend]||trend.trend;
+  tEl.style.color=(trend.trend.indexOf("falling")!==-1||trend.trend==="stable")?"var(--good)":"var(--ok)";
+
+  document.getElementById("condWind").textContent = w.wind_speed_mph+" mph";
+  document.getElementById("condDir").textContent  = windDir(w.wind_direction_deg);
+  document.getElementById("condMoon").innerHTML = moon.icon;
+
+  var ms=moon.name.replace("Waxing Crescent","Cres ↑").replace("Waning Crescent","Cres ↓")
+    .replace("Waxing Gibbous","Gib ↑").replace("Waning Gibbous","Gib ↓")
+    .replace("First Quarter","1st Qtr").replace("Last Quarter","Last Qtr");
+  document.getElementById("condMoonSub").textContent = ms;
+
+  var t=new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+  document.getElementById("statusText").textContent = "Updated "+t;
+}
+
+// ═══════════════════════════════════════════
+// RENDERING — HERO + BAITS
+// ═══════════════════════════════════════════
+function renderHero(top, baits, moon) {
+  var el=document.getElementById("heroCard");
+  var sc=scoreColor(top.score), hex=scoreHex(top.score);
+  var chips=baits.slice(0,3).map(function(b){return '<span class="hero-chip">'+IC.hook+' '+b.name+'</span>';}).join("");
+  var dist=top.dist<10?top.dist.toFixed(1):Math.round(top.dist);
+  el.innerHTML=
+    '<div class="hero-lbl"><span style="width:18px;height:18px;display:inline-block;vertical-align:middle">'+IC.trophy+'</span> Best Bet Today</div>'+
+    '<div class="hero-body">'+
+      '<div class="hero-info">'+
+        '<div class="hero-name">'+top.name+'</div>'+
+        '<div class="hero-sub">'+dist+'mi · '+top.type+' · '+moon.icon+' '+moon.name+'</div>'+
+        '<div class="hero-baits">'+chips+'</div>'+
+      '</div>'+
+      '<div class="hero-ring">'+
+        '<svg width="64" height="64" viewBox="0 0 64 64">'+
+          '<circle cx="32" cy="32" r="26" fill="none" stroke="var(--border)" stroke-width="5"/>'+
+          '<circle cx="32" cy="32" r="26" fill="none" stroke="'+hex+'" stroke-width="5"'+
+            ' stroke-dasharray="'+(2*Math.PI*26*top.score/10).toFixed(1)+' 999"'+
+            ' stroke-linecap="round" transform="rotate(-90 32 32)"/>'+
+          '<text x="32" y="32" text-anchor="middle" dominant-baseline="central"'+
+            ' fill="'+hex+'" font-size="19" font-weight="900" font-family="-apple-system">'+top.score+'</text>'+
+        '</svg>'+
+      '</div>'+
+    '</div>';
+  el.style.display="block";
+}
+
+function renderBaits(baits) {
+  var el=document.getElementById("baitsStrip");
+  var chips=baits.map(function(b){
+    return '<div class="bait-chip">'+IC.hook+' '+b.name+' <span class="bait-why">'+b.why+'</span></div>';
+  }).join("");
+  el.innerHTML='<div class="baits-hdr">'+IC.target+' Recommended Baits Right Now</div><div class="baits-row">'+chips+'</div>';
+  el.style.display="block";
+}
+
+// ═══════════════════════════════════════════
+// RENDERING — LAKE LIST
+// ═══════════════════════════════════════════
+function renderLakes(weather, trend, sun, moon) {
+  var container=document.getElementById("lakesList");
+  var sectionLbl=document.getElementById("sectionLbl");
+  var noNearby=document.getElementById("noNearby");
+
+  if (!userLat || !userLon) {
+    container.innerHTML='<div class="loading-screen"><span style="width:22px;height:22px;display:inline-block;vertical-align:middle">'+IC.search+'</span> Search for a location above to see nearby waters</div>';
+    return;
+  }
+
+  // Score and sort all lakes by distance from user
+  var scored=ALL_LAKES.map(function(lake){
+    var dist=haversine(userLat,userLon,lake.lat,lake.lon);
+    var res=scoreLake(lake,weather,trend,sun,moon);
+    return Object.assign({},lake,{dist:dist},res);
+  });
+  scored.sort(function(a,b){return a.dist-b.dist;});
+
+  // Show nearest N, then re-sort by score
+  var nearest=scored.slice(0,MAX_SHOWN);
+  var maxDist=nearest[nearest.length-1].dist;
+  nearest.sort(function(a,b){return b.score-a.score||a.dist-b.dist;});
+
+  // Warn if far away
+  var closest=scored[0];
+  if(closest.dist>100){
+    noNearby.textContent=' Near ' + Math.round(closest.dist) + 'mi away. Showing closest ' + MAX_SHOWN + ' waters in Texas.';
+    noNearby.style.display="block";
+  } else {
+    noNearby.style.display="none";
+  }
+
+  // Update location pill
+  var pill=document.getElementById("locPill");
+  var pillName=document.getElementById("locPillName");
+  var pillDist=document.getElementById("locPillDist");
+  pill.classList.add("visible");
+  pillName.textContent=userLabel||"Custom Location";
+  pillDist.textContent="Showing "+nearest.length+" nearest waters";
+
+  // Save history
+  saveHistory(nearest.map(function(l){return{name:l.name,score:l.score};}));
+
+  var srH=nearest[0].srH||6, ssH=nearest[0].ssH||20, hour=new Date().getHours();
+  var baits=getBaits(weather,trend,nearest[0].wt,moon,hour,srH,ssH);
+  renderHero(nearest[0],baits,moon);
+  renderBaits(baits);
+  sectionLbl.style.display="block";
+  sectionLbl.textContent="Waters Within ~"+Math.round(maxDist)+"mi — Ranked by Score";
+
+  // Store for filter/sort
+  window._lastNearest = nearest;
+  window._lastWeather = weather;
+  window._lastTrend = trend;
+  window._lastMoon = moon;
+  document.getElementById("filterBar").style.display = "flex";
+  document.getElementById("filterSortRow").style.display = "flex";
+  renderFilteredCards(nearest, weather, trend, moon);
+}
+
+// ── Filter & Sort logic ──
+var _activeFilter = "all";
+var _activeSort = "score";
+
+function passesFilter(lake) {
+  var f = _activeFilter;
+  if (f === "all") return true;
+  if (f === "score-hot") return lake.score >= 7;
+  if (f === "score-ok") return lake.score >= 5 && lake.score < 7;
+  if (f === "score-cold") return lake.score < 5;
+  if (f === "close") return lake.dist < 30;
+  if (f === "mid") return lake.dist >= 30 && lake.dist < 60;
+  if (f === "far") return lake.dist >= 60;
+  if (f === "lake") return (lake.type||"").toLowerCase() === "lake";
+  if (f === "reservoir") return (lake.type||"").toLowerCase() === "reservoir";
+  return true;
+}
+
+function sortLakes(arr, mode) {
+  var sorted = arr.slice();
+  if (mode === "score") sorted.sort(function(a,b){ return b.score - a.score; });
+  else if (mode === "distance") sorted.sort(function(a,b){ return a.dist - b.dist; });
+  else if (mode === "name") sorted.sort(function(a,b){ return a.name.localeCompare(b.name); });
+  else if (mode === "temp") sorted.sort(function(a,b){ return b.wt - a.wt; });
+  return sorted;
+}
+
+function renderFilteredCards(nearest, weather, trend, moon) {
+  var filtered = nearest.filter(passesFilter);
+  var sorted = sortLakes(filtered, _activeSort);
+  document.getElementById("filterCount").textContent = sorted.length + " of " + nearest.length;
+
+  var srH = nearest[0] ? nearest[0].srH || 6 : 6;
+  var ssH = nearest[0] ? nearest[0].ssH || 20 : 20;
+  var container = document.getElementById("lakesList");
+
+  var html = "";
+  sorted.forEach(function(lake, i) {
+    var hex=scoreHex(lake.score);
+    var distLabel=lake.dist<1?Math.round(lake.dist*5280)+"ft":lake.dist.toFixed(1)+"mi";
+    var trend2=getTrend(lake.name);
+    var trendHtml=trend2?'<span class="card-trend" style="color:'+trend2.color+'">'+trend2.arrow+'</span>':'';
+
+    var tags=lake.bd.map(function(b){
+      var cls=b.m>0?"pos":b.m<0?"neg":"neu";
+      return '<span class="stag '+cls+'">'+b.l+' '+(b.m>0?"+":"")+b.m+'</span>';
+    }).join("");
+
+    var mini=getBaits(weather,trend,lake.wt,moon,new Date().getHours(),srH,ssH)
+      .slice(0,2).map(function(b){return '<span class="mini-chip">'+b.name+'</span>';}).join("");
+
+    var cid = _storeCard({
+      name:lake.name, lat:lake.lat, lon:lake.lon, type:lake.type,
+      region:lake.region, dist:lake.dist, score:lake.score,
+      bd:lake.bd, wt:lake.wt, srH:lake.srH, ssH:lake.ssH
+    });
+    html+=
+      '<div class="lake-card" onclick="openDetail(\'' + cid + '\')">'+
+        '<div class="card-bar" style="background:'+hex+'"></div>'+
+        '<div class="card-body">'+
+          '<div class="card-top">'+
+            '<div class="card-info">'+
+              '<div class="card-name">'+(i===0?IC.trophy+' ':"")+lake.name+'</div>'+
+              '<div class="card-meta">'+distLabel+' · '+lake.type+' · '+lake.region+' · '+IC.water+' '+lake.wt+'°F</div>'+
+            '</div>'+
+            '<div class="card-right">'+
+              '<svg width="44" height="44" viewBox="0 0 44 44">'+
+                '<circle cx="22" cy="22" r="17" fill="none" stroke="var(--border)" stroke-width="4"/>'+
+                '<circle cx="22" cy="22" r="17" fill="none" stroke="'+hex+'" stroke-width="4"'+
+                  ' stroke-dasharray="'+(2*Math.PI*17*lake.score/10).toFixed(1)+' 999"'+
+                  ' stroke-linecap="round" transform="rotate(-90 22 22)"/>'+
+                '<text x="22" y="22" text-anchor="middle" dominant-baseline="central"'+
+                  ' fill="'+hex+'" font-size="13" font-weight="900" font-family="-apple-system">'+lake.score+'</text>'+
+              '</svg>'+
+              trendHtml+
+            '</div>'+
+          '</div>'+
+          '<div class="score-tags">'+tags+'</div>'+
+          '<div class="card-baits">'+mini+'</div>'+
+        '</div>'+
+      '</div>';
+  });
+  container.innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+// MAP
+// ═══════════════════════════════════════════
+function initMap() {
+  if(map)return;
+  map=L.map("map",{center:[31.5,-97.5],zoom:6,zoomControl:false,attributionControl:false});
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:18}).addTo(map);
+  L.control.zoom({position:"bottomleft"}).addTo(map);
+  var Leg=L.Control.extend({options:{position:"topright"},onAdd:function(){
+    var d=L.DomUtil.create("div","map-legend");
+    d.innerHTML='<h4>Score</h4>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#00e676"></div>Hot (7-10)</div>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>OK (5-6)</div>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Cold (1-4)</div>';
+    return d;
+  }});
+  map.addControl(new Leg());
+}
+
+function renderMapMarkers() {
+  initMap();
+  mapMarkers.forEach(function(m){map.removeLayer(m);}); mapMarkers=[];
+  var moon=getMoon();
+  ALL_LAKES.forEach(function(lake){
+    // Find nearest grid point for weather
+    var g=nearestGrid(lake.lat,lake.lon);
+    var gw=gridWeather[g.key];
+    if(!gw)return;
+    var res=scoreLake(lake,gw.weather,gw.trend,gw.sun,moon);
+    var hex=scoreHex(res.score);
+    var r=7+res.score*1.1;
+    var circle=L.circleMarker([lake.lat,lake.lon],{
+      radius:r,fillColor:hex,color:"#080e18",weight:2,opacity:1,fillOpacity:res.score>=7?0.9:0.65
+    }).addTo(map);
+    circle.bindTooltip(res.score.toString(),{permanent:true,direction:"center",className:"marker-label",offset:[0,0]});
+    var dist=userLat?haversine(userLat,userLon,lake.lat,lake.lon):null;
+    var distStr=dist?((dist<10?dist.toFixed(1):Math.round(dist))+"mi"):"–";
+    var ph=res.bd.map(function(b){
+      var cls=b.m>0?"pos":b.m<0?"neg":"neu";
+      return '<span class="ptag stag '+cls+'">'+b.l+' '+(b.m>0?"+":"")+b.m+'</span>';
+    }).join("");
+    circle.bindPopup(
+      '<div class="popup-name">'+lake.name+'</div>'+
+      '<div class="popup-score" style="background:'+hex+'22;color:'+hex+'">⭐ '+res.score+'/10</div>'+
+      '<div class="popup-meta">'+lake.type+' · '+lake.region+' · '+distStr+' from you</div>'+
+      '<div class="popup-tags">'+ph+'</div>',
+      {maxWidth:240}
+    );
+    mapMarkers.push(circle);
+  });
+  if(mapMarkers.length&&userLat){
+    map.setView([userLat,userLon],8);
+  }
+}
+
+function loadGridWeather() {
+  var remaining=GRID.filter(function(g){return !gridWeather[g.key];});
+  if(!remaining.length){renderMapMarkers();return;}
+  var promises=remaining.map(function(g){
+    return Promise.all([fetchWeather(g.lat,g.lon),fetchTrend(g.lat,g.lon),fetchSun(g.lat,g.lon)])
+      .then(function(res){gridWeather[g.key]={weather:res[0],trend:res[1],sun:res[2]};});
+  });
+  Promise.all(promises).then(renderMapMarkers).catch(function(e){console.error("Grid weather:",e);});
+}
+
+// ═══════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════
+function switchView(v) {
+  currentView=v;
+  document.getElementById("tabList").classList.toggle("active",v==="list");
+  document.getElementById("tabMap").classList.toggle("active",v==="map");
+  document.getElementById("tabNearby").classList.toggle("active",v==="nearby");
+  document.getElementById("listView").style.display=v==="list"?"block":"none";
+  document.getElementById("mapView").classList.toggle("active",v==="map");
+  document.getElementById("nearbyView").classList.toggle("active",v==="nearby");
+  if(v==="map"){
+    if(map)setTimeout(function(){map.invalidateSize();},100);
+    loadGridWeather();
+  }
+}
+
+// ═══════════════════════════════════════════
+// LOADING / ERROR
+// ═══════════════════════════════════════════
+function showLoading() {
+  document.getElementById("lakesList").innerHTML='<div class="loading-screen"><div class="spinner"></div><span>Fetching conditions…</span></div>';
+  document.getElementById("heroCard").style.display="none";
+  document.getElementById("baitsStrip").style.display="none";
+  document.getElementById("sectionLbl").style.display="none";
+  document.getElementById("noNearby").style.display="none";
+}
+function showError(msg) {
+  document.getElementById("lakesList").innerHTML='<div class="error-msg">'+IC.warn+'<br><br><button class="refresh-btn" onclick="loadReport()">↻ Try Again</button></div>';
+}
+
+// ═══════════════════════════════════════════
+// MAIN FLOW
+// ═══════════════════════════════════════════
+function loadReport() {
+  if(!userLat||!userLon){
+    document.getElementById("lakesList").innerHTML=
+      '<div class="loading-screen"><span style="font-size:22px;display:inline-block;vertical-align:middle">'+IC.search+'</span><span>Search for a city or tap '+IC.pin+' to start</span></div>';
+    return;
+  }
+  showLoading();
+  var g=nearestGrid(userLat,userLon);
+  return Promise.all([fetchWeather(userLat,userLon),fetchTrend(userLat,userLon),fetchSun(userLat,userLon)])
+    .then(function(res){
+      weatherData=res[0]; pressureTrend=res[1]; sunData=res[2];
+      // Also cache this grid point for map
+      gridWeather[g.key]={weather:weatherData,trend:pressureTrend,sun:sunData};
+      var moon=getMoon();
+      renderConditions(weatherData,pressureTrend,sunData,moon);
+      renderLakes(weatherData,pressureTrend,sunData,moon);
+      if(currentView==="map")loadGridWeather();
+    })
+    .catch(function(e){showError(e.message||"Failed to load data.");console.error(e);});
+}
+
+function refreshData() {
+  var btn=document.getElementById("refreshBtn");
+  btn.classList.add("loading");
+  btn.innerHTML='<span class="ri">↻</span> Refreshing…';
+  loadReport().then(function(){
+    btn.classList.remove("loading");
+    btn.innerHTML='<span class="ri">↻</span> Refresh Conditions';
+  }).catch(function(){
+    btn.classList.remove("loading");
+    btn.innerHTML='<span class="ri">↻</span> Refresh Conditions';
+  });
+}
+
+// ═══════════════════════════════════════════
+// NEARBY — Overpass API (OpenStreetMap live)
+// ═══════════════════════════════════════════
+var nearbyLat = null, nearbyLon = null;
+var nearbyRadiusM = 8047; // 5 miles in meters
+var nearbyResults = [];
+
+var WATER_TYPES = {
+  reservoir:"Reservoir", lake:"Lake", pond:"Pond",
+  river:"River", stream:"Creek", creek:"Creek",
+  oxbow:"Oxbow", lagoon:"Lagoon", basin:"Basin",
+  canal:"Canal", ditch:"Ditch", marsh:"Marsh",
+  wetland:"Wetland", bayou:"Bayou"
+};
+
+function setRadius(miles) {
+  nearbyRadiusM = miles * 1609.34;
+  [5,10,25,50].forEach(function(m) {
+    var el = document.getElementById("r"+m);
+    if(el) el.classList.toggle("active", m===miles);
+  });
+  if(nearbyLat) fetchNearby();
+}
+
+function nearbyLocate() {
+  var btn = document.getElementById("nearbyGpsBtn");
+  var txt = document.getElementById("nearbyBtnText");
+  if(!navigator.geolocation) {
+    renderNearbyError("Geolocation not supported on this device.");
+    return;
+  }
+  btn.classList.add("locating");
+  txt.textContent = "Getting your location…";
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      nearbyLat = pos.coords.latitude;
+      nearbyLon = pos.coords.longitude;
+      btn.classList.remove("locating");
+      txt.textContent = "Refresh Nearby Waters";
+      document.getElementById("radiusRow").style.display = "flex";
+      fetchNearby();
+    },
+    function(err) {
+      btn.classList.remove("locating");
+      txt.textContent = "Find Water Near Me";
+      renderNearbyError("Location access denied. Please allow location in your browser settings.");
+    },
+    { enableHighAccuracy:true, timeout:12000, maximumAge:60000 }
+  );
+}
+
+function fetchNearby() {
+  var list = document.getElementById("nearbyList");
+  var cnt  = document.getElementById("nearbyCount");
+
+  list.innerHTML = '<div class="loading-screen"><div class="spinner"></div>' +
+    '<span id="nearbyLoadMsg">Scanning nearby water…</span>' +
+    '<small style="color:var(--dim);font-size:11px;margin-top:4px">Querying OpenStreetMap — may take 10-20s</small></div>';
+  cnt.textContent = "";
+
+  // Progress timer so user knows it's working
+  var elapsed = 0;
+  var timer = setInterval(function() {
+    elapsed += 5;
+    var el = document.getElementById("nearbyLoadMsg");
+    if (el) el.textContent = "Scanning nearby water… " + elapsed + "s";
+  }, 5000);
+
+  var r = Math.round(nearbyRadiusM);
+  // Explicit way/relation/node to avoid nwr timeout issues on some servers
+  var query =
+    "[out:json][timeout:25];" +
+    "(" +
+    "way[\"natural\"=\"water\"][\"name\"](around:" + r + "," + nearbyLat + "," + nearbyLon + ");" +
+    "relation[\"natural\"=\"water\"][\"name\"](around:" + r + "," + nearbyLat + "," + nearbyLon + ");" +
+    "way[\"waterway\"][\"name\"](around:" + r + "," + nearbyLat + "," + nearbyLon + ");" +
+    "node[\"natural\"=\"water\"][\"name\"](around:" + r + "," + nearbyLat + "," + nearbyLon + ");" +
+    ");" +
+    "out center 80;";
+
+  // Confirmed working public Overpass instances with CORS
+  var ENDPOINTS = [
+    "https://overpass.openstreetmap.fr/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter"
+  ];
+
+  function tryEndpoint(idx) {
+    if (idx >= ENDPOINTS.length) {
+      clearInterval(timer);
+      renderNearbyError("All Overpass servers failed. Check your connection and try again.");
+      return;
+    }
+
+    var controller = new AbortController();
+    var fetchTimeout = setTimeout(function() { controller.abort(); }, 28000);
+
+    fetch(ENDPOINTS[idx], {
+      method: "POST",
+      body: "data=" + encodeURIComponent(query),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: controller.signal
+    })
+    .then(function(r) {
+      clearTimeout(fetchTimeout);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      clearInterval(timer);
+      if (!data.elements) throw new Error("No elements in response");
+      processNearbyResults(data.elements);
+    })
+    .catch(function(e) {
+      clearTimeout(fetchTimeout);
+      if (e.name === "AbortError") {
+        // Timed out — try next endpoint
+        tryEndpoint(idx + 1);
+      } else if (idx + 1 < ENDPOINTS.length) {
+        // Server error — try next
+        tryEndpoint(idx + 1);
+      } else {
+        clearInterval(timer);
+        renderNearbyError("Could not reach Overpass servers. Check your connection and try again.<br><br>" +
+          "<small style='color:var(--dim)'>Error: " + e.message + "</small>");
+      }
+    });
+  }
+
+  tryEndpoint(0);
+}
+
+function processNearbyResults(elements) {
+  var seen = {};
+  var waters = [];
+
+  elements.forEach(function(el) {
+    var name = el.tags && el.tags.name;
+    if (!name) return;
+
+    // Get center coords — ways/relations use el.center, nodes use el.lat/el.lon
+    var lat = (el.center && el.center.lat) || el.lat;
+    var lon = (el.center && el.center.lon) || el.lon;
+    if (!lat || !lon) return;
+
+    var dist = haversine(nearbyLat, nearbyLon, lat, lon);
+
+    // Dedup: same name within 0.5mi = same water body (catches split waterway segments)
+    var nameLower = name.toLowerCase();
+    if (seen[nameLower] !== undefined) {
+      // Keep the closer segment
+      if (dist < seen[nameLower].dist) {
+        seen[nameLower].dist = dist;
+        seen[nameLower].lat  = lat;
+        seen[nameLower].lon  = lon;
+      }
+      return;
+    }
+
+    var waterType = (el.tags.water || el.tags.waterway || "water").toLowerCase();
+    var typeLabel = WATER_TYPES[waterType] || capitalise(waterType) || "Water";
+
+    var entry = {
+      name: name, lat: lat, lon: lon,
+      type: typeLabel, rawType: waterType,
+      dist: dist, tags: el.tags
+    };
+    seen[nameLower] = entry;
+    waters.push(entry);
+  });
+
+  // Sort by distance, nearest first
+  waters.sort(function(a, b) { return a.dist - b.dist; });
+  nearbyResults = waters;
+  renderNearby(waters);
+}
+
+function capitalise(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+}
+
+function renderNearby(waters) {
+  var list = document.getElementById("nearbyList");
+  var cnt  = document.getElementById("nearbyCount");
+
+  if(!waters.length) {
+    cnt.textContent = "No results";
+    list.innerHTML =
+      '<div class="nearby-empty">'+
+        '<div class="ne-icon">'+IC.terrain+'</div>'+
+        '<p>No named water bodies found<br>within this radius</p>'+
+        '<small>Try expanding the radius above</small>'+
+      '</div>';
+    return;
+  }
+
+  cnt.textContent = waters.length + " found";
+
+  // We need weather to score — use nearest grid point
+  var g = nearestGrid(nearbyLat, nearbyLon);
+  var gw = gridWeather[g.key];
+  var moon = getMoon();
+
+  // If grid weather not cached yet, fetch it first
+  if(!gw) {
+    Promise.all([fetchWeather(g.lat,g.lon), fetchTrend(g.lat,g.lon), fetchSun(g.lat,g.lon)])
+      .then(function(res){
+        gridWeather[g.key] = {weather:res[0],trend:res[1],sun:res[2]};
+        renderNearbyCards(waters, gridWeather[g.key], moon);
+      })
+      .catch(function(){ renderNearbyCards(waters, null, moon); });
+    return;
+  }
+  renderNearbyCards(waters, gw, moon);
+}
+
+function renderNearbyCards(waters, gw, moon) {
+  var list = document.getElementById("nearbyList");
+  var hasWeather = gw && gw.weather && gw.trend && gw.sun;
+  var html = "";
+
+  // Disclaimer note
+  html += '<div class="nc-note">'+
+    IC.warn + ' <strong>Live OSM data</strong> — these waters may be small, private, or seasonal. ' +
+    'Scores use nearest regional weather. Always check access & regulations before fishing.'+
+  '</div>';
+
+  waters.forEach(function(w, i) {
+    var score=null, hex="#4a6070", tags="", baits="", detailBd=[], detailWt=null;
+    if(hasWeather) {
+      var fakeLake = { name:w.name, lat:w.lat, lon:w.lon, type:w.type };
+      var res = scoreLake(fakeLake, gw.weather, gw.trend, gw.sun, moon);
+      score = res.score; detailBd = res.bd; detailWt = res.wt;
+      hex = scoreHex(score);
+      var srH=res.srH||6, ssH=res.ssH||20, hour=new Date().getHours();
+      tags = res.bd.map(function(b){
+        var cls=b.m>0?"pos":b.m<0?"neg":"neu";
+        return '<span class="stag '+cls+'">'+b.l+' '+(b.m>0?"+":"")+b.m+'</span>';
+      }).join("");
+      baits = getBaits(gw.weather, gw.trend, res.wt, moon, hour, srH, ssH)
+        .slice(0,2).map(function(b){ return '<span class="mini-chip">'+b.name+'</span>'; }).join("");
+    }
+
+    var distLabel = w.dist<0.1 ? Math.round(w.dist*5280)+"ft" :
+                    w.dist<1   ? (w.dist*5280).toFixed(0)+"ft" :
+                    w.dist<10  ? w.dist.toFixed(2)+"mi" : w.dist.toFixed(1)+"mi";
+
+    var ringHtml = score!==null ?
+      '<svg width="44" height="44" viewBox="0 0 44 44">'+
+        '<circle cx="22" cy="22" r="17" fill="none" stroke="var(--border)" stroke-width="4"/>'+
+        '<circle cx="22" cy="22" r="17" fill="none" stroke="'+hex+'" stroke-width="4"'+
+          ' stroke-dasharray="'+(2*Math.PI*17*score/10).toFixed(1)+' 999"'+
+          ' stroke-linecap="round" transform="rotate(-90 22 22)"/>'+
+        '<text x="22" y="22" text-anchor="middle" dominant-baseline="central"'+
+          ' fill="'+hex+'" font-size="13" font-weight="900" font-family="-apple-system">'+score+'</text>'+
+      '</svg>' :
+      '<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;'+
+        'font-size:20px;background:var(--card2);border-radius:50%;border:1px solid var(--border)">💧</div>';
+
+    // Extra tags from OSM
+    var osmTags = "";
+    if(w.tags.access==="private")   osmTags+='<span class="stag neg">Private</span>';
+    if(w.tags.access==="no")        osmTags+='<span class="stag neg">No Access</span>';
+    if(w.tags.fishing==="yes"||w.tags.fishing==="permitted") osmTags+='<span class="stag pos">Fishing ✓</span>';
+    if(w.tags.fishing==="no")       osmTags+='<span class="stag neg">No Fishing</span>';
+    if(w.tags.fee==="yes")          osmTags+='<span class="stag neu">Fee Area</span>';
+
+    var detailData = JSON.stringify({
+      name:w.name, lat:w.lat, lon:w.lon, type:w.type,
+      dist:w.dist, score:(score||0), bd:detailBd, wt:detailWt
+    }).replace(/"/g,"&quot;");
+
+    var ncid = _storeCard({
+      name:w.name, lat:w.lat, lon:w.lon, type:w.type,
+      dist:w.dist, score:(score||0), bd:detailBd, wt:detailWt
+    });
+
+    html +=
+      '<div class="nearby-card" onclick="openDetail(\'' + ncid + '\')">'+
+        '<div class="nc-bar" style="background:'+hex+'"></div>'+
+        '<div class="nc-body">'+
+          '<div class="nc-top">'+
+            '<div class="nc-info">'+
+              '<div class="nc-name">'+(i===0?IC.pin+' ':"")+w.name+'</div>'+
+              '<div class="nc-meta">'+w.type+' · '+distLabel+' away</div>'+
+            '</div>'+
+            '<div class="nc-right">'+ringHtml+'<span class="nc-dist" style="color:'+hex+'">'+distLabel+'</span></div>'+
+          '</div>'+
+          (tags||osmTags ? '<div class="nc-tags">'+osmTags+tags+'</div>' : '')+
+          (baits ? '<div class="nc-baits">'+baits+'</div>' : '')+
+        '</div>'+
+      '</div>';
+  });
+
+  list.innerHTML = html;
+}
+
+function renderNearbyError(msg) {
+  document.getElementById("nearbyList").innerHTML =
+    '<div class="error-msg">'+IC.warn+' '+msg+'</div>';
+}
+
+// Global store for clickable card data (avoids HTML attribute quoting issues)
+var _cardData = {};
+var _cardIdx  = 0;
+
+function _storeCard(obj) {
+  var id = "cd" + (_cardIdx++);
+  _cardData[id] = obj;
+  return id;
+}
+// ═══════════════════════════════════════════
+var detailMap = null;
+var detailMarker = null;
+var detailCircle = null;
+var _detailLat = null, _detailLon = null;
+
+function fetchDetailPhotos(name) {
+  var cont = document.getElementById("detailPhotos");
+  cont.innerHTML = '<div class="detail-photo-placeholder">Loading…</div>';
+  // Use Wikipedia search API (finds the right page even with extra keywords)
+  var search = encodeURIComponent(name + " Texas lake");
+  var cbName = "wp_cb_" + Date.now() + "_" + Math.floor(Math.random()*9999);
+  var timeout;
+  window[cbName] = function(data) {
+    clearTimeout(timeout);
+    delete window[cbName];
+    if (!data || !data.query || !data.query.search || !data.query.search[0]) {
+      noPhotos(name, cont);
+      return;
+    }
+    var hit = data.query.search[0];
+    var pageid = hit.pageid;
+    // Now fetch the thumbnail for the actual page
+    var cb2 = "wp_cb2_" + Date.now() + "_" + Math.floor(Math.random()*9999);
+    window[cb2] = function(d2) {
+      delete window[cb2];
+      if (!d2 || !d2.query || !d2.query.pages) { noPhotos(name, cont); return; }
+      var page = d2.query.pages[pageid];
+      if (page && page.thumbnail) {
+        var thumb = page.thumbnail.source;
+        var credit = '<div class="detail-photo-credit">Wikimedia Commons · <a href="https://en.wikipedia.org/?curid=' + pageid + '" target="_blank" rel="noopener">View</a></div>';
+        cont.innerHTML = '<img src="' + thumb + '" alt="' + name + '" loading="lazy">' +
+          '<img src="' + thumb + '" alt="' + name + '" loading="lazy" style="object-position:center 60%">' +
+          credit;
+        return;
+      }
+      noPhotos(name, cont);
+    };
+    try {
+      var s2 = document.createElement("script");
+      s2.src = "https://en.wikipedia.org/w/api.php?" +
+        "action=query&pageids=" + pageid +
+        "&prop=pageimages&format=json&pithumbsize=640&callback=" + cb2;
+      s2.onerror = function(){ noPhotos(name, cont); try{delete window[cb2];}catch(e){} };
+      document.head.appendChild(s2);
+    } catch(e) { noPhotos(name, cont); }
+  };
+  try {
+    var s = document.createElement("script");
+    s.src = "https://en.wikipedia.org/w/api.php?" +
+      "action=query&list=search&srsearch=" + search +
+      "&srlimit=1&format=json&callback=" + cbName;
+    s.onerror = function(){ noPhotos(name, cont); try{delete window[cbName];}catch(e){} };
+    document.head.appendChild(s);
+  } catch(e) { noPhotos(name, cont); }
+  timeout = setTimeout(function(){ noPhotos(name, cont); try{delete window[cbName];}catch(e){} }, 8000);
+}
+
+function noPhotos(name, cont) {
+  cont.innerHTML = '<div class="detail-photo-placeholder">No photos available for ' + name + '</div>';
+}
+
+function openDetail(lake) {
+  // Accept a store key string or a raw object
+  if (typeof lake === "string") lake = _cardData[lake];
+  if (!lake) return;
+  _detailLat = lake.lat;
+  _detailLon = lake.lon;
+
+  var moon = getMoon();
+  var hex  = scoreHex(lake.score);
+  var hour = new Date().getHours();
+  var srH  = lake.srH || 6;
+  var ssH  = lake.ssH || 20;
+
+  // ── Badge & name ──
+  document.getElementById("detailBadge").innerHTML = IC.fish + " " + (lake.type || "Water");
+  document.getElementById("detailName").textContent  = lake.name;
+
+  // Meta line
+  var distStr = (lake.dist != null)
+    ? ((lake.dist < 10 ? lake.dist.toFixed(1) : Math.round(lake.dist)) + "mi away · ")
+    : "";
+  document.getElementById("detailMeta").textContent =
+    distStr + (lake.region || "") + (lake.wt != null ? " · " + IC.wave + " " + lake.wt + "°F est." : "");
+
+  // ── Score ring ──
+  document.getElementById("detailRing").innerHTML =
+    '<svg width="72" height="72" viewBox="0 0 72 72">' +
+      '<circle cx="36" cy="36" r="29" fill="none" stroke="var(--border)" stroke-width="6"/>' +
+      '<circle cx="36" cy="36" r="29" fill="none" stroke="' + hex + '" stroke-width="6"' +
+        ' stroke-dasharray="' + (2*Math.PI*29*lake.score/10).toFixed(1) + ' 999"' +
+        ' stroke-linecap="round" transform="rotate(-90 36 36)"/>' +
+      '<text x="36" y="36" text-anchor="middle" dominant-baseline="central"' +
+        ' fill="' + hex + '" font-size="22" font-weight="900" font-family="-apple-system">' + lake.score + '</text>' +
+    '</svg>';
+
+  // ── Score breakdown tags ──
+  var tagsHtml = (lake.bd || []).map(function(b) {
+    var cls = b.m > 0 ? "pos" : b.m < 0 ? "neg" : "neu";
+    return '<span class="stag ' + cls + '">' + b.l + ' ' + (b.m > 0 ? "+" : "") + b.m + '</span>';
+  }).join("");
+  document.getElementById("detailTags").innerHTML = tagsHtml;
+
+  // ── Strategy ──
+  document.getElementById("detailStrategy").innerHTML = buildStrategy(lake, moon, hour, srH, ssH);
+
+  // ── Baits ──
+  var gw = weatherData ? { weather: weatherData, trend: pressureTrend, sun: sunData } : null;
+  if (!gw) {
+    var g = nearestGrid(lake.lat, lake.lon);
+    gw = gridWeather[g.key];
+  }
+  var baits = gw
+    ? getBaits(gw.weather, gw.trend, lake.wt || 70, moon, hour, srH, ssH)
+    : [{ name:"Texas Rig", why:"universal" }, { name:"Ned Rig", why:"finesse" }, { name:"Spinnerbait", why:"search bait" }];
+
+  document.getElementById("detailBaits").innerHTML = baits.map(function(b) {
+    return '<div class="detail-bait-chip">'+IC.hook+' ' + b.name +
+      ' <span class="dbc-why">' + b.why + '</span></div>';
+  }).join("");
+
+  // ── Open overlay ──
+  document.getElementById("detailOverlay").classList.add("open");
+  document.getElementById("detailOverlay").scrollTop = 0;
+  document.body.style.overflow = "hidden";
+
+  // ── Detail map ──
+  setTimeout(function() { initDetailMap(lake.lat, lake.lon, lake.name, hex, lake.score); }, 80);
+  fetchDetailPhotos(lake.name);
+}
+
+function closeDetail() {
+  document.getElementById("detailOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function initDetailMap(lat, lon, name, hex, score) {
+  // Tighter zoom so the actual water is visible, not just a tiny dot in a huge area
+  var type = (name||"").toLowerCase();
+  var zoom;
+  if (type.indexOf("river")>=0 || type.indexOf("creek")>=0 || type.indexOf("stream")>=0)
+    zoom = 15;
+  else if (type.indexOf("pond")>=0)
+    zoom = 14;
+  else if (type.indexOf("reservoir")>=0 || type.indexOf("lake")>=0) {
+    // Known big waters get a bit wider
+    if (KNOWN_WATERS[name] && KNOWN_WATERS[name].d === "deep")
+      zoom = 12;
+    else
+      zoom = 13;
+  } else {
+    zoom = 14;
+  }
+  // Estimate water extent for a visible circle overlay (in meters)
+  var radius;
+  if (type.indexOf("river")>=0 || type.indexOf("creek")>=0) radius = 300;
+  else if (type.indexOf("pond")>=0) radius = 200;
+  else if (type.indexOf("reservoir")>=0) radius = 2500;
+  else if (type.indexOf("lake")>=0) radius = 1500;
+  else radius = 800;
+
+  if (!detailMap) {
+    detailMap = L.map("detailMap", {
+      center: [lat, lon], zoom: zoom,
+      zoomControl: true, attributionControl: false,
+      dragging: true, scrollWheelZoom: false
+    });
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19 }).addTo(detailMap);
+  } else {
+    detailMap.setView([lat, lon], zoom);
+    if (detailMarker) detailMap.removeLayer(detailMarker);
+    if (detailCircle) detailMap.removeLayer(detailCircle);
+  }
+
+  // Water-extent circle so you can actually SEE the body of water on dark tiles
+  detailCircle = L.circle([lat, lon], {
+    radius: radius,
+    color: hex,
+    weight: 2,
+    fillColor: hex,
+    fillOpacity: 0.12,
+    opacity: 0.5
+  }).addTo(detailMap);
+
+  // Custom pin
+  var pinIcon = L.divIcon({
+    className: "",
+    html: '<div style="width:44px;height:44px;border-radius:50%;background:' + hex +
+      ';border:3px solid #080e18;display:flex;align-items:center;justify-content:center;' +
+      'font-size:16px;font-weight:900;color:#080e18;box-shadow:0 0 0 3px ' + hex + '44">' +
+      score + '</div>',
+    iconSize: [44, 44], iconAnchor: [22, 22]
+  });
+
+  detailMarker = L.marker([lat, lon], { icon: pinIcon }).addTo(detailMap);
+  detailMarker.bindPopup('<strong>' + name + '</strong>', { closeButton: false }).openPopup();
+
+  setTimeout(function() { detailMap.invalidateSize(); }, 100);
+}
+
+function openAppleMaps() {
+  if (_detailLat == null) return;
+  var name = encodeURIComponent(document.getElementById("detailName").textContent);
+  window.open("https://maps.apple.com/?ll=" + _detailLat + "," + _detailLon + "&q=" + name + "&t=m", "_blank");
+}
+
+function openGoogleMaps() {
+  if (_detailLat == null) return;
+  var name = encodeURIComponent(document.getElementById("detailName").textContent);
+  window.open("https://www.google.com/maps/dir/?api=1&destination=" + _detailLat + "," + _detailLon + "&destination_place_id=" + name, "_blank");
+}
+
+// Swipe-left or Escape to close detail
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") closeDetail();
+});
+
+// ── Strategy builder ──
+function buildStrategy(lake, moon, hour, srH, ssH) {
+  var rows = [];
+  var w = weatherData || (function(){ var g=nearestGrid(lake.lat,lake.lon); var gw=gridWeather[g.key]; return gw&&gw.weather; })();
+  var trend = pressureTrend || (function(){ var g=nearestGrid(lake.lat,lake.lon); var gw=gridWeather[g.key]; return gw&&gw.trend; })();
+
+  // Time of day
+  var isNight = hour < srH || hour > ssH;
+  var isDawn  = hour >= srH-1 && hour <= srH+1;
+  var isDusk  = hour >= ssH-1 && hour <= ssH+1;
+  var timeTip;
+  if (isDawn)       timeTip = "Dawn bite is on — work shallow cover aggressively. Bass are actively feeding.";
+  else if (isDusk)  timeTip = "Evening bite window. Move to points and transitions as light fades.";
+  else if (isNight) timeTip = "Night fishing — slow down, use dark profiles. Target shallow rocky structure.";
+  else if (hour >= 10 && hour <= 15) timeTip = "Midday lull. Go deeper or find shade. Finesse presentations work best.";
+  else              timeTip = "Morning feeding period winding down. Cover water fast, then slow down.";
+  rows.push({ icon:IC.clock, label:"Time of Day", text: timeTip });
+
+  // Pressure
+  var trendStr = (trend && trend.trend) || "stable";
+  var baroTip;
+  if (trendStr === "rapidly falling")  baroTip = "Pressure dropping fast — fish are pre-front feeding hard. This is your best window. Cover water quickly.";
+  else if (trendStr === "slowly falling") baroTip = "Slow pressure drop — bass are actively feeding. Good window, don't waste it.";
+  else if (trendStr === "stable")      baroTip = "Stable pressure — fish are patterned and predictable. Match what worked here before.";
+  else if (trendStr === "slowly rising") baroTip = "Post-front recovery. Fish may be sluggish. Slow down presentations, target deeper structure.";
+  else                                  baroTip = "High pressure spike. Fish are tight to cover and deep. Go finesse — Ned rig, drop shot.";
+  rows.push({ icon:IC.baro, label:"Barometric Trend", text: baroTip });
+
+  // Wind
+  var windTip;
+  if (w) {
+    var ws = w.wind_speed_mph;
+    if      (ws < 2)    windTip = "Glassy water — bass can see everything. Downsize tackle, use lighter line, go natural colors.";
+    else if (ws <= 5)   windTip = "Light breeze — decent conditions. Work windward banks where baitfish accumulate.";
+    else if (ws <= 12)  windTip = "Perfect wind — waves break up light penetration and push baitfish. Fish the windward shore.";
+    else if (ws <= 18)  windTip = "Strong wind. Stay on the leeward side for boat control. Bass stack on wind-blown points.";
+    else                windTip = "High winds — tough conditions. Use heavier tackle, stay close to protected coves.";
+    rows.push({ icon:IC.wind, label:"Wind " + ws + " mph", text: windTip });
+  }
+
+  // Water temp
+  var wt = lake.wt;
+  var tempTip;
+  if      (wt < 50)  tempTip = "Cold water — metabolism is very slow. Fish deep, move extremely slowly. Jigs and spoons.";
+  else if (wt < 60)  tempTip = "Cool water — bass moving to shallows on warm days. Target sunny shallow flats in afternoons.";
+  else if (wt <= 70) tempTip = "Prime temperature range — bass are most active and catchable. Full range of techniques work.";
+  else if (wt <= 80) tempTip = "Warm but fishable. Focus on early/late, shade, and deeper cooler water mid-day.";
+  else               tempTip = "Hot water — stress on bass. Target shaded docks, deep timber, and thermoclines.";
+  rows.push({ icon:IC.temp, label:"Water ~" + wt + "°F", text: tempTip });
+
+  // Moon
+  var moonTip;
+  if (moon.score === 3)      moonTip = moon.name + " — peak solunar period. Feeding activity is highest around moonrise/moonset.";
+  else if (moon.score === 2) moonTip = moon.name + " — moderate lunar influence. Some solunar feeding windows during the day.";
+  else                       moonTip = moon.name + " — low lunar influence. Rely on time-of-day patterns instead.";
+  rows.push({ icon: moon.icon, label:"Moon — " + moon.name, text: moonTip });
+
+  // Water type specific tip
+  var typeTip = null;
+  var type = (lake.type || "").toLowerCase();
+  if (type.includes("river") || type.includes("creek") || type.includes("stream")) {
+    typeTip = "Moving water — position upstream of structure and let current bring bait to fish. Target eddies and seams.";
+  } else if (type.includes("pond")) {
+    typeTip = "Small pond — fan cast from the bank systematically. Work all visible cover. Bass have limited range.";
+  } else if (type.includes("reservoir")) {
+    typeTip = "Reservoir — target main lake points, creek channel swings, and standing timber. Depth changes are key.";
+  } else if (type.includes("lake")) {
+    typeTip = "Natural lake — focus on weed edges, laydowns, and rock piles. Bass orient to the sharpest structure breaks.";
+  }
+  if (typeTip) rows.push({ icon:IC.lake, label:"Water Type — " + (lake.type||"Water"), text: typeTip });
+
+  return rows.map(function(r) {
+    return '<div class="strategy-row">' +
+      '<div class="sr-icon">' + r.icon + '</div>' +
+      '<div class="sr-body"><div class="sr-label">' + r.label + '</div><div class="sr-text">' + r.text + '</div></div>' +
+    '</div>';
+  }).join("");
+}
+
+// ═══════════════════════════════════════════
+// SVG ICONS (clean, minimalist line-art)
+// ═══════════════════════════════════════════
+var IC = {
+  fish: '<svg viewBox="0 0 24 24"><path d="M21 12c-2-4-6-7-11-7S3 9 3 12s3 7 7 7 9-3 11-7z"/><circle cx="10" cy="11" r="1.5" fill="currentColor" stroke="none"/><path d="M18 12l3-3v6z"/></svg>',
+  pin: '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+  search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>',
+  temp: '<svg viewBox="0 0 24 24"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>',
+  wind: '<svg viewBox="0 0 24 24"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.17 12H2"/></svg>',
+  baro: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 12l3-5"/><path d="M12 12l-2 3"/></svg>',
+  moon: '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  map: '<svg viewBox="0 0 24 24"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16m8-12v16"/></svg>',
+  signal: '<svg viewBox="0 0 24 24"><path d="M2 20h20"/><path d="M6 16v4m4-8v8m4-12v12m4-16v16"/></svg>',
+  list: '<svg viewBox="0 0 24 24"><path d="M8 6h13m-13 6h13m-13 6h13"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/></svg>',
+  water: '<svg viewBox="0 0 24 24"><path d="M3 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M3 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>',
+  hook: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 9V4m0 0l-3 3m3-3l3 3"/></svg>',
+  target: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>',
+  wave: '<svg viewBox="0 0 24 24"><path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M2 17c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></svg>',
+  clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  trophy: '<svg viewBox="0 0 24 24"><path d="M6 9H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m12 5h3a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-3M9 21h6m-3-3v3M10 1h4v6a4 4 0 0 1-8 0V1z"/></svg>',
+  lake: '<svg viewBox="0 0 24 24"><path d="M3 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M21 12H3" stroke-dasharray="2 2"/></svg>',
+  flame: '<svg viewBox="0 0 24 24"><path d="M12 22c4-3 8-7 8-12a8 8 0 0 0-16 0c0 5 4 9 8 12z"/><path d="M12 22c-1.5-1.5-3-3.5-3-6a3 3 0 0 1 6 0c0 2.5-1.5 4.5-3 6z"/></svg>',
+  bolt: '<svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+  snow: '<svg viewBox="0 0 24 24"><path d="M12 2v20m-8-8h16M5.64 5.64l12.72 12.72M5.64 18.36l12.72-12.72"/><circle cx="12" cy="12" r="2"/></svg>',
+  car: '<svg viewBox="0 0 24 24"><path d="M5 17h14v-5l-2-5H7L5 12v5z"/><path d="M5 17a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2"/><circle cx="7.5" cy="17" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="17" r="1.5" fill="currentColor" stroke="none"/></svg>',
+  drop: '<svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>',
+  reservoir: '<svg viewBox="0 0 24 24"><path d="M2 20h20M4 20V10l8-7 8 7v10"/><path d="M9 20v-6h6v6"/></svg>',
+  arrow: '<svg viewBox="0 0 24 24"><path d="M15 3l6 6-6 6"/><path d="M21 9H7"/></svg>',
+  back: '<svg viewBox="0 0 24 24"><path d="M19 12H5m0 0l6 6m-6-6l6-6"/></svg>',
+  nav: '<svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9-9 9z"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg>',
+  warn: '<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4m0 4h.01"/></svg>',
+  terrain: '<svg viewBox="0 0 24 24"><path d="M8 3l4 8 4-4 4 7M2 20h20"/></svg>'
+};
+
+function icon(name, cls) {
+  var extra = cls ? ' class="' + cls + '"' : '';
+  return IC[name] ? IC[name].replace('<svg', '<svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"' + extra) : '';
+}
+
+// ═══════════════════════════════════════════
+// FILTER / SORT EVENT WIRING
+// ═══════════════════════════════════════════
+document.getElementById("filterBar").addEventListener("click", function(e) {
+  var chip = e.target.closest(".filter-chip");
+  if (!chip) return;
+  _activeFilter = chip.getAttribute("data-filter");
+  var chips = document.querySelectorAll(".filter-chip");
+  for (var i = 0; i < chips.length; i++) chips[i].classList.remove("active");
+  chip.classList.add("active");
+  if (window._lastNearest) renderFilteredCards(window._lastNearest, window._lastWeather, window._lastTrend, window._lastMoon);
+});
+document.getElementById("sortSelect").addEventListener("change", function(e) {
+  _activeSort = e.target.value;
+  if (window._lastNearest) renderFilteredCards(window._lastNearest, window._lastWeather, window._lastTrend, window._lastMoon);
+});
+
+// ═══════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════
+// Restore last location from localStorage
+try {
+  var saved=JSON.parse(localStorage.getItem("bass-loc")||"null");
+  if(saved&&saved.lat&&saved.lon){
+    userLat=saved.lat; userLon=saved.lon; userLabel=saved.label||"Saved Location";
+    document.getElementById("searchInput").value=userLabel;
+    document.getElementById("searchClear").classList.add("visible");
+  }
+} catch(e){}
+
+loadReport();
+setInterval(function(){if(document.visibilityState==="visible"&&userLat)loadReport();},15*60*1000);
+</script>
+</body>
+</html>
