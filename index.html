@@ -301,6 +301,11 @@ svg[style*="width"] { width: auto; height: auto; }
   transition: color .2s;
 }
 .tab-btn .ti { font-size: 22px; line-height: 1; transition: transform .2s; }
+/* Icon PNG tinting — mix-blend-mode screen makes dark backgrounds transparent */
+img[src^="icons/"] {
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
 .tab-btn.active { color: var(--accent); }
 .tab-btn.active .ti { transform: scale(1.1); }
 .tab-btn:active { opacity: .6; }
