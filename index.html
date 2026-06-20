@@ -1960,60 +1960,22 @@ var detailMarker = null;
 var detailCircle = null;
 var _detailLat = null, _detailLon = null;
 
-function fetchDetailPhotos(name) {
-  var cont = document.getElementById("detailPhotos");
-  cont.innerHTML = '<div class="detail-photo-placeholder">Loading…</div>';
-  // Use Wikipedia search API (finds the right page even with extra keywords)
-  var search = encodeURIComponent(name + " Texas lake");
-  var cbName = "wp_cb_" + Date.now() + "_" + Math.floor(Math.random()*9999);
-  var timeout;
-  window[cbName] = function(data) {
-    clearTimeout(timeout);
-    delete window[cbName];
-    if (!data || !data.query || !data.query.search || !data.query.search[0]) {
-      noPhotos(name, cont);
-      return;
-    }
-    var hit = data.query.search[0];
-    var pageid = hit.pageid;
-    // Now fetch the thumbnail for the actual page
-    var cb2 = "wp_cb2_" + Date.now() + "_" + Math.floor(Math.random()*9999);
-    window[cb2] = function(d2) {
-      delete window[cb2];
-      if (!d2 || !d2.query || !d2.query.pages) { noPhotos(name, cont); return; }
-      var page = d2.query.pages[pageid];
-      if (page && page.thumbnail) {
-        var thumb = page.thumbnail.source;
-        var credit = '<div class="detail-photo-credit">Wikimedia Commons · <a href="https://en.wikipedia.org/?curid=' + pageid + '" target="_blank" rel="noopener">View</a></div>';
-        cont.innerHTML = '<img src="' + thumb + '" alt="' + name + '" loading="lazy">' +
-          '<img src="' + thumb + '" alt="' + name + '" loading="lazy" style="object-position:center 60%">' +
-          credit;
-        return;
-      }
-      noPhotos(name, cont);
-    };
-    try {
-      var s2 = document.createElement("script");
-      s2.src = "https://en.wikipedia.org/w/api.php?" +
-        "action=query&pageids=" + pageid +
-        "&prop=pageimages&format=json&pithumbsize=640&callback=" + cb2;
-      s2.onerror = function(){ noPhotos(name, cont); try{delete window[cb2];}catch(e){} };
-      document.head.appendChild(s2);
-    } catch(e) { noPhotos(name, cont); }
-  };
-  try {
-    var s = document.createElement("script");
-    s.src = "https://en.wikipedia.org/w/api.php?" +
-      "action=query&list=search&srsearch=" + search +
-      "&srlimit=1&format=json&callback=" + cbName;
-    s.onerror = function(){ noPhotos(name, cont); try{delete window[cbName];}catch(e){} };
-    document.head.appendChild(s);
-  } catch(e) { noPhotos(name, cont); }
-  timeout = setTimeout(function(){ noPhotos(name, cont); try{delete window[cbName];}catch(e){} }, 8000);
-}
-
-function noPhotos(name, cont) {
-  cont.innerHTML = '<div class="detail-photo-placeholder">No photos available for ' + name + '</div>';
+function noPhotos(name, cont, score) {
+  var hex = scoreHex(score || 5);
+  var label = '';
+  if (score >= 7) label = '🔥 Hot Spot';
+  else if (score >= 5) label = '✅ Fair Bite';
+  else label = '❄️ Slow Day';
+  var gradient = score >= 7 
+    ? 'linear-gradient(135deg, #2B4F6E 0%, #4A6B85 40%, #9E8B7A 100%)'
+    : score >= 5 
+    ? 'linear-gradient(135deg, #2B4F6E 0%, #4A6B85 60%, #9E8B7A 100%)'
+    : 'linear-gradient(135deg, #244562 0%, #2B4F6E 60%, #4A6B85 100%)';
+  cont.innerHTML = '<div class="detail-scenic-card" style="height:160px;border-radius:var(--radius);background:' + gradient + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(158,139,122,.2);">' +
+    '<span style="font-size:36px;">🐟</span>' +
+    '<span style="font-size:16px;font-weight:700;color:var(--text);">' + name + '</span>' +
+    '<span style="font-size:12px;color:var(--mid);">' + label + '</span>' +
+    '</div>';
 }
 
 function openDetail(lake) {
@@ -2083,7 +2045,7 @@ function openDetail(lake) {
 
   // ── Detail map ──
   setTimeout(function() { initDetailMap(lake.lat, lake.lon, lake.name, hex, lake.score); }, 80);
-  fetchDetailPhotos(lake.name);
+  noPhotos(lake.name, document.getElementById("detailPhotos"), lake.score);
 }
 
 function closeDetail() {
