@@ -106,8 +106,7 @@ header {
   -webkit-text-fill-color:transparent;
   display:inline-block;
 }
-/* (backdrop removed — fish now fades via opacity when behind blocking words) */
-/* Swimming fish — wrapper uses translateX (GPU-accelerated), img wiggles via CSS */
+/* Swimming fish — wrapper handles position+rotation, img does tail wiggle */
 header .swim-fish-wrap {
   position:absolute;
   left:0; top:50%;
@@ -125,29 +124,43 @@ header .swim-fish-wrap .swim-fish {
   transform-origin:55% 50%;
   will-change:transform;
 }
-/* Tail wiggle — facing direction baked into keyframes
-   transform conflicts. skewX amplitude reduced (4°) and slowed (0.5s) for
-   a smoother, less frenetic swish. */
-@keyframes tailWiggleRight {
-  0%, 100% { transform:scaleX(-1) skewX(0deg); }
-  25%      { transform:scaleX(-1) skewX(-4deg); }
-  50%      { transform:scaleX(-1) skewX(0deg); }
-  75%      { transform:scaleX(-1) skewX(4deg); }
-}
+/* Tail wiggle — combines skew, scaleY compression, and micro-rotation
+   for an undulating body-wave feel. Animation-duration is set dynamically
+   in JS to match swim speed (faster swim = faster tail). */
 @keyframes tailWiggleLeft {
-  0%, 100% { transform:scaleX(1) skewX(0deg); }
-  25%      { transform:scaleX(1) skewX(-4deg); }
-  50%      { transform:scaleX(1) skewX(0deg); }
-  75% { transform:scaleX(1) skewX(4deg); }
+  0%   { transform:scaleX(1) skewX(0deg)  scaleY(1)    rotate(0deg); }
+  15%  { transform:scaleX(1) skewX(-5deg) scaleY(0.96) rotate(-1.2deg); }
+  35%  { transform:scaleX(1) skewX(3deg)  scaleY(1.02) rotate(0.6deg); }
+  50%  { transform:scaleX(1) skewX(0deg)  scaleY(1)    rotate(0deg); }
+  65%  { transform:scaleX(1) skewX(5deg)  scaleY(0.96) rotate(1.2deg); }
+  85%  { transform:scaleX(1) skewX(-3deg) scaleY(1.02) rotate(-0.6deg); }
+  100% { transform:scaleX(1) skewX(0deg)  scaleY(1)    rotate(0deg); }
+}
+@keyframes tailWiggleRight {
+  0%   { transform:scaleX(-1) skewX(0deg)  scaleY(1)    rotate(0deg); }
+  15%  { transform:scaleX(-1) skewX(-5deg) scaleY(0.96) rotate(1.2deg); }
+  35%  { transform:scaleX(-1) skewX(3deg)  scaleY(1.02) rotate(-0.6deg); }
+  50%  { transform:scaleX(-1) skewX(0deg)  scaleY(1)    rotate(0deg); }
+  65%  { transform:scaleX(-1) skewX(5deg)  scaleY(0.96) rotate(-1.2deg); }
+  85%  { transform:scaleX(-1) skewX(-3deg) scaleY(1.02) rotate(0.6deg); }
+  100% { transform:scaleX(-1) skewX(0deg)  scaleY(1)    rotate(0deg); }
 }
 .swim-fish.wiggle-right { animation:tailWiggleRight 0.5s ease-in-out infinite; }
 .swim-fish.wiggle-left  { animation:tailWiggleLeft 0.5s ease-in-out infinite; }
-/* Bubble trail */
+/* Bubble trail — small iridescent bubbles that drift up and fade */
 .fish-bubble {
   position:absolute;
   border-radius:50%;
-  background:radial-gradient(circle at 35% 35%, rgba(180,200,220,0.45), rgba(74,107,133,0.1));
-  border:1px solid rgba(180,200,220,0.2);
+  background:radial-gradient(circle at 35% 35%, rgba(180,200,220,0.5), rgba(74,107,133,0.08));
+  border:1px solid rgba(180,200,220,0.25);
+  pointer-events:none;
+  z-index:1;
+}
+/* Splash ripple when fish enters/exits water */
+.fish-splash {
+  position:absolute;
+  border-radius:50%;
+  border:2px solid rgba(180,200,220,0.4);
   pointer-events:none;
   z-index:1;
 }
@@ -3675,9 +3688,11 @@ loadReport();
 setInterval(function(){if(document.visibilityState==="visible"&&userLat)loadReport();},15*60*1000);
 
 // ═══════════════════════════════════════════════════════════════
-// SWIMMING FISH CYCLE — every 30s the icon fish swims left off
-// the screen, re-enters from the right, and swims back to the icon.
-// Fish always faces left (natural image orientation) — no flipping.
+// SWIMMING FISH CYCLE — natural, dynamic animation engine.
+// Fish swims left off-screen, re-enters from the right, returns to icon.
+// Features: variable speed (accel/decel), multi-frequency bob, body
+// rotation, bubble trail, splash effects, dynamic tail speed, random timing.
+// Fish always faces left (natural image orientation).
 // ═══════════════════════════════════════════════════════════════
 function startFishCycle() {
   var staticIcon = document.getElementById('staticIcon');
@@ -3687,24 +3702,91 @@ function startFishCycle() {
   if (!staticIcon || !wrap || !fishImg || !headerEl) return;
 
   var busy = false;
+  var nextTimer = null;
 
-  // Generate smooth sinusoidal swim keyframes.
-  // X moves linearly (constant swim speed), Y bobs in a gentle sine wave.
-  function swimFrames(xFrom, xTo, cycles) {
+  // ── Bubble emitter ──
+  function emitBubble(x, y) {
+    var b = document.createElement('div');
+    b.className = 'fish-bubble';
+    var size = 3 + Math.random() * 5;
+    b.style.width  = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left   = x + 'px';
+    b.style.top    = y + 'px';
+    headerEl.appendChild(b);
+    var driftX = (Math.random() - 0.5) * 24;
+    var driftY = -18 - Math.random() * 28;
+    b.animate([
+      { transform: 'translate(0,0) scale(1)',              opacity: 0.7 },
+      { transform: 'translate(' + driftX + 'px,' + driftY + 'px) scale(0.3)', opacity: 0 }
+    ], { duration: 1400 + Math.random() * 1100, easing: 'ease-out' });
+    setTimeout(function() { if (b.parentNode) b.remove(); }, 2700);
+  }
+
+  // ── Splash ripple ──
+  function emitSplash(x, y) {
+    var s = document.createElement('div');
+    s.className = 'fish-splash';
+    s.style.left = (x - 12) + 'px';
+    s.style.top  = (y - 12) + 'px';
+    s.style.width  = '24px';
+    s.style.height = '24px';
+    headerEl.appendChild(s);
+    s.animate([
+      { transform: 'scale(0.3)', opacity: 0.6, borderWidth: '2px' },
+      { transform: 'scale(2.5)', opacity: 0,   borderWidth: '0.5px' }
+    ], { duration: 800, easing: 'ease-out' });
+    setTimeout(function() { if (s.parentNode) s.remove(); }, 900);
+  }
+
+  // ── Set tail wiggle speed dynamically (faster swim = faster tail) ──
+  function setTailSpeed(durationPx) {
+    // Duration in seconds — clamp 0.3s (fast dart) to 0.65s (lazy cruise)
+    var sec = Math.max(0.3, Math.min(0.65, durationPx / 5000));
+    fishImg.style.animationDuration = sec.toFixed(2) + 's';
+  }
+
+  // ── Generate natural swim keyframes ──
+  // X uses easing (accel/cruise/decel) instead of linear.
+  // Y bobs with two superposed sine waves (slow large + fast small).
+  // Body rotates slightly to follow the vertical curve.
+  function swimFrames(xFrom, xTo, opts) {
+    opts = opts || {};
+    var cycles  = opts.cycles  || 3;
+    var bobAmp  = opts.bobAmp  || 4;   // vertical bob amplitude (% of header height)
+    var n       = opts.steps   || 40;
+    var ease    = opts.ease    || 'cruise';
+
     var frames = [];
-    var n = 28;
     for (var i = 0; i <= n; i++) {
       var t = i / n;
-      var x = xFrom + (xTo - xFrom) * t;
-      var y = -50 + 3 * Math.sin(t * Math.PI * 2 * cycles);
+
+      // Eased horizontal progress — fish don't swim at constant speed
+      var ex;
+      if (ease === 'accel')       ex = t * t;
+      else if (ease === 'decel')  ex = 1 - (1 - t) * (1 - t);
+      else if (ease === 'dart')   ex = t < 0.25 ? t * t * 4 : 1 - (1 - t) * (1 - t) * 0.8;
+      else                        ex = t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t); // ease-in-out
+
+      var x = xFrom + (xTo - xFrom) * ex;
+
+      // Dual-frequency vertical bob for organic undulation
+      var y = -50
+            + bobAmp       * Math.sin(t * Math.PI * 2 * cycles)
+            + (bobAmp*0.3) * Math.sin(t * Math.PI * 2 * cycles * 2.7 + 1.3);
+
+      // Body tilt follows the vertical direction of travel
+      var rot = 2.5 * Math.cos(t * Math.PI * 2 * cycles);
+
       frames.push({
-        transform: 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(2) + '%)',
+        transform: 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(2) + '%) rotate(' + rot.toFixed(2) + 'deg)',
         offset: t
       });
     }
     return frames;
   }
 
+  // ── The main swim cycle ──
   function swimCycle() {
     if (busy) return;
     busy = true;
@@ -3712,52 +3794,92 @@ function startFishCycle() {
     var iconRect = staticIcon.getBoundingClientRect();
     var hdrRect  = headerEl.getBoundingClientRect();
     var startX   = iconRect.left - hdrRect.left + 2;
-    var offLeft  = -60;                  // off-screen left
-    var offRight = hdrRect.width + 20;   // off-screen right
+    var offLeft  = -70;                    // off-screen left
+    var offRight = hdrRect.width + 30;     // off-screen right
 
-    // Fish faces left the entire time — natural orientation, no flipping
     fishImg.classList.remove('wiggle-right', 'wiggle-left');
     fishImg.classList.add('wiggle-left');
     wrap.style.zIndex = '10';
 
+    // Smooth fade transitions
+    staticIcon.style.transition = 'opacity 0.5s ease';
+    wrap.style.transition       = 'opacity 0.5s ease';
     staticIcon.style.opacity = '0';
     wrap.style.opacity = '1';
 
-    // Phase 1: swim left from icon, off the left edge of the screen
-    var dur1 = 2800;
-    var anim1 = wrap.animate(swimFrames(startX, offLeft, 2), {
-      duration: dur1, easing: 'linear', fill: 'forwards'
-    });
+    // ── Bubble trail timer ──
+    var bubbleTimer = setInterval(function() {
+      var wr = wrap.getBoundingClientRect();
+      if (wr.left < hdrRect.left - 80 || wr.left > hdrRect.right + 80) return;
+      var bx = wr.left - hdrRect.left + wr.width * 0.75;
+      var by = wr.top  - hdrRect.top  + wr.height * 0.6;
+      emitBubble(bx, by);
+    }, 280);
+
+    // ── Phase 1: swim left from icon, accelerating off the left edge ──
+    var dist1 = Math.abs(startX - offLeft);
+    var dur1  = 1800 + Math.random() * 800;
+    setTailSpeed(dist1 / (dur1 / 1000));
+    var anim1 = wrap.animate(swimFrames(startX, offLeft, {
+      cycles: 2, bobAmp: 5, ease: 'accel', steps: 35
+    }), { duration: dur1, easing: 'linear', fill: 'forwards' });
 
     anim1.onfinish = function() {
       anim1.cancel();
 
-      // Brief pause — fish is swimming around off-screen
+      // Small splash as fish exits left
+      emitSplash(0, hdrRect.height * 0.5);
+
+      // Off-screen pause — random 500-1400ms (fish cruising around back)
+      var pauseMs = 500 + Math.random() * 900;
       setTimeout(function() {
 
-        // Phase 2: enter from the right edge, swim left back to the icon
-        var dur2 = 4500;
-        var anim2 = wrap.animate(swimFrames(offRight, startX, 3), {
-          duration: dur2, easing: 'linear', fill: 'forwards'
-        });
+        // Splash as fish re-enters from the right
+        emitSplash(hdrRect.width - 10, hdrRect.height * 0.5);
+
+        // ── Phase 2: enter from right, swim left back to icon — decelerating ──
+        var dist2 = Math.abs(offRight - startX);
+        var dur2  = 3500 + Math.random() * 1800;
+        setTailSpeed(dist2 / (dur2 / 1000));
+        var anim2 = wrap.animate(swimFrames(offRight, startX, {
+          cycles: 3, bobAmp: 4, ease: 'decel', steps: 50
+        }), { duration: dur2, easing: 'linear', fill: 'forwards' });
 
         anim2.onfinish = function() {
           anim2.cancel();
+          clearInterval(bubbleTimer);
+
+          // One last bubble at the resting position
+          var wr = wrap.getBoundingClientRect();
+          emitBubble(wr.left - hdrRect.left + 35, wr.top - hdrRect.top + 30);
+
           fishImg.classList.remove('wiggle-left');
+          fishImg.style.animationDuration = ''; // reset to CSS default
           wrap.style.opacity = '0';
           staticIcon.style.opacity = '1';
           busy = false;
+
+          scheduleNext();
         };
-      }, 600);
+      }, pauseMs);
     };
   }
 
-  setInterval(function() {
-    if (document.visibilityState === 'visible') swimCycle();
-  }, 30000);
+  // ── Random scheduling — unpredictable 18-40 second intervals ──
+  function scheduleNext() {
+    if (nextTimer) clearTimeout(nextTimer);
+    var delay = 18000 + Math.random() * 22000;
+    nextTimer = setTimeout(function() {
+      if (document.visibilityState === 'visible') swimCycle();
+      else scheduleNext(); // reschedule if tab was hidden
+    }, delay);
+  }
+
+  // Kick off with a short initial delay
+  scheduleNext();
 }
 
-// Kick off the swimming fish cycle
+// Start the swimming fish cycle
 startFishCycle();
 </script>
 </body>
