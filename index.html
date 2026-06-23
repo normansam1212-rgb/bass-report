@@ -3675,8 +3675,9 @@ loadReport();
 setInterval(function(){if(document.visibilityState==="visible"&&userLat)loadReport();},15*60*1000);
 
 // ═══════════════════════════════════════════════════════════════
-// SWIMMING FISH CYCLE — every 30s the icon fish emerges, swims
-// across the title, and swims back home to the icon.
+// SWIMMING FISH CYCLE — every 30s the icon fish swims left off
+// the screen, re-enters from the right, and swims back to the icon.
+// Fish always faces left (natural image orientation) — no flipping.
 // ═══════════════════════════════════════════════════════════════
 function startFishCycle() {
   var staticIcon = document.getElementById('staticIcon');
@@ -3685,47 +3686,23 @@ function startFishCycle() {
   var headerEl   = document.querySelector('header');
   if (!staticIcon || !wrap || !fishImg || !headerEl) return;
 
-  var titleWords = headerEl.querySelectorAll('.title-fx');
-  if (titleWords.length < 3) return;
-
   var busy = false;
 
-  titleWords[0].style.zIndex = '5';
-  titleWords[1].style.zIndex = '1';
-  titleWords[2].style.zIndex = '5';
-
-  // Pre-compute blocking regions (word X bounds relative to header) for fade-out
-  var hdrRect0 = headerEl.getBoundingClientRect();
-  var blockRects = [];
-  for (var bi = 0; bi < titleWords.length; bi++) {
-    if (titleWords[bi].classList.contains('blocking')) {
-      var br = titleWords[bi].getBoundingClientRect();
-      blockRects.push({
-        left: br.left - hdrRect0.left - 10,
-        right: br.right - hdrRect0.left + 10
+  // Generate smooth sinusoidal swim keyframes.
+  // X moves linearly (constant swim speed), Y bobs in a gentle sine wave.
+  function swimFrames(xFrom, xTo, cycles) {
+    var frames = [];
+    var n = 28;
+    for (var i = 0; i <= n; i++) {
+      var t = i / n;
+      var x = xFrom + (xTo - xFrom) * t;
+      var y = -50 + 3 * Math.sin(t * Math.PI * 2 * cycles);
+      frames.push({
+        transform: 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(2) + '%)',
+        offset: t
       });
     }
-  }
-
-  function setBehind() { wrap.style.zIndex = '2'; }
-  function setFront()  { wrap.style.zIndex = '10'; }
-
-  // Returns the fish opacity (0–1) for a given X position relative to header.
-  // Fish fades to ~25% when behind a blocking word.
-  function fishOpacityAt(x) {
-    var op = 1;
-    for (var bi = 0; bi < blockRects.length; bi++) {
-      if (x >= blockRects[bi].left && x <= blockRects[bi].right) {
-        // Fade smoothly near edges: 15px transition zone
-        var l = blockRects[bi].left, r = blockRects[bi].right;
-        var edgeW = 15;
-        var lFade = Math.min(1, (x - l) / edgeW);
-        var rFade = Math.min(1, (r - x) / edgeW);
-        var fade = Math.min(lFade, rFade);
-        op = Math.min(op, 1 - 0.75 * fade);  // min opacity 0.25
-      }
-    }
-    return op;
+    return frames;
   }
 
   function swimCycle() {
@@ -3734,112 +3711,44 @@ function startFishCycle() {
 
     var iconRect = staticIcon.getBoundingClientRect();
     var hdrRect  = headerEl.getBoundingClientRect();
-    var rR = titleWords[2].getBoundingClientRect();
+    var startX   = iconRect.left - hdrRect.left + 2;
+    var offLeft  = -60;                  // off-screen left
+    var offRight = hdrRect.width + 20;   // off-screen right
 
-    var startX = iconRect.left - hdrRect.left + 2;
-    var endX   = rR.right - hdrRect.left + 14;
-
-    // Reset facing — always start facing right
-    fishImg.classList.remove('wiggle-left', 'wiggle-right');
-    fishImg.classList.add('wiggle-right');
+    // Fish faces left the entire time — natural orientation, no flipping
+    fishImg.classList.remove('wiggle-right', 'wiggle-left');
+    fishImg.classList.add('wiggle-left');
+    wrap.style.zIndex = '10';
 
     staticIcon.style.opacity = '0';
     wrap.style.opacity = '1';
-    wrap.style.zIndex = '2';
 
-    // ── Generate smooth sinusoidal swim keyframes ──
-    // X moves linearly (constant swim speed — no easing stutter).
-    // Y bobs in a gentle sine wave: ±3% amplitude, 3 cycles per pass.
-    // Fish opacity fades to ~25% when behind blocking words.
-    // 24 keyframes give a smooth curve without hand-tuned jitter.
-    function swimFrames(xFrom, xTo, cycles) {
-      var frames = [];
-      var n = 24;
-      for (var i = 0; i <= n; i++) {
-        var t = i / n;
-        var x = xFrom + (xTo - xFrom) * t;
-        var y = -50 + 3 * Math.sin(t * Math.PI * 2 * cycles);
-        frames.push({
-          transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(2)+'%)',
-          opacity: fishOpacityAt(x).toFixed(3),
-          offset:t
-        });
-      }
-      return frames;
-    }
-
-    // ── RIGHT: smooth swim across the title ──
-    var dur1 = 4200;
-    var anim1 = wrap.animate(swimFrames(startX, endX, 3), {
-      duration: dur1, easing:'linear', fill:'forwards'
+    // Phase 1: swim left from icon, off the left edge of the screen
+    var dur1 = 2800;
+    var anim1 = wrap.animate(swimFrames(startX, offLeft, 2), {
+      duration: dur1, easing: 'linear', fill: 'forwards'
     });
 
-    // Frame-accurate z-index swaps (fish goes behind "Texas" & "Report")
-    var swaps1 = [
-      { t: dur1 * 0.30, fn: setFront },
-      { t: dur1 * 0.62, fn: setBehind }
-    ];
-    var si1 = 0;
-    function checkSwaps1() {
-      if (si1 >= swaps1.length || anim1.playState !== 'running') return;
-      if (anim1.currentTime >= swaps1[si1].t) { swaps1[si1].fn(); si1++; }
-      requestAnimationFrame(checkSwaps1);
-    }
-    requestAnimationFrame(checkSwaps1);
-
     anim1.onfinish = function() {
-      // Gentle hover — single smooth bob at the right edge (no jitter)
-      var hoverDur = 500;
-      var hover = wrap.animate([
-        { transform:'translate('+endX+'px,-50%)' },
-        { transform:'translate('+endX+'px,-46.5%)', offset:0.5 },
-        { transform:'translate('+endX+'px,-50%)' }
-      ], { duration: hoverDur, easing:'ease-in-out', fill:'forwards' });
+      anim1.cancel();
 
-      hover.onfinish = function() {
-        hover.cancel();  // release hold so return swim overrides cleanly
+      // Brief pause — fish is swimming around off-screen
+      setTimeout(function() {
 
-        // Smooth flip — quick scaleX through ~0.1, not a full squash to 0
-        fishImg.classList.remove('wiggle-right');
-        var flip = fishImg.animate([
-          { transform:'scaleX(-1) skewX(0deg)' },
-          { transform:'scaleX(0.1) skewX(0deg)' },
-          { transform:'scaleX(1) skewX(0deg)' }
-        ], { duration: 280, easing:'cubic-bezier(0.4,0,0.6,1)', fill:'forwards' });
+        // Phase 2: enter from the right edge, swim left back to the icon
+        var dur2 = 4500;
+        var anim2 = wrap.animate(swimFrames(offRight, startX, 3), {
+          duration: dur2, easing: 'linear', fill: 'forwards'
+        });
 
-        flip.onfinish = function() {
-          flip.cancel();  // release WAAPI hold so CSS wiggle takes over
-          fishImg.classList.add('wiggle-left');  // CSS has scaleX(-1) baked in
-          setBehind();
-
-          // ── LEFT: smooth swim back to the icon ──
-          var dur2 = 4200;
-          var anim2 = wrap.animate(swimFrames(endX, startX, 3), {
-            duration: dur2, easing:'linear', fill:'forwards'
-          });
-
-          var swaps2 = [
-            { t: dur2 * 0.30, fn: setFront },
-            { t: dur2 * 0.62, fn: setBehind }
-          ];
-          var si2 = 0;
-          function checkSwaps2() {
-            if (si2 >= swaps2.length || anim2.playState !== 'running') return;
-            if (anim2.currentTime >= swaps2[si2].t) { swaps2[si2].fn(); si2++; }
-            requestAnimationFrame(checkSwaps2);
-          }
-          requestAnimationFrame(checkSwaps2);
-
-          anim2.onfinish = function() {
-            anim2.cancel();  // release fill:'forwards' so inline opacity applies
-            anim1.cancel();  // also release anim1's hold
-            fishImg.classList.remove('wiggle-left');
-            wrap.style.opacity = '0';
-            staticIcon.style.opacity = '1';
-            busy = false;
-          };
+        anim2.onfinish = function() {
+          anim2.cancel();
+          fishImg.classList.remove('wiggle-left');
+          wrap.style.opacity = '0';
+          staticIcon.style.opacity = '1';
+          busy = false;
         };
-      };
+      }, 600);
     };
   }
 
