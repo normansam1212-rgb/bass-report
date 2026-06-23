@@ -80,20 +80,36 @@ header {
   display:flex; align-items:center; gap:0;
   text-shadow:0 1px 2px rgba(0,0,0,0.3);
 }
-.hdr-title span { color:var(--accent); margin-right:0.35em; }
-.hdr-title .title-fx {
-  background:linear-gradient(110deg, #E8DDD0 0%, #4A6B85 25%, #9E8B7A 50%, #2B4F6E 75%, #E8DDD0 100%);
-  background-size:250% 100%;
+.hdr-title span.title-fx {
+  position:relative;
+  background:linear-gradient(180deg, #E8DDD0 0%, #9E8B7A 40%, #4A6B85 70%, #2B4F6E 100%);
   -webkit-background-clip:text;
   background-clip:text;
   -webkit-text-fill-color:transparent;
-  animation:titleShimmer 5s ease-in-out infinite;
-  filter:drop-shadow(0 0 6px rgba(74,107,133,0.35));
+  margin-right:0.35em;
 }
-@keyframes titleShimmer {
-  0%   { background-position:0% 50%; }
-  50%  { background-position:100% 50%; }
-  100% { background-position:0% 50%; }
+/* Swimming fish that sweeps across the title text */
+.hdr-title .title-fx::after {
+  content:"🐟";
+  position:absolute;
+  left:-1.2em;
+  top:50%;
+  transform:translateY(-50%) scaleX(-1);
+  font-size:14px;
+  opacity:0;
+  -webkit-text-fill-color:initial;
+  animation:swimAcross 4s ease-in-out infinite;
+  pointer-events:none;
+  filter:drop-shadow(0 0 3px rgba(74,107,133,0.4));
+}
+@keyframes swimAcross {
+  0%   { left:-1.2em; opacity:0; transform:translateY(-50%) scaleX(-1) rotate(-5deg); }
+  10%  { opacity:0.9; }
+  45%  { transform:translateY(-30%) scaleX(-1) rotate(3deg); }
+  50%  { transform:translateY(-50%) scaleX(-1) rotate(0deg); }
+  55%  { transform:translateY(-70%) scaleX(-1) rotate(-3deg); }
+  90%  { opacity:0.9; }
+  100% { left:100%; opacity:0; transform:translateY(-50%) scaleX(-1) rotate(5deg); }
 }
 .hdr-sub {
   font-size:10px; color:var(--dim); margin-top:3px;
@@ -1047,7 +1063,7 @@ a.bait-chip, a.detail-bait-chip {
 
 <header>
   <div class="header-left" style="flex:1">
-    <div class="hdr-title"><img src="icon-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;margin-right:10px;border-radius:12px;object-fit:contain;background:var(--card2);padding:4px"><span>Texas</span> <span class="title-fx">Bass Report</span></div>
+    <div class="hdr-title"><img src="icon-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;margin-right:10px;border-radius:12px;object-fit:contain;background:var(--card2);padding:4px"><span class="title-fx">Texas Bass Report</span></div>
     <div class="hdr-sub" id="statusText">Loading…</div>
   </div>
   <button class="geo-btn" onclick="useMyLocation()" title="Use GPS location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C9.24 2 7 4.24 7 7c0 4.5 5 11 5 11s5-6.5 5-11c0-2.76-2.24-5-5-5z"/><circle cx="12" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg style="width:22px;height:22px;object-fit:contain"></button>
