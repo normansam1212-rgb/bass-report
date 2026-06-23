@@ -598,10 +598,12 @@ footer { padding:24px 20px 10px; text-align:center; font-size:10px; color:var(--
 }
 .detail-close:active { opacity:.5; transform:translateX(-3px); }
 .detail-badge {
+  position:absolute; top:calc(var(--st) + 18px); right:20px;
   display:inline-flex; align-items:center; gap:6px;
   font-size:11px; font-weight:700; letter-spacing:1.8px;
   text-transform:uppercase; color:var(--mid); opacity:.75;
-  margin-bottom:14px;
+  background:var(--card2); padding:6px 12px; border-radius:8px;
+  border:1px solid var(--border);
 }
 .detail-name {
   font-size:30px; font-weight:900; letter-spacing:-.8px;
