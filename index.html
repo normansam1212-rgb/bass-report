@@ -95,7 +95,7 @@ header {
   white-space:nowrap;
 }
 .hdr-title .title-fx {
-  position:relative;
+  position:relative; z-index:3;
   background:linear-gradient(180deg, #E8DDD0 0%, #9E8B7A 35%, #4A6B85 65%, #2B4F6E 100%);
   -webkit-background-clip:text;
   background-clip:text;
@@ -103,18 +103,19 @@ header {
   margin-right:0.35em;
   display:inline-block;
 }
-/* Swimming fish — positioned relative to header, swims across entire width */
+/* Swimming fish — positioned relative to header, weaves through title words */
 header .swim-fish {
   position:absolute;
   left:14px;
   top:50%;
   transform:translateY(-50%);
-  width:32px; height:32px;
+  width:52px; height:52px;
   object-fit:contain;
   pointer-events:none;
   opacity:0;
   z-index:2;
-  filter:drop-shadow(0 0 5px rgba(74,107,133,0.6)) drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+  filter:drop-shadow(0 0 8px rgba(74,107,133,0.7)) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  will-change:transform,left,opacity;
 }
 .hdr-sub {
   font-size:10px; color:var(--dim);
@@ -1073,7 +1074,7 @@ a.bait-chip, a.detail-bait-chip {
     <img id="staticIcon" src="fish-swim-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;border-radius:12px;object-fit:contain;padding:4px;transition:opacity 0.4s ease">
   </div>
   <div class="hdr-center">
-    <div class="hdr-title"><span class="title-fx">Texas Bass Report</span></div>
+    <div class="hdr-title"><span class="title-fx">Texas</span> <span class="title-fx">Bass</span> <span class="title-fx">Report</span></div>
   </div>
   <div class="hdr-right">
     <div class="hdr-sub" id="statusText">Loading…</div>
@@ -3720,52 +3721,117 @@ function startFishCycle() {
   var headerEl   = document.querySelector('header');
   if (!staticIcon || !swimFish || !headerEl) return;
 
+  var titleWords = headerEl.querySelectorAll('.title-fx');
+  if (titleWords.length < 3) return;
+
   var busy = false;
+
+  // Set z-index: Texas=5, Bass=1, Report=5 — fish toggles between 0 and 10
+  titleWords[0].style.zIndex = '5'; // Texas — fish goes behind
+  titleWords[1].style.zIndex = '1'; // Bass — fish goes in front
+  titleWords[2].style.zIndex = '5'; // Report — fish goes behind
+
+  function setFishBehind() { swimFish.style.zIndex = '2'; }  // behind words with z-index 5
+  function setFishFront()  { swimFish.style.zIndex = '10'; } // in front of words with z-index 1
 
   function swimCycle() {
     if (busy) return;
     busy = true;
 
-    // Measure positions relative to header
-    var iconRect  = staticIcon.getBoundingClientRect();
-    var hdrRect   = headerEl.getBoundingClientRect();
-    var startX = iconRect.left - hdrRect.left + 4;
-    var endX   = hdrRect.width - 80; // stop before the right-side elements
+    // Measure positions
+    var iconRect = staticIcon.getBoundingClientRect();
+    var hdrRect  = headerEl.getBoundingClientRect();
+    var texasR   = titleWords[0].getBoundingClientRect();
+    var bassR    = titleWords[1].getBoundingClientRect();
+    var reportR  = titleWords[2].getBoundingClientRect();
 
-    // Hide the static icon fish — dark card2 square remains
+    var startX  = iconRect.left - hdrRect.left + 2;
+    var texasL  = texasR.left - hdrRect.left;
+    var texasR2 = texasR.right - hdrRect.left;
+    var bassL   = bassR.left - hdrRect.left;
+    var bassR2  = bassR.right - hdrRect.left;
+    var reportL = reportR.left - hdrRect.left;
+    var reportR2= reportR.right - hdrRect.left;
+    var endX    = reportR2 + 10;
+
+    // Hide static icon, show swimmer
     staticIcon.style.opacity = '0';
-    // Show swimmer at the icon position
-    swimFish.style.opacity   = '0.9';
+    swimFish.style.opacity   = '1';
     swimFish.style.left      = startX + 'px';
-    swimFish.style.transform = 'translateY(-50%) scaleX(-1) rotate(0deg)';
+    swimFish.style.zIndex    = '2'; // behind everything initially (behind Texas)
 
-    // ── Swim RIGHT (fish faces right via scaleX(-1)) ──
+    // ── PHASE 1: Swim RIGHT — behind Texas → front of Bass → behind Report → to end ──
     setTimeout(function() {
-      swimFish.animate([
-        { left: startX+'px',                              transform:'translateY(-50%) scaleX(-1) rotate(-3deg)' },
-        { left: (startX+(endX-startX)*0.25)+'px',         transform:'translateY(-32%) scaleX(-1) rotate(3deg)' },
-        { left: (startX+(endX-startX)*0.5)+'px',          transform:'translateY(-58%) scaleX(-1) rotate(-2deg)' },
-        { left: (startX+(endX-startX)*0.75)+'px',         transform:'translateY(-38%) scaleX(-1) rotate(2deg)' },
-        { left: endX+'px',                                transform:'translateY(-50%) scaleX(-1) rotate(3deg)' }
-      ], { duration: 2600, easing:'ease-in-out', fill:'forwards' }).onfinish = function() {
-        // ── Swim BACK LEFT (fish flips to face left via scaleX(1)) ──
-        // Brief pause at the far end, then return
-        setTimeout(function() {
-          swimFish.animate([
-            { left: endX+'px',                            transform:'translateY(-50%) scaleX(1) rotate(3deg)' },
-            { left: (startX+(endX-startX)*0.75)+'px',     transform:'translateY(-38%) scaleX(1) rotate(-2deg)' },
-            { left: (startX+(endX-startX)*0.5)+'px',      transform:'translateY(-58%) scaleX(1) rotate(2deg)' },
-            { left: (startX+(endX-startX)*0.25)+'px',     transform:'translateY(-32%) scaleX(1) rotate(-3deg)' },
-            { left: startX+'px',                          transform:'translateY(-50%) scaleX(1) rotate(-3deg)' }
-          ], { duration: 2600, easing:'ease-in-out', fill:'forwards' }).onfinish = function() {
-            // Fish arrives home — fade out swimmer, bring back static icon
+      var phase1 = swimFish.animate([
+        // Emerge from icon, approach Texas from behind
+        { left: startX+'px',                       transform:'translateY(-50%) scaleX(-1) rotate(-2deg) scale(1)' },
+        { left: (startX+(texasL-startX)*0.5)+'px', transform:'translateY(-45%) scaleX(-1) rotate(2deg) scale(1.02)', offset:0.15 },
+        // Behind Texas — fish dips slightly
+        { left: texasL+'px',                       transform:'translateY(-55%) scaleX(-1) rotate(-3deg) scale(1)', offset:0.25 },
+        { left: (texasL+(bassL-texasR2)*0.5)+'px', transform:'translateY(-48%) scaleX(-1) rotate(1deg) scale(1.03)', offset:0.35 },
+        // Enter Bass zone — pop IN FRONT
+        { left: bassL+'px',                        transform:'translateY(-50%) scaleX(-1) rotate(0deg) scale(1.05)', offset:0.45 },
+        { left: (bassL+(bassR2-bassL)*0.5)+'px',   transform:'translateY(-42%) scaleX(-1) rotate(3deg) scale(1.08)', offset:0.55 },
+        { left: bassR2+'px',                       transform:'translateY(-52%) scaleX(-1) rotate(-2deg) scale(1.05)', offset:0.65 },
+        // Exit Bass — dip back BEHIND for Report
+        { left: (bassR2+(reportL-bassR2)*0.5)+'px',transform:'translateY(-58%) scaleX(-1) rotate(1deg) scale(1.02)', offset:0.75 },
+        { left: reportL+'px',                      transform:'translateY(-48%) scaleX(-1) rotate(-3deg) scale(1)', offset:0.82 },
+        // Behind Report
+        { left: reportR2+'px',                     transform:'translateY(-54%) scaleX(-1) rotate(2deg) scale(0.98)', offset:0.92 },
+        // Reach end
+        { left: endX+'px',                         transform:'translateY(-50%) scaleX(-1) rotate(0deg) scale(1)' }
+      ], { duration: 3200, easing:'cubic-bezier(0.4,0,0.6,1)', fill:'forwards' });
+
+      // Toggle z-index at the right moments during phase 1
+      // Behind Texas (0-25%): z-index 2 (behind Texas z=5)
+      setTimeout(function(){ setFishFront(); }, 3200 * 0.38);  // → front of Bass
+      setTimeout(function(){ setFishBehind(); }, 3200 * 0.68); // → behind Report
+
+      phase1.onfinish = function() {
+        // Brief pause at far end — fish hovers
+        var hover = swimFish.animate([
+          { transform:'translateY(-50%) scaleX(-1) rotate(0deg) scale(1)' },
+          { transform:'translateY(-46%) scaleX(-1) rotate(2deg) scale(1.03)' },
+          { transform:'translateY(-54%) scaleX(-1) rotate(-2deg) scale(1)' },
+          { transform:'translateY(-50%) scaleX(-1) rotate(0deg) scale(1.02)' }
+        ], { duration: 600, easing:'ease-in-out', fill:'forwards' });
+
+        hover.onfinish = function() {
+          // ── PHASE 2: Swim LEFT — behind Report → front of Bass → behind Texas → home ──
+          // Fish flips to face left (scaleX(1))
+          swimFish.style.zIndex = '2'; // behind Report
+
+          var phase2 = swimFish.animate([
+            // Behind Report
+            { left: endX+'px',                          transform:'translateY(-50%) scaleX(1) rotate(0deg) scale(1)' },
+            { left: reportR2+'px',                      transform:'translateY(-46%) scaleX(1) rotate(-2deg) scale(1.02)', offset:0.1 },
+            { left: reportL+'px',                       transform:'translateY(-54%) scaleX(1) rotate(2deg) scale(1)', offset:0.18 },
+            // Exit Report → enter Bass (pop front)
+            { left: (bassR2+(reportL-bassR2)*0.5)+'px', transform:'translateY(-48%) scaleX(1) rotate(-1deg) scale(1.03)', offset:0.28 },
+            { left: bassR2+'px',                        transform:'translateY(-50%) scaleX(1) rotate(0deg) scale(1.05)', offset:0.35 },
+            { left: (bassL+(bassR2-bassL)*0.5)+'px',    transform:'translateY(-42%) scaleX(1) rotate(3deg) scale(1.08)', offset:0.45 },
+            { left: bassL+'px',                         transform:'translateY(-52%) scaleX(1) rotate(-2deg) scale(1.05)', offset:0.55 },
+            // Exit Bass → behind Texas
+            { left: (texasR2+(bassL-texasR2)*0.5)+'px', transform:'translateY(-56%) scaleX(1) rotate(1deg) scale(1.02)', offset:0.65 },
+            { left: texasR2+'px',                       transform:'translateY(-48%) scaleX(1) rotate(-3deg) scale(1)', offset:0.75 },
+            { left: texasL+'px',                        transform:'translateY(-54%) scaleX(1) rotate(2deg) scale(0.98)', offset:0.85 },
+            // Home stretch
+            { left: (startX+(texasL-startX)*0.5)+'px',  transform:'translateY(-46%) scaleX(1) rotate(-1deg) scale(1)', offset:0.93 },
+            { left: startX+'px',                        transform:'translateY(-50%) scaleX(1) rotate(0deg) scale(1)' }
+          ], { duration: 3200, easing:'cubic-bezier(0.4,0,0.6,1)', fill:'forwards' });
+
+          // Toggle z-index for return trip
+          setTimeout(function(){ setFishFront(); }, 3200 * 0.32);  // → front of Bass
+          setTimeout(function(){ setFishBehind(); }, 3200 * 0.65); // → behind Texas
+
+          phase2.onfinish = function() {
             swimFish.style.opacity = '0';
             staticIcon.style.opacity = '1';
             busy = false;
           };
-        }, 400); // brief pause at far end
+        };
       };
-    }, 80); // tiny delay so the swimmer is positioned before animating
+    }, 80);
   }
 
   // First swim after 30s, then repeat
