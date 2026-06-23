@@ -3813,12 +3813,7 @@ function startFishCycle() {
       }
       bubbleTimerId = setTimeout(scheduleBubble, 150 + Math.random() * 250);
     } else {
-      var ir = staticIcon.getBoundingClientRect();
-      var ix = ir.left + ir.width * 0.18;
-      var iy = ir.top  + ir.height * 0.42;
-      var c2 = Math.random() < 0.6 ? 1 : 2;
-      for (var j = 0; j < c2; j++)
-        emitDynamicBubble(ix + (Math.random() - 0.5) * 8, iy + (Math.random() - 0.5) * 5);
+      // Idle: no bubbles — only emit during swim animation
       bubbleTimerId = setTimeout(scheduleBubble, 800 + Math.random() * 1400);
     }
   }
