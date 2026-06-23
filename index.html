@@ -3888,7 +3888,7 @@ function startFishCycle() {
   // ── Random scheduling — unpredictable 18-40 second intervals ──
   function scheduleNext() {
     if (nextTimer) clearTimeout(nextTimer);
-    var delay = 18000 + Math.random() * 22000;
+    var delay = 10000;
     nextTimer = setTimeout(function() {
       if (document.visibilityState === 'visible') swimCycle();
       else scheduleNext(); // reschedule if tab was hidden
