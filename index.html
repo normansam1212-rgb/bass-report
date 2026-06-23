@@ -103,6 +103,17 @@ header {
   margin-right:0.35em;
   display:inline-block;
 }
+/* Solid backdrop behind words the fish hides behind — blocks the fish
+   from showing through the transparent text fill */
+.hdr-title .title-fx.blocking::before {
+  content:"";
+  position:absolute;
+  left:-3px; right:-3px;
+  top:-2px; bottom:-2px;
+  background:#0a0a08;
+  border-radius:4px;
+  z-index:-1;
+}
 /* Swimming fish — wrapper uses translateX (GPU-accelerated), img wiggles via CSS */
 header .swim-fish-wrap {
   position:absolute;
@@ -1094,7 +1105,7 @@ a.bait-chip, a.detail-bait-chip {
     <img id="staticIcon" src="fish-swim-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;border-radius:12px;object-fit:contain;padding:4px;transition:opacity 0.4s ease">
   </div>
   <div class="hdr-center">
-    <div class="hdr-title"><span class="title-fx">Texas</span> <span class="title-fx">Bass</span> <span class="title-fx">Report</span></div>
+    <div class="hdr-title"><span class="title-fx blocking">Texas</span> <span class="title-fx">Bass</span> <span class="title-fx blocking">Report</span></div>
   </div>
   <div class="hdr-right">
     <div class="hdr-sub" id="statusText">Loading…</div>
@@ -3796,8 +3807,18 @@ function startFishCycle() {
       { transform:'translate('+endX+'px,-50%)' }
     ], { duration: dur1, easing:'cubic-bezier(0.45,0,0.55,1)', fill:'forwards' });
 
-    setTimeout(setFront,  dur1 * 0.34);
-    setTimeout(setBehind, dur1 * 0.64);
+    // Frame-accurate z-index swaps
+    var swaps1 = [
+      { t: dur1 * 0.34, fn: setFront },
+      { t: dur1 * 0.64, fn: setBehind }
+    ];
+    var si1 = 0;
+    function checkSwaps1() {
+      if (si1 >= swaps1.length || anim1.playState !== 'running') return;
+      if (anim1.currentTime >= swaps1[si1].t) { swaps1[si1].fn(); si1++; }
+      requestAnimationFrame(checkSwaps1);
+    }
+    requestAnimationFrame(checkSwaps1);
 
     anim1.onfinish = function() {
       // Hover
@@ -3835,8 +3856,17 @@ function startFishCycle() {
             { transform:'translate('+startX+'px,-50%)' }
           ], { duration: dur2, easing:'cubic-bezier(0.45,0,0.55,1)', fill:'forwards' });
 
-          setTimeout(setFront,  dur2 * 0.34);
-          setTimeout(setBehind, dur2 * 0.64);
+          var swaps2 = [
+            { t: dur2 * 0.34, fn: setFront },
+            { t: dur2 * 0.64, fn: setBehind }
+          ];
+          var si2 = 0;
+          function checkSwaps2() {
+            if (si2 >= swaps2.length || anim2.playState !== 'running') return;
+            if (anim2.currentTime >= swaps2[si2].t) { swaps2[si2].fn(); si2++; }
+            requestAnimationFrame(checkSwaps2);
+          }
+          requestAnimationFrame(checkSwaps2);
 
           anim2.onfinish = function() {
             fishImg.classList.remove('wiggling');
