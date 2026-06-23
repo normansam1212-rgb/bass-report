@@ -103,19 +103,41 @@ header {
   margin-right:0.35em;
   display:inline-block;
 }
-/* Swimming fish — positioned relative to header, weaves through title words */
-header .swim-fish {
+/* Swimming fish — wrapper handles position (JS), img handles tail wiggle (CSS) */
+header .swim-fish-wrap {
   position:absolute;
   left:14px;
   top:50%;
   transform:translateY(-50%);
   width:52px; height:52px;
-  object-fit:contain;
   pointer-events:none;
   opacity:0;
   z-index:2;
-  filter:drop-shadow(0 0 8px rgba(74,107,133,0.7)) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
   will-change:transform,left,opacity;
+}
+header .swim-fish-wrap .swim-fish {
+  width:100%; height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 0 8px rgba(74,107,133,0.7)) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  transform-origin:60% 50%;
+}
+/* Tail wiggle — continuous body flex that runs whenever fish is swimming */
+@keyframes tailWiggle {
+  0%, 100% { transform:skewX(0deg) rotate(0deg); }
+  20%      { transform:skewX(-4deg) rotate(1deg); }
+  40%      { transform:skewX(3deg) rotate(-1deg); }
+  60%      { transform:skewX(-3deg) rotate(1deg); }
+  80%      { transform:skewX(4deg) rotate(-1deg); }
+}
+.swim-fish.wiggling { animation:tailWiggle 0.35s ease-in-out infinite; }
+/* Bubble trail particles */
+.fish-bubble {
+  position:absolute;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, rgba(180,200,220,0.5), rgba(74,107,133,0.15));
+  border:1px solid rgba(180,200,220,0.25);
+  pointer-events:none;
+  z-index:1;
 }
 .hdr-sub {
   font-size:10px; color:var(--dim);
@@ -1069,7 +1091,7 @@ a.bait-chip, a.detail-bait-chip {
 <body>
 
 <header>
-  <img class="swim-fish" src="fish-swim-64.png" alt="">
+  <div class="swim-fish-wrap"><img class="swim-fish" src="fish-swim-64.png" alt=""></div>
   <div class="hdr-icon-side">
     <img id="staticIcon" src="fish-swim-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;border-radius:12px;object-fit:contain;padding:4px;transition:opacity 0.4s ease">
   </div>
@@ -3717,28 +3739,71 @@ setInterval(function(){if(document.visibilityState==="visible"&&userLat)loadRepo
 // ═══════════════════════════════════════════════════════════════
 function startFishCycle() {
   var staticIcon = document.getElementById('staticIcon');
-  var swimFish   = document.querySelector('header .swim-fish');
+  var wrap       = document.querySelector('header .swim-fish-wrap');
+  var fishImg    = document.querySelector('header .swim-fish');
   var headerEl   = document.querySelector('header');
-  if (!staticIcon || !swimFish || !headerEl) return;
+  if (!staticIcon || !wrap || !fishImg || !headerEl) return;
 
   var titleWords = headerEl.querySelectorAll('.title-fx');
   if (titleWords.length < 3) return;
 
   var busy = false;
+  var bubbleTimer = null;
 
-  // Set z-index: Texas=5, Bass=1, Report=5 — fish toggles between 0 and 10
-  titleWords[0].style.zIndex = '5'; // Texas — fish goes behind
-  titleWords[1].style.zIndex = '1'; // Bass — fish goes in front
-  titleWords[2].style.zIndex = '5'; // Report — fish goes behind
+  titleWords[0].style.zIndex = '5';
+  titleWords[1].style.zIndex = '1';
+  titleWords[2].style.zIndex = '5';
 
-  function setFishBehind() { swimFish.style.zIndex = '2'; }  // behind words with z-index 5
-  function setFishFront()  { swimFish.style.zIndex = '10'; } // in front of words with z-index 1
+  function setBehind() { wrap.style.zIndex = '2'; }
+  function setFront()  { wrap.style.zIndex = '10'; }
+
+  // Spawn a bubble at a position relative to header
+  function spawnBubble(x, y) {
+    var b = document.createElement('div');
+    b.className = 'fish-bubble';
+    var size = 3 + Math.random() * 5;
+    b.style.width = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left = x + 'px';
+    b.style.top = y + 'px';
+    headerEl.appendChild(b);
+    var driftX = (Math.random() - 0.5) * 12;
+    b.animate([
+      { transform:'translate(0,0) scale(1)', opacity:0.6 },
+      { transform:'translate('+driftX+'px,-20px) scale(0.4)', opacity:0 }
+    ], { duration: 1200 + Math.random()*600, easing:'ease-out', fill:'forwards' }).onfinish = function(){ b.remove(); };
+  }
+
+  function startBubbles(getFishX, getFishY) {
+    stopBubbles();
+    bubbleTimer = setInterval(function() {
+      var x = getFishX();
+      var y = getFishY();
+      spawnBubble(x, y);
+    }, 280);
+  }
+  function stopBubbles() {
+    if (bubbleTimer) { clearInterval(bubbleTimer); bubbleTimer = null; }
+  }
+
+  // Smooth direction flip — squash and stretch
+  function flipFish(toScaleX, cb) {
+    fishImg.classList.remove('wiggling');
+    fishImg.animate([
+      { transform:'skewX(0deg) scale('+(toScaleX<0?-1:1)+',1) rotate(0deg)' },
+      { transform:'skewX(0deg) scale(0,0.85) rotate(0deg)' },
+      { transform:'skewX(0deg) scale('+toScaleX+',1.1) rotate(0deg)' },
+      { transform:'skewX(0deg) scale('+toScaleX+',1) rotate(0deg)' }
+    ], { duration: 400, easing:'cubic-bezier(0.4,0,0.2,1)', fill:'forwards' }).onfinish = function() {
+      fishImg.classList.add('wiggling');
+      if (cb) cb();
+    };
+  }
 
   function swimCycle() {
     if (busy) return;
     busy = true;
 
-    // Measure positions
     var iconRect = staticIcon.getBoundingClientRect();
     var hdrRect  = headerEl.getBoundingClientRect();
     var texasR   = titleWords[0].getBoundingClientRect();
@@ -3752,89 +3817,130 @@ function startFishCycle() {
     var bassR2  = bassR.right - hdrRect.left;
     var reportL = reportR.left - hdrRect.left;
     var reportR2= reportR.right - hdrRect.left;
-    var endX    = reportR2 + 10;
+    var endX    = reportR2 + 14;
 
-    // Hide static icon, show swimmer
+    var midY = -50; // base translateY percentage
+
+    // Crossfade: fade out icon, fade in swimmer
     staticIcon.style.opacity = '0';
-    swimFish.style.opacity   = '1';
-    swimFish.style.left      = startX + 'px';
-    swimFish.style.zIndex    = '2'; // behind everything initially (behind Texas)
+    wrap.style.opacity = '1';
+    wrap.style.left = startX + 'px';
+    wrap.style.zIndex = '2';
+    fishImg.style.transform = 'scaleX(-1) skewX(0deg)';
+    fishImg.classList.add('wiggling');
 
-    // ── PHASE 1: Swim RIGHT — behind Texas → front of Bass → behind Report → to end ──
+    // Helper: get current fish center for bubbles
+    function fishCenterX() {
+      var r = wrap.getBoundingClientRect();
+      return r.left - hdrRect.left + r.width / 2;
+    }
+    function fishCenterY() {
+      var r = wrap.getBoundingClientRect();
+      return r.top - hdrRect.top + r.height / 2;
+    }
+
+    startBubbles(fishCenterX, fishCenterY);
+
+    // ── PHASE 1: Swim RIGHT with dart-glide-dart-glide ──
+    // Segment A: dart from icon to behind Texas (fast)
     setTimeout(function() {
-      var phase1 = swimFish.animate([
-        // Emerge from icon, approach Texas from behind
-        { left: startX+'px',                       transform:'translateY(-50%) scaleX(-1) rotate(-2deg) scale(1)' },
-        { left: (startX+(texasL-startX)*0.5)+'px', transform:'translateY(-45%) scaleX(-1) rotate(2deg) scale(1.02)', offset:0.15 },
-        // Behind Texas — fish dips slightly
-        { left: texasL+'px',                       transform:'translateY(-55%) scaleX(-1) rotate(-3deg) scale(1)', offset:0.25 },
-        { left: (texasL+(bassL-texasR2)*0.5)+'px', transform:'translateY(-48%) scaleX(-1) rotate(1deg) scale(1.03)', offset:0.35 },
-        // Enter Bass zone — pop IN FRONT
-        { left: bassL+'px',                        transform:'translateY(-50%) scaleX(-1) rotate(0deg) scale(1.05)', offset:0.45 },
-        { left: (bassL+(bassR2-bassL)*0.5)+'px',   transform:'translateY(-42%) scaleX(-1) rotate(3deg) scale(1.08)', offset:0.55 },
-        { left: bassR2+'px',                       transform:'translateY(-52%) scaleX(-1) rotate(-2deg) scale(1.05)', offset:0.65 },
-        // Exit Bass — dip back BEHIND for Report
-        { left: (bassR2+(reportL-bassR2)*0.5)+'px',transform:'translateY(-58%) scaleX(-1) rotate(1deg) scale(1.02)', offset:0.75 },
-        { left: reportL+'px',                      transform:'translateY(-48%) scaleX(-1) rotate(-3deg) scale(1)', offset:0.82 },
-        // Behind Report
-        { left: reportR2+'px',                     transform:'translateY(-54%) scaleX(-1) rotate(2deg) scale(0.98)', offset:0.92 },
-        // Reach end
-        { left: endX+'px',                         transform:'translateY(-50%) scaleX(-1) rotate(0deg) scale(1)' }
-      ], { duration: 3200, easing:'cubic-bezier(0.4,0,0.6,1)', fill:'forwards' });
+      var segA = wrap.animate([
+        { left: startX+'px',                       transform:'translateY('+midY+'%)' },
+        { left: (startX+(texasL-startX)*0.6)+'px', transform:'translateY(-46%)' },
+        { left: texasL+'px',                       transform:'translateY(-54%)' }
+      ], { duration: 700, easing:'cubic-bezier(0.3,0,0.7,1)', fill:'forwards' });
 
-      // Toggle z-index at the right moments during phase 1
-      // Behind Texas (0-25%): z-index 2 (behind Texas z=5)
-      setTimeout(function(){ setFishFront(); }, 3200 * 0.38);  // → front of Bass
-      setTimeout(function(){ setFishBehind(); }, 3200 * 0.68); // → behind Report
+      segA.onfinish = function() {
+        // Segment B: glide through gap, accelerate into Bass (medium-fast)
+        setFront(); // pop in front of Bass
+        var segB = wrap.animate([
+          { left: texasL+'px',                              transform:'translateY(-54%)' },
+          { left: (texasL+(bassL-texasR2)*0.5)+'px',        transform:'translateY(-48%)' },
+          { left: bassL+'px',                               transform:'translateY(-50%)' },
+          { left: (bassL+(bassR2-bassL)*0.4)+'px',          transform:'translateY(-42%)' },
+          { left: (bassL+(bassR2-bassL)*0.7)+'px',          transform:'translateY(-45%)' },
+          { left: bassR2+'px',                              transform:'translateY(-52%)' }
+        ], { duration: 900, easing:'cubic-bezier(0.2,0,0.3,1)', fill:'forwards' });
 
-      phase1.onfinish = function() {
-        // Brief pause at far end — fish hovers
-        var hover = swimFish.animate([
-          { transform:'translateY(-50%) scaleX(-1) rotate(0deg) scale(1)' },
-          { transform:'translateY(-46%) scaleX(-1) rotate(2deg) scale(1.03)' },
-          { transform:'translateY(-54%) scaleX(-1) rotate(-2deg) scale(1)' },
-          { transform:'translateY(-50%) scaleX(-1) rotate(0deg) scale(1.02)' }
-        ], { duration: 600, easing:'ease-in-out', fill:'forwards' });
+        segB.onfinish = function() {
+          // Segment C: glide from Bass to behind Report (slow, lazy)
+          setBehind();
+          var segC = wrap.animate([
+            { left: bassR2+'px',                              transform:'translateY(-52%)' },
+            { left: (bassR2+(reportL-bassR2)*0.4)+'px',       transform:'translateY(-57%)' },
+            { left: (bassR2+(reportL-bassR2)*0.7)+'px',       transform:'translateY(-50%)' },
+            { left: reportL+'px',                             transform:'translateY(-46%)' },
+            { left: reportR2+'px',                            transform:'translateY(-54%)' },
+            { left: endX+'px',                                transform:'translateY(-50%)' }
+          ], { duration: 1000, easing:'cubic-bezier(0.3,0,0.7,1)', fill:'forwards' });
 
-        hover.onfinish = function() {
-          // ── PHASE 2: Swim LEFT — behind Report → front of Bass → behind Texas → home ──
-          // Fish flips to face left (scaleX(1))
-          swimFish.style.zIndex = '2'; // behind Report
+          segC.onfinish = function() {
+            // Hover at far end — gentle bobbing
+            stopBubbles();
+            var hover = wrap.animate([
+              { transform:'translateY(-50%)' },
+              { transform:'translateY(-45%)' },
+              { transform:'translateY(-53%)' },
+              { transform:'translateY(-48%)' },
+              { transform:'translateY(-50%)' }
+            ], { duration: 800, easing:'ease-in-out', fill:'forwards' });
 
-          var phase2 = swimFish.animate([
-            // Behind Report
-            { left: endX+'px',                          transform:'translateY(-50%) scaleX(1) rotate(0deg) scale(1)' },
-            { left: reportR2+'px',                      transform:'translateY(-46%) scaleX(1) rotate(-2deg) scale(1.02)', offset:0.1 },
-            { left: reportL+'px',                       transform:'translateY(-54%) scaleX(1) rotate(2deg) scale(1)', offset:0.18 },
-            // Exit Report → enter Bass (pop front)
-            { left: (bassR2+(reportL-bassR2)*0.5)+'px', transform:'translateY(-48%) scaleX(1) rotate(-1deg) scale(1.03)', offset:0.28 },
-            { left: bassR2+'px',                        transform:'translateY(-50%) scaleX(1) rotate(0deg) scale(1.05)', offset:0.35 },
-            { left: (bassL+(bassR2-bassL)*0.5)+'px',    transform:'translateY(-42%) scaleX(1) rotate(3deg) scale(1.08)', offset:0.45 },
-            { left: bassL+'px',                         transform:'translateY(-52%) scaleX(1) rotate(-2deg) scale(1.05)', offset:0.55 },
-            // Exit Bass → behind Texas
-            { left: (texasR2+(bassL-texasR2)*0.5)+'px', transform:'translateY(-56%) scaleX(1) rotate(1deg) scale(1.02)', offset:0.65 },
-            { left: texasR2+'px',                       transform:'translateY(-48%) scaleX(1) rotate(-3deg) scale(1)', offset:0.75 },
-            { left: texasL+'px',                        transform:'translateY(-54%) scaleX(1) rotate(2deg) scale(0.98)', offset:0.85 },
-            // Home stretch
-            { left: (startX+(texasL-startX)*0.5)+'px',  transform:'translateY(-46%) scaleX(1) rotate(-1deg) scale(1)', offset:0.93 },
-            { left: startX+'px',                        transform:'translateY(-50%) scaleX(1) rotate(0deg) scale(1)' }
-          ], { duration: 3200, easing:'cubic-bezier(0.4,0,0.6,1)', fill:'forwards' });
+            hover.onfinish = function() {
+              // Flip direction with squash-and-stretch
+              flipFish(1, function() {
+                setBehind(); // behind Report for return
+                startBubbles(fishCenterX, fishCenterY);
 
-          // Toggle z-index for return trip
-          setTimeout(function(){ setFishFront(); }, 3200 * 0.32);  // → front of Bass
-          setTimeout(function(){ setFishBehind(); }, 3200 * 0.65); // → behind Texas
+                // ── PHASE 2: Swim LEFT — dart-glide-glide ──
+                // Segment D: dart from end through Report (fast)
+                var segD = wrap.animate([
+                  { left: endX+'px',                                transform:'translateY(-50%)' },
+                  { left: reportR2+'px',                            transform:'translateY(-46%)' },
+                  { left: reportL+'px',                             transform:'translateY(-54%)' }
+                ], { duration: 650, easing:'cubic-bezier(0.3,0,0.7,1)', fill:'forwards' });
 
-          phase2.onfinish = function() {
-            swimFish.style.opacity = '0';
-            staticIcon.style.opacity = '1';
-            busy = false;
+                segD.onfinish = function() {
+                  // Segment E: glide into Bass (medium, pop front)
+                  setFront();
+                  var segE = wrap.animate([
+                    { left: reportL+'px',                              transform:'translateY(-54%)' },
+                    { left: (bassR2+(reportL-bassR2)*0.5)+'px',        transform:'translateY(-48%)' },
+                    { left: bassR2+'px',                               transform:'translateY(-50%)' },
+                    { left: (bassL+(bassR2-bassL)*0.4)+'px',           transform:'translateY(-42%)' },
+                    { left: (bassL+(bassR2-bassL)*0.7)+'px',           transform:'translateY(-45%)' },
+                    { left: bassL+'px',                                transform:'translateY(-52%)' }
+                  ], { duration: 900, easing:'cubic-bezier(0.2,0,0.3,1)', fill:'forwards' });
+
+                  segE.onfinish = function() {
+                    // Segment F: lazy glide home behind Texas (slow)
+                    setBehind();
+                    var segF = wrap.animate([
+                      { left: bassL+'px',                                transform:'translateY(-52%)' },
+                      { left: (texasR2+(bassL-texasR2)*0.4)+'px',       transform:'translateY(-56%)' },
+                      { left: (texasR2+(bassL-texasR2)*0.7)+'px',       transform:'translateY(-50%)' },
+                      { left: texasR2+'px',                              transform:'translateY(-46%)' },
+                      { left: texasL+'px',                               transform:'translateY(-54%)' },
+                      { left: startX+'px',                               transform:'translateY(-50%)' }
+                    ], { duration: 1000, easing:'cubic-bezier(0.3,0,0.7,1)', fill:'forwards' });
+
+                    segF.onfinish = function() {
+                      stopBubbles();
+                      fishImg.classList.remove('wiggling');
+                      // Crossfade back
+                      wrap.style.opacity = '0';
+                      staticIcon.style.opacity = '1';
+                      busy = false;
+                    };
+                  };
+                };
+              });
+            };
           };
         };
       };
     }, 80);
   }
 
-  // First swim after 30s, then repeat
   setInterval(function() {
     if (document.visibilityState === 'visible') swimCycle();
   }, 30000);
