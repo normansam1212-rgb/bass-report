@@ -550,10 +550,84 @@ footer { padding:20px 18px 8px; text-align:center; font-size:10px; color:var(--d
   height:64px; display:flex; align-items:center; justify-content:center;
   color:var(--dim); font-size:12px; font-weight:600;
 }
-.detail-photo-credit {
-  grid-column:1/-1;
-  font-size:9px; color:var(--dim); text-align:right; padding-right:2px;
+
+/* Lake photo cards */
+.lake-photo-wrapper { position: relative; overflow: hidden; border-radius: var(--radius); }
+.lake-photo-wrapper img { width: 100%; height: 160px; object-fit: cover; border-radius: var(--radius); display: block; transition: transform .3s; }
+.lake-photo-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 100px;
+  background: linear-gradient(transparent, rgba(0,0,0,.75));
+  border-radius: 0 0 var(--radius) var(--radius);
 }
+.lake-photo-info {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 16px 14px 10px;
+  pointer-events: none;
+}
+.lake-photo-name {
+  display: block; font-size: 15px; font-weight: 800; color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,.7);
+}
+.lake-photo-label {
+  display: block; font-size: 11px; font-weight: 700; margin-top: 2px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+
+/* Detail scenic card fallback */
+/* Settings button */
+.detail-settings-btn {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--mid);
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  margin-left: 6px;
+}
+.detail-settings-btn:hover { background: var(--card-hi); color: var(--text); }
+
+/* Settings modal */
+.settings-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.7);
+  display: flex; align-items: center; justify-content: center;
+}
+.settings-modal.open { display: flex; }
+.settings-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 320px;
+  max-width: 90vw;
+}
+.settings-panel h3 {
+  font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text);
+}
+.settings-panel p {
+  font-size: 12px; color: var(--dim); line-height: 1.5; margin-bottom: 16px;
+}
+.settings-panel input {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--text);
+  font-size: 13px; margin-bottom: 12px;
+}
+.settings-panel input::placeholder { color: var(--dim); }
+.settings-panel button {
+  padding: 8px 18px; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.settings-save { background: var(--good); color: #000; }
+.settings-close { background: var(--card2); color: var(--mid); margin-left: 6px; }
+.settings-status { font-size: 11px; margin-top: 8px; }
+.settings-status.connected { color: var(--good); }
+.settings-status.disconnected { color: var(--dim); }
+
+.detail-scenic-card { border-radius: var(--radius); overflow: hidden; }
 
 /* Bottom info */
 .detail-bottom { background:var(--bg); padding:18px 18px 0; flex:1; }
@@ -766,7 +840,8 @@ footer { padding:20px 18px 8px; text-align:center; font-size:10px; color:var(--d
 
     <!-- TOP: name, score, breakdown -->
     <div class="detail-top" id="detailTop">
-      <button class="detail-close" onclick="closeDetail()">‹ Back</button>
+            <button class="detail-close" onclick="closeDetail()">‹ Back</button>
+      <button class="detail-settings-btn" onclick="showSettings()" title="Settings">⚙</button>
       <div class="detail-badge" id="detailBadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;object-fit:contain">Water Detail</div>
       <div class="detail-name" id="detailName">–</div>
       <div class="detail-meta" id="detailMeta">–</div>
@@ -816,6 +891,14 @@ footer { padding:20px 18px 8px; text-align:center; font-size:10px; color:var(--d
 </div>
 
 <script>
+// Global HTML escaper
+var escHtml = function(s) {
+  if (s == null) return '';
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+};
+
 // ═══════════════════════════════════════════
 // TEXAS BASS WATERS — statewide database
 // ═══════════════════════════════════════════
@@ -2061,22 +2144,134 @@ var detailCircle = null;
 var _detailLat = null, _detailLon = null;
 
 function noPhotos(name, cont, score) {
-  var hex = scoreHex(score || 5);
   var label = '';
-  if (score >= 7) label = '🔥 Hot Spot';
-  else if (score >= 5) label = '✅ Fair Bite';
-  else label = '❄️ Slow Day';
+  if (score >= 7) label = 'Hot Spot';
+  else if (score >= 5) label = 'Fair Bite';
+  else label = 'Slow Day';
+  var accent = score >= 7 ? 'var(--good)' : score >= 5 ? 'var(--ok)' : 'var(--bad)';
   var gradient = score >= 7 
     ? 'linear-gradient(135deg, #1a1a10 0%, #2a2a18 40%, #3a3520 100%)'
     : score >= 5 
     ? 'linear-gradient(135deg, #1a1a10 0%, #2a2a18 60%, #3a3520 100%)'
     : 'linear-gradient(135deg, #151510 0%, #1a1a10 60%, #2a2a18 100%)';
-  cont.innerHTML = '<div class="detail-scenic-card" style="height:160px;border-radius:var(--radius);background:' + gradient + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(158,139,122,.2);">' +
-    '<span style="font-size:36px;">🐟</span>' +
+  var dotPattern = 'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.02) 8px, rgba(255,255,255,0.02) 9px)';
+  cont.innerHTML = '<div class="detail-scenic-card" style="height:160px;border-radius:var(--radius);background:' + gradient + ';' + dotPattern + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(158,139,122,.2);">' +
+    '<span style="font-size:32px;opacity:.35;">\U0001F41F</span>' +
     '<span style="font-size:16px;font-weight:700;color:var(--text);">' + name + '</span>' +
-    '<span style="font-size:12px;color:var(--mid);">' + label + '</span>' +
+    '<span style="font-size:12px;color:' + accent + ';font-weight:600;">' + label + '</span>' +
     '</div>';
 }
+
+// ═══════════════════════════════════════════
+// PHOTO LOADER — Unsplash \u2192 Wikipedia \u2192 gradient fallback
+// ═══════════════════════════════════════════
+var UNSPLASH_KEY = localStorage.getItem('unsplash_key') || '';
+var _photoCache = {};
+try { var _cached = JSON.parse(localStorage.getItem('photo_cache') || '{}'); Object.assign(_photoCache, _cached); } catch(e) {}
+
+function savePhotoCache() {
+  try { localStorage.setItem('photo_cache', JSON.stringify(_photoCache)); } catch(e) {}
+}
+
+function loadLakePhoto(name, cont, score) {
+  var cacheKey = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  
+  // Check cache first
+  if (_photoCache[cacheKey]) {
+    renderLakePhoto(cont, _photoCache[cacheKey].url, _photoCache[cacheKey].credit, score, name);
+    return;
+  }
+  
+  // Try Unsplash first
+  if (UNSPLASH_KEY) {
+    fetchUnsplash(name, function(url, credit) {
+      if (url) {
+        _photoCache[cacheKey] = { url: url, credit: credit };
+        savePhotoCache();
+        renderLakePhoto(cont, url, credit, score, name);
+      } else {
+        loadLakePhotoWiki(name, cont, score);
+      }
+    });
+  } else {
+    loadLakePhotoWiki(name, cont, score);
+  }
+}
+
+function fetchUnsplash(name, callback) {
+  var query = name.replace(/Lake|Reservoir|Lake |Reservoir /gi, '').trim();
+  if (!query || query.length < 2) query = 'texas lake';
+  var url = 'https://api.unsplash.com/search/photos?query=' + encodeURIComponent(query + ' lake texas fishing') + '&per_page=5';
+  
+  fetch(url, { headers: { 'Authorization': 'Client-ID ' + UNSPLASH_KEY } })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.results && data.results.length > 0) {
+        var best = null;
+        for (var i = 0; i < data.results.length; i++) {
+          if (data.results[i].urls && data.results[i].urls.regular) {
+            best = data.results[i];
+            break;
+          }
+        }
+        if (best) {
+          callback(best.urls.regular, 'Photo by ' + best.user.name + ' on Unsplash');
+          return;
+        }
+      }
+      callback(null, null);
+    })
+    .catch(function() { callback(null, null); });
+}
+
+function loadLakePhotoWiki(name, cont, score) {
+  var clean = name.replace(/ /g, '_');
+  var url = 'https://en.wikipedia.org/w/api.php?action=query&titles=' + encodeURIComponent(clean) + '&prop=pageimages&format=json&pithumbsize=600&origin=*';
+  
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var pages = data.query.pages;
+      var page = Object.values(pages)[0];
+      if (page && page.thumbnail && page.thumbnail.source) {
+        renderLakePhoto(cont, page.thumbnail.source, 'Image from Wikipedia', score, name);
+      } else {
+        noPhotos(name, cont, score);
+      }
+    })
+    .catch(function() {
+      noPhotos(name, cont, score);
+    });
+}
+
+function renderLakePhoto(cont, imgUrl, credit, score, name) {
+  var label = '';
+  if (score >= 7) label = 'Hot Spot';
+  else if (score >= 5) label = 'Fair Bite';
+  else label = 'Slow Day';
+  var accent = score >= 7 ? 'var(--good)' : score >= 5 ? 'var(--ok)' : 'var(--bad)';
+  var safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  
+  cont.innerHTML = 
+    '<div class="lake-photo-wrapper" style="position:relative;">' +
+      '<img src="' + imgUrl + '" alt="' + safeName + '" style="width:100%;height:160px;object-fit:cover;border-radius:var(--radius);display:block;" loading="lazy">' +
+      '<div class="lake-photo-overlay"></div>' +
+      '<div class="lake-photo-info">' +
+        '<span class="lake-photo-name">' + safeName + '</span>' +
+        '<span class="lake-photo-label" style="color:' + accent + ';">' + label + '</span>' +
+      '</div>' +
+    '</div>' +
+    (credit ? '<div class="detail-photo-credit">' + credit + '</div>' : '');
+  
+  // Handle image load failure with fallback
+  var img = cont.querySelector('img');
+  if (img) {
+    img.onerror = function() {
+      noPhotos(name, cont, score);
+    };
+  }
+}
+
 
 function openDetail(lake) {
   // Accept a store key string or a raw object
@@ -2099,7 +2294,6 @@ function openDetail(lake) {
   var distStr = (lake.dist != null)
     ? ((lake.dist < 10 ? lake.dist.toFixed(1) : Math.round(lake.dist)) + "mi away · ")
     : "";
-  var escHtml = function(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s || '')); return d.innerHTML; };
   document.getElementById("detailMeta").innerHTML =
     escHtml(distStr) + escHtml(lake.region || "") + (lake.wt != null ? " · " + IC.wave + " " + escHtml(lake.wt) + "°F est." : "");
 
@@ -2146,7 +2340,7 @@ function openDetail(lake) {
 
   // ── Detail map ──
   setTimeout(function() { initDetailMap(lake.lat, lake.lon, lake.name, hex, lake.score); }, 80);
-  noPhotos(lake.name, document.getElementById("detailPhotos"), lake.score);
+  loadLakePhoto(lake.name, document.getElementById("detailPhotos"), lake.score);
 }
 
 function closeDetail() {
@@ -2312,6 +2506,56 @@ function buildStrategy(lake, moon, hour, srH, ssH) {
       '<div class="sr-body"><div class="sr-label">' + r.label + '</div><div class="sr-text">' + r.text + '</div></div>' +
     '</div>';
   }).join("");
+}
+
+// ═══════════════════════════════════════════
+// SETTINGS — Unsplash API key
+// ═══════════════════════════════════════════
+function showSettings() {
+  var key = localStorage.getItem('unsplash_key') || '';
+  var modal = document.getElementById('settingsModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'settingsModal';
+    modal.className = 'settings-modal';
+    modal.innerHTML = '<div class="settings-panel">' +
+      '<h3>Photo Settings</h3>' +
+      '<p>Enter your free Unsplash API key to load real lake photos. <a href="https://unsplash.com/oauth/applications" target="_blank" style="color:var(--good)">Get one here</a> (takes 2 min, free).</p>' +
+      '<input id="apiKeyInput" type="text" placeholder="Client-ID abc123xyz...">' +
+      '<div><button class="settings-save" onclick="saveApiKey()">Save</button>' +
+      '<button class="settings-close" onclick="hideSettings()">Close</button></div>' +
+      '<div class="settings-status disconnected" id="settingsStatus">Not connected</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) hideSettings(); });
+  }
+  document.getElementById('apiKeyInput').value = key;
+  updateSettingsStatus(key);
+  modal.classList.add('open');
+}
+
+function hideSettings() {
+  var modal = document.getElementById('settingsModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function saveApiKey() {
+  var input = document.getElementById('apiKeyInput');
+  var key = input.value.trim();
+  localStorage.setItem('unsplash_key', key);
+  updateSettingsStatus(key);
+}
+
+function updateSettingsStatus(key) {
+  var el = document.getElementById('settingsStatus');
+  if (!el) return;
+  if (key && key.length > 5) {
+    el.className = 'settings-status connected';
+    el.textContent = '✓ API key saved';
+  } else {
+    el.className = 'settings-status disconnected';
+    el.textContent = 'Not connected — photos will use Wikipedia fallback';
+  }
 }
 
 // ═══════════════════════════════════════════
