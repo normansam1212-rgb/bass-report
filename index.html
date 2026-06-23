@@ -189,6 +189,18 @@ header .swim-fish-wrap .swim-fish {
   pointer-events:none;
   z-index:1;
 }
+/* Idle float — gentle hovering bob when fish is at rest */
+@keyframes idleFloat {
+  0%   { transform: translateY(0px)  rotate(0deg); }
+  20%  { transform: translateY(-3px) rotate(-1.2deg); }
+  40%  { transform: translateY(-5px) rotate(0deg); }
+  50%  { transform: translateY(-4px) rotate(0.8deg); }
+  60%  { transform: translateY(-2px) rotate(0deg); }
+  80%  { transform: translateY(2px)  rotate(-0.8deg); }
+  100% { transform: translateY(0px)  rotate(0deg); }
+}
+#staticIcon { animation: idleFloat 5s ease-in-out infinite; }
+#staticIcon.dimmed { animation-play-state: paused; }
 .hdr-sub {
   font-size:10px; color:var(--dim);
   letter-spacing:.3px; font-weight:500;
@@ -3729,23 +3741,70 @@ function startFishCycle() {
   var busy = false;
   var nextTimer = null;
 
-  // ── Bubble emitter ──
-  function emitBubble(x, y) {
+  // ── Dynamic bubble emitter — wobble drift, varied size/speed/opacity ──
+  function emitDynamicBubble(x, y) {
     var b = document.createElement('div');
     b.className = 'fish-bubble';
-    var size = 3 + Math.random() * 5;
+    var size = 2 + Math.random() * 7;
     b.style.width  = size + 'px';
     b.style.height = size + 'px';
     b.style.left   = x + 'px';
     b.style.top    = y + 'px';
     headerEl.appendChild(b);
-    var driftX = (Math.random() - 0.5) * 24;
-    var driftY = -18 - Math.random() * 28;
-    b.animate([
-      { transform: 'translate(0,0) scale(1)',              opacity: 0.7 },
-      { transform: 'translate(' + driftX + 'px,' + driftY + 'px) scale(0.3)', opacity: 0 }
-    ], { duration: 1400 + Math.random() * 1100, easing: 'ease-out' });
-    setTimeout(function() { if (b.parentNode) b.remove(); }, 2700);
+
+    var driftX     = (Math.random() - 0.5) * 30;
+    var driftY     = -20 - Math.random() * 35;
+    var wobbleAmp  = 3 + Math.random() * 8;
+    var wobbleFreq = 2 + Math.random() * 3;
+    var duration   = 1200 + Math.random() * 1500;
+    var peakOp     = 0.5 + Math.random() * 0.3;
+
+    var steps = 8, frames = [];
+    for (var i = 0; i <= steps; i++) {
+      var t = i / steps;
+      var wx = Math.sin(t * Math.PI * wobbleFreq) * wobbleAmp * (1 - t);
+      var px = driftX * t + wx;
+      var py = driftY * t;
+      var sc = 1 - t * (0.3 + Math.random() * 0.3);
+      var op = t < 0.1 ? peakOp * (t * 10) : peakOp * (1 - t * t);
+      frames.push({
+        transform: 'translate(' + px.toFixed(1) + 'px,' + py.toFixed(1) + 'px) scale(' + sc.toFixed(2) + ')',
+        opacity: op
+      });
+    }
+    b.animate(frames, { duration: duration, easing: 'ease-out' });
+    setTimeout(function() { if (b.parentNode) b.remove(); }, duration + 200);
+  }
+
+  // ── Continuous bubble emitter — always running ──
+  // Emits from the swimming fish's mouth when busy, from the static icon
+  // when idle.  Fish faces LEFT so the mouth is on the LEFT side.
+  var bubbleTimerId = null;
+  function scheduleBubble() {
+    if (document.visibilityState !== 'visible') {
+      bubbleTimerId = setTimeout(scheduleBubble, 2000);
+      return;
+    }
+    var hdrRect = headerEl.getBoundingClientRect();
+    if (busy) {
+      var wr = wrap.getBoundingClientRect();
+      if (wr.left >= hdrRect.left - 80 && wr.left <= hdrRect.right + 80) {
+        var mx = wr.left - hdrRect.left + wr.width * 0.15;
+        var my = wr.top  - hdrRect.top  + wr.height * 0.45;
+        var c1 = 1 + Math.floor(Math.random() * 2);
+        for (var i = 0; i < c1; i++)
+          emitDynamicBubble(mx + (Math.random() - 0.5) * 5, my + (Math.random() - 0.5) * 4);
+      }
+      bubbleTimerId = setTimeout(scheduleBubble, 150 + Math.random() * 250);
+    } else {
+      var ir = staticIcon.getBoundingClientRect();
+      var ix = ir.left - hdrRect.left + ir.width * 0.18;
+      var iy = ir.top  - hdrRect.top  + ir.height * 0.42;
+      var c2 = Math.random() < 0.7 ? 1 : 2;
+      for (var j = 0; j < c2; j++)
+        emitDynamicBubble(ix + (Math.random() - 0.5) * 6, iy + (Math.random() - 0.5) * 4);
+      bubbleTimerId = setTimeout(scheduleBubble, 1000 + Math.random() * 1800);
+    }
   }
 
   // ── Splash ripple ──
@@ -3826,20 +3885,12 @@ function startFishCycle() {
     fishImg.classList.add('wiggle-left');
     wrap.style.zIndex = '10';
 
-    // Smooth fade transitions
+    // Pause idle float, fade icon out
+    staticIcon.classList.add('dimmed');
     staticIcon.style.transition = 'opacity 0.5s ease';
     wrap.style.transition       = 'opacity 0.5s ease';
     staticIcon.style.opacity = '0';
     wrap.style.opacity = '1';
-
-    // ── Bubble trail timer ──
-    var bubbleTimer = setInterval(function() {
-      var wr = wrap.getBoundingClientRect();
-      if (wr.left < hdrRect.left - 80 || wr.left > hdrRect.right + 80) return;
-      var bx = wr.left - hdrRect.left + wr.width * 0.75;
-      var by = wr.top  - hdrRect.top  + wr.height * 0.6;
-      emitBubble(bx, by);
-    }, 280);
 
     // ── Phase 1: swim left from icon, accelerating off the left edge ──
     var dist1 = Math.abs(startX - offLeft);
@@ -3892,16 +3943,11 @@ function startFishCycle() {
 
         anim2.onfinish = function() {
           anim2.cancel();
-          clearInterval(bubbleTimer);
-
-          // One last bubble at the resting position
-          var wr = wrap.getBoundingClientRect();
-          emitBubble(wr.left - hdrRect.left + 35, wr.top - hdrRect.top + 30);
-
           fishImg.classList.remove('wiggle-left');
-          fishImg.style.animationDuration = ''; // reset to CSS default
+          fishImg.style.animationDuration = '';
           wrap.style.opacity = '0';
           staticIcon.style.opacity = '1';
+          staticIcon.classList.remove('dimmed');
           busy = false;
 
           scheduleNext();
@@ -3922,6 +3968,8 @@ function startFishCycle() {
 
   // Kick off with a short initial delay
   scheduleNext();
+  // Start continuous bubble emitter
+  scheduleBubble();
 }
 
 // Start the swimming fish cycle
