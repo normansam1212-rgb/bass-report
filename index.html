@@ -106,18 +106,7 @@ header {
   -webkit-text-fill-color:transparent;
   display:inline-block;
 }
-/* Solid backdrop behind words the fish hides behind — matches header bg.
-   The gradient is now on .title-inner (a child), so it paints on top of
-   this backdrop instead of being covered by it. */
-.hdr-title .title-fx.blocking::before {
-  content:"";
-  position:absolute;
-  left:-6px; right:-6px;
-  top:-4px; bottom:-4px;
-  background:linear-gradient(180deg, rgb(10,27,31) 0%, rgb(23,24,17) 100%);
-  border-radius:6px;
-  z-index:-1;
-}
+/* (backdrop removed — fish now fades via opacity when behind blocking words) */
 /* Swimming fish — wrapper uses translateX (GPU-accelerated), img wiggles via CSS */
 header .swim-fish-wrap {
   position:absolute;
@@ -3776,8 +3765,39 @@ function startFishCycle() {
   titleWords[1].style.zIndex = '1';
   titleWords[2].style.zIndex = '5';
 
+  // Pre-compute blocking regions (word X bounds relative to header) for fade-out
+  var hdrRect0 = headerEl.getBoundingClientRect();
+  var blockRects = [];
+  for (var bi = 0; bi < titleWords.length; bi++) {
+    if (titleWords[bi].classList.contains('blocking')) {
+      var br = titleWords[bi].getBoundingClientRect();
+      blockRects.push({
+        left: br.left - hdrRect0.left - 10,
+        right: br.right - hdrRect0.left + 10
+      });
+    }
+  }
+
   function setBehind() { wrap.style.zIndex = '2'; }
   function setFront()  { wrap.style.zIndex = '10'; }
+
+  // Returns the fish opacity (0–1) for a given X position relative to header.
+  // Fish fades to ~25% when behind a blocking word.
+  function fishOpacityAt(x) {
+    var op = 1;
+    for (var bi = 0; bi < blockRects.length; bi++) {
+      if (x >= blockRects[bi].left && x <= blockRects[bi].right) {
+        // Fade smoothly near edges: 15px transition zone
+        var l = blockRects[bi].left, r = blockRects[bi].right;
+        var edgeW = 15;
+        var lFade = Math.min(1, (x - l) / edgeW);
+        var rFade = Math.min(1, (r - x) / edgeW);
+        var fade = Math.min(lFade, rFade);
+        op = Math.min(op, 1 - 0.75 * fade);  // min opacity 0.25
+      }
+    }
+    return op;
+  }
 
   function swimCycle() {
     if (busy) return;
@@ -3801,6 +3821,7 @@ function startFishCycle() {
     // ── Generate smooth sinusoidal swim keyframes ──
     // X moves linearly (constant swim speed — no easing stutter).
     // Y bobs in a gentle sine wave: ±3% amplitude, 3 cycles per pass.
+    // Fish opacity fades to ~25% when behind blocking words.
     // 24 keyframes give a smooth curve without hand-tuned jitter.
     function swimFrames(xFrom, xTo, cycles) {
       var frames = [];
@@ -3809,7 +3830,11 @@ function startFishCycle() {
         var t = i / n;
         var x = xFrom + (xTo - xFrom) * t;
         var y = -50 + 3 * Math.sin(t * Math.PI * 2 * cycles);
-        frames.push({ transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(2)+'%)', offset:t });
+        frames.push({
+          transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(2)+'%)',
+          opacity: fishOpacityAt(x).toFixed(3),
+          offset:t
+        });
       }
       return frames;
     }
@@ -3877,6 +3902,8 @@ function startFishCycle() {
           requestAnimationFrame(checkSwaps2);
 
           anim2.onfinish = function() {
+            anim2.cancel();  // release fill:'forwards' so inline opacity applies
+            anim1.cancel();  // also release anim1's hold
             fishImg.classList.remove('wiggle-left');
             wrap.style.opacity = '0';
             staticIcon.style.opacity = '1';
