@@ -203,6 +203,10 @@ header .swim-fish-wrap .swim-fish {
 }
 #staticIcon { animation: idleFloat 4s ease-in-out infinite; }
 #staticIcon.dimmed { animation-play-state: paused; }
+/* Reduced motion: slow the gentle idle float to a near-still hover */
+@media (prefers-reduced-motion: reduce) {
+  #staticIcon { animation: idleFloat 9s ease-in-out infinite; }
+}
 .hdr-sub {
   font-size:10px; color:var(--dim);
   letter-spacing:.3px; font-weight:500;
@@ -3740,6 +3744,11 @@ function startFishCycle() {
   var headerEl   = document.querySelector('header');
   if (!staticIcon || !wrap || !fishImg || !headerEl) return;
 
+  // Accessibility: skip the swim cycle entirely for reduced-motion users.
+  // The idle float remains (slowed via the media query below).
+  var reduceMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   var busy = false;
   var nextTimer = null;
 
@@ -3900,11 +3909,13 @@ function startFishCycle() {
     wrap.style.opacity = '1';
 
     // ── Phase 1: swim left from icon, accelerating off the left edge ──
+    // ~30% of the time the fish darts instead of cruising for variety.
     var dist1 = Math.abs(startX - offLeft);
     var dur1  = 1800 + Math.random() * 800;
+    var ease1 = Math.random() < 0.3 ? 'dart' : 'accel';
     setTailSpeed(dist1 / (dur1 / 1000));
     var anim1 = wrap.animate(swimFrames(startX, offLeft, {
-      cycles: 2, bobAmp: 5, ease: 'accel', steps: 35
+      cycles: 2, bobAmp: 5, ease: ease1, steps: 35
     }), { duration: dur1, easing: 'linear', fill: 'forwards' });
 
     anim1.onfinish = function() {
@@ -3917,8 +3928,8 @@ function startFishCycle() {
       wrap.style.transition = 'opacity 0.4s ease';
       wrap.style.opacity = '0';
 
-      // Off-screen pause — random 600-1400ms (fish cruising around back)
-      var pauseMs = 600 + Math.random() * 800;
+      // Off-screen pause — random 700-2400ms (fish cruising around back)
+      var pauseMs = 700 + Math.random() * 1700;
       setTimeout(function() {
 
         // ── Cancel Phase 1 (releases the fill) and reposition to right ──
@@ -3963,10 +3974,11 @@ function startFishCycle() {
     };
   }
 
-  // ── Random scheduling — unpredictable 18-40 second intervals ──
+  // ── Random scheduling — genuinely unpredictable 14-32 second gaps
+  // so the fish never feels mechanical or attention-grabbing. ──
   function scheduleNext() {
     if (nextTimer) clearTimeout(nextTimer);
-    var delay = 10000;
+    var delay = 14000 + Math.random() * 18000;
     nextTimer = setTimeout(function() {
       if (document.visibilityState === 'visible') swimCycle();
       else scheduleNext(); // reschedule if tab was hidden
@@ -3974,8 +3986,8 @@ function startFishCycle() {
   }
 
   // Kick off with a short initial delay
-  scheduleNext();
-  // Start continuous bubble emitter
+  if (!reduceMotion) scheduleNext();
+  // Start continuous bubble emitter (harmless even when swim is disabled)
   scheduleBubble();
 }
 
