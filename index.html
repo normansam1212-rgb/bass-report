@@ -121,21 +121,20 @@ header .swim-fish-wrap .swim-fish {
   filter:drop-shadow(0 0 8px rgba(74,107,133,0.7)) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
   transform-origin:60% 50%;
 }
-/* Tail wiggle — continuous body flex that runs whenever fish is swimming */
+/* Tail wiggle — pure CSS on the img, runs independently of position */
 @keyframes tailWiggle {
-  0%, 100% { transform:skewX(0deg) rotate(0deg); }
-  20%      { transform:skewX(-4deg) rotate(1deg); }
-  40%      { transform:skewX(3deg) rotate(-1deg); }
-  60%      { transform:skewX(-3deg) rotate(1deg); }
-  80%      { transform:skewX(4deg) rotate(-1deg); }
+  0%, 100% { transform:skewX(0deg); }
+  25%      { transform:skewX(-5deg); }
+  50%      { transform:skewX(0deg); }
+  75%      { transform:skewX(5deg); }
 }
-.swim-fish.wiggling { animation:tailWiggle 0.35s ease-in-out infinite; }
-/* Bubble trail particles */
+.swim-fish.wiggling { animation:tailWiggle 0.4s ease-in-out infinite; transform-origin:55% 50%; }
+/* Bubble trail */
 .fish-bubble {
   position:absolute;
   border-radius:50%;
-  background:radial-gradient(circle at 35% 35%, rgba(180,200,220,0.5), rgba(74,107,133,0.15));
-  border:1px solid rgba(180,200,220,0.25);
+  background:radial-gradient(circle at 35% 35%, rgba(180,200,220,0.45), rgba(74,107,133,0.1));
+  border:1px solid rgba(180,200,220,0.2);
   pointer-events:none;
   z-index:1;
 }
@@ -3757,47 +3756,32 @@ function startFishCycle() {
   function setBehind() { wrap.style.zIndex = '2'; }
   function setFront()  { wrap.style.zIndex = '10'; }
 
-  // Spawn a bubble at a position relative to header
   function spawnBubble(x, y) {
     var b = document.createElement('div');
     b.className = 'fish-bubble';
-    var size = 3 + Math.random() * 5;
+    var size = 3 + Math.random() * 4;
     b.style.width = size + 'px';
     b.style.height = size + 'px';
     b.style.left = x + 'px';
     b.style.top = y + 'px';
     headerEl.appendChild(b);
-    var driftX = (Math.random() - 0.5) * 12;
+    var drift = (Math.random() - 0.5) * 10;
     b.animate([
-      { transform:'translate(0,0) scale(1)', opacity:0.6 },
-      { transform:'translate('+driftX+'px,-20px) scale(0.4)', opacity:0 }
-    ], { duration: 1200 + Math.random()*600, easing:'ease-out', fill:'forwards' }).onfinish = function(){ b.remove(); };
+      { transform:'translate(0,0) scale(1)', opacity:0.5 },
+      { transform:'translate('+drift+'px,-18px) scale(0.3)', opacity:0 }
+    ], { duration: 1000, easing:'ease-out', fill:'forwards' }).onfinish = function(){ b.remove(); };
   }
 
-  function startBubbles(getFishX, getFishY) {
+  function startBubbles() {
     stopBubbles();
     bubbleTimer = setInterval(function() {
-      var x = getFishX();
-      var y = getFishY();
-      spawnBubble(x, y);
-    }, 280);
+      var r = wrap.getBoundingClientRect();
+      var hr = headerEl.getBoundingClientRect();
+      spawnBubble(r.left - hr.left + 8, r.top - hr.top + r.height/2);
+    }, 350);
   }
   function stopBubbles() {
     if (bubbleTimer) { clearInterval(bubbleTimer); bubbleTimer = null; }
-  }
-
-  // Smooth direction flip — squash and stretch
-  function flipFish(toScaleX, cb) {
-    fishImg.classList.remove('wiggling');
-    fishImg.animate([
-      { transform:'skewX(0deg) scale('+(toScaleX<0?-1:1)+',1) rotate(0deg)' },
-      { transform:'skewX(0deg) scale(0,0.85) rotate(0deg)' },
-      { transform:'skewX(0deg) scale('+toScaleX+',1.1) rotate(0deg)' },
-      { transform:'skewX(0deg) scale('+toScaleX+',1) rotate(0deg)' }
-    ], { duration: 400, easing:'cubic-bezier(0.4,0,0.2,1)', fill:'forwards' }).onfinish = function() {
-      fishImg.classList.add('wiggling');
-      if (cb) cb();
-    };
   }
 
   function swimCycle() {
@@ -3806,139 +3790,112 @@ function startFishCycle() {
 
     var iconRect = staticIcon.getBoundingClientRect();
     var hdrRect  = headerEl.getBoundingClientRect();
-    var texasR   = titleWords[0].getBoundingClientRect();
-    var bassR    = titleWords[1].getBoundingClientRect();
-    var reportR  = titleWords[2].getBoundingClientRect();
+    var tR = titleWords[0].getBoundingClientRect();
+    var bR = titleWords[1].getBoundingClientRect();
+    var rR = titleWords[2].getBoundingClientRect();
 
-    var startX  = iconRect.left - hdrRect.left + 2;
-    var texasL  = texasR.left - hdrRect.left;
-    var texasR2 = texasR.right - hdrRect.left;
-    var bassL   = bassR.left - hdrRect.left;
-    var bassR2  = bassR.right - hdrRect.left;
-    var reportL = reportR.left - hdrRect.left;
-    var reportR2= reportR.right - hdrRect.left;
-    var endX    = reportR2 + 14;
+    var startX   = iconRect.left - hdrRect.left + 2;
+    var texasL   = tR.left - hdrRect.left;
+    var texasR   = tR.right - hdrRect.left;
+    var bassL    = bR.left - hdrRect.left;
+    var bassR    = bR.right - hdrRect.left;
+    var reportL  = rR.left - hdrRect.left;
+    var reportR  = rR.right - hdrRect.left;
+    var endX     = reportR + 14;
+    var gap1Mid  = (texasR + bassL) / 2;
+    var gap2Mid  = (bassR + reportL) / 2;
 
-    var midY = -50; // base translateY percentage
-
-    // Crossfade: fade out icon, fade in swimmer
+    // Start
     staticIcon.style.opacity = '0';
     wrap.style.opacity = '1';
     wrap.style.left = startX + 'px';
     wrap.style.zIndex = '2';
-    fishImg.style.transform = 'scaleX(-1) skewX(0deg)';
     fishImg.classList.add('wiggling');
+    startBubbles();
 
-    // Helper: get current fish center for bubbles
-    function fishCenterX() {
-      var r = wrap.getBoundingClientRect();
-      return r.left - hdrRect.left + r.width / 2;
-    }
-    function fishCenterY() {
-      var r = wrap.getBoundingClientRect();
-      return r.top - hdrRect.top + r.height / 2;
-    }
+    // ── ONE smooth animation going RIGHT ──
+    var dur1 = 4000;
+    var anim1 = wrap.animate([
+      // 0% — emerge from icon
+      { left: startX+'px',   transform:'translateY(-50%)' },
+      // 12% — approaching Texas, rise slightly
+      { left: (startX+(texasL-startX)*0.7)+'px', transform:'translateY(-46%)', offset:0.12 },
+      // 20% — behind Texas, dip down
+      { left: texasL+'px',   transform:'translateY(-54%)', offset:0.20 },
+      // 28% — between Texas and Bass
+      { left: gap1Mid+'px',  transform:'translateY(-48%)', offset:0.28 },
+      // 38% — enter Bass (z-index flips to front via timeout)
+      { left: bassL+'px',    transform:'translateY(-50%)', offset:0.38 },
+      // 48% — center of Bass, peak height
+      { left: (bassL+bassR)/2+'px', transform:'translateY(-42%)', offset:0.48 },
+      // 58% — exit Bass
+      { left: bassR+'px',    transform:'translateY(-52%)', offset:0.58 },
+      // 68% — between Bass and Report (z-index flips to behind)
+      { left: gap2Mid+'px',  transform:'translateY(-56%)', offset:0.68 },
+      // 78% — behind Report
+      { left: reportL+'px',  transform:'translateY(-48%)', offset:0.78 },
+      // 88% — through Report
+      { left: reportR+'px',  transform:'translateY(-54%)', offset:0.88 },
+      // 100% — end point
+      { left: endX+'px',     transform:'translateY(-50%)' }
+    ], { duration: dur1, easing:'cubic-bezier(0.45,0,0.55,1)', fill:'forwards' });
 
-    startBubbles(fishCenterX, fishCenterY);
+    // Z-index swaps synced to keyframe offsets
+    setTimeout(setFront,  dur1 * 0.34); // pop in front of Bass
+    setTimeout(setBehind, dur1 * 0.64); // behind Report
 
-    // ── PHASE 1: Swim RIGHT with dart-glide-dart-glide ──
-    // Segment A: dart from icon to behind Texas (fast)
-    setTimeout(function() {
-      var segA = wrap.animate([
-        { left: startX+'px',                       transform:'translateY('+midY+'%)' },
-        { left: (startX+(texasL-startX)*0.6)+'px', transform:'translateY(-46%)' },
-        { left: texasL+'px',                       transform:'translateY(-54%)' }
-      ], { duration: 700, easing:'cubic-bezier(0.3,0,0.7,1)', fill:'forwards' });
+    anim1.onfinish = function() {
+      // Gentle hover at far end
+      stopBubbles();
+      var hover = wrap.animate([
+        { transform:'translateY(-50%)' },
+        { transform:'translateY(-46%)' },
+        { transform:'translateY(-53%)' },
+        { transform:'translateY(-48%)' },
+        { transform:'translateY(-50%)' }
+      ], { duration: 700, easing:'ease-in-out', fill:'forwards' });
 
-      segA.onfinish = function() {
-        // Segment B: glide through gap, accelerate into Bass (medium-fast)
-        setFront(); // pop in front of Bass
-        var segB = wrap.animate([
-          { left: texasL+'px',                              transform:'translateY(-54%)' },
-          { left: (texasL+(bassL-texasR2)*0.5)+'px',        transform:'translateY(-48%)' },
-          { left: bassL+'px',                               transform:'translateY(-50%)' },
-          { left: (bassL+(bassR2-bassL)*0.4)+'px',          transform:'translateY(-42%)' },
-          { left: (bassL+(bassR2-bassL)*0.7)+'px',          transform:'translateY(-45%)' },
-          { left: bassR2+'px',                              transform:'translateY(-52%)' }
-        ], { duration: 900, easing:'cubic-bezier(0.2,0,0.3,1)', fill:'forwards' });
-
-        segB.onfinish = function() {
-          // Segment C: glide from Bass to behind Report (slow, lazy)
+      hover.onfinish = function() {
+        // Flip: squash and stretch
+        fishImg.classList.remove('wiggling');
+        fishImg.animate([
+          { transform:'scaleX(-1) skewX(0deg)' },
+          { transform:'scaleX(0) skewX(0deg)' },
+          { transform:'scaleX(1) skewX(0deg)' }
+        ], { duration: 350, easing:'cubic-bezier(0.4,0,0.2,1)', fill:'forwards' }).onfinish = function() {
+          fishImg.classList.add('wiggling');
           setBehind();
-          var segC = wrap.animate([
-            { left: bassR2+'px',                              transform:'translateY(-52%)' },
-            { left: (bassR2+(reportL-bassR2)*0.4)+'px',       transform:'translateY(-57%)' },
-            { left: (bassR2+(reportL-bassR2)*0.7)+'px',       transform:'translateY(-50%)' },
-            { left: reportL+'px',                             transform:'translateY(-46%)' },
-            { left: reportR2+'px',                            transform:'translateY(-54%)' },
-            { left: endX+'px',                                transform:'translateY(-50%)' }
-          ], { duration: 1000, easing:'cubic-bezier(0.3,0,0.7,1)', fill:'forwards' });
+          startBubbles();
 
-          segC.onfinish = function() {
-            // Hover at far end — gentle bobbing
+          // ── ONE smooth animation going LEFT ──
+          var dur2 = 4000;
+          var anim2 = wrap.animate([
+            { left: endX+'px',     transform:'translateY(-50%)' },
+            { left: reportR+'px',  transform:'translateY(-46%)', offset:0.12 },
+            { left: reportL+'px',  transform:'translateY(-54%)', offset:0.20 },
+            { left: gap2Mid+'px',  transform:'translateY(-48%)', offset:0.28 },
+            { left: bassR+'px',    transform:'translateY(-50%)', offset:0.38 },
+            { left: (bassL+bassR)/2+'px', transform:'translateY(-42%)', offset:0.48 },
+            { left: bassL+'px',    transform:'translateY(-52%)', offset:0.58 },
+            { left: gap1Mid+'px',  transform:'translateY(-56%)', offset:0.68 },
+            { left: texasR+'px',   transform:'translateY(-48%)', offset:0.78 },
+            { left: texasL+'px',   transform:'translateY(-54%)', offset:0.88 },
+            { left: startX+'px',   transform:'translateY(-50%)' }
+          ], { duration: dur2, easing:'cubic-bezier(0.45,0,0.55,1)', fill:'forwards' });
+
+          setTimeout(setFront,  dur2 * 0.34);
+          setTimeout(setBehind, dur2 * 0.64);
+
+          anim2.onfinish = function() {
             stopBubbles();
-            var hover = wrap.animate([
-              { transform:'translateY(-50%)' },
-              { transform:'translateY(-45%)' },
-              { transform:'translateY(-53%)' },
-              { transform:'translateY(-48%)' },
-              { transform:'translateY(-50%)' }
-            ], { duration: 800, easing:'ease-in-out', fill:'forwards' });
-
-            hover.onfinish = function() {
-              // Flip direction with squash-and-stretch
-              flipFish(1, function() {
-                setBehind(); // behind Report for return
-                startBubbles(fishCenterX, fishCenterY);
-
-                // ── PHASE 2: Swim LEFT — dart-glide-glide ──
-                // Segment D: dart from end through Report (fast)
-                var segD = wrap.animate([
-                  { left: endX+'px',                                transform:'translateY(-50%)' },
-                  { left: reportR2+'px',                            transform:'translateY(-46%)' },
-                  { left: reportL+'px',                             transform:'translateY(-54%)' }
-                ], { duration: 650, easing:'cubic-bezier(0.3,0,0.7,1)', fill:'forwards' });
-
-                segD.onfinish = function() {
-                  // Segment E: glide into Bass (medium, pop front)
-                  setFront();
-                  var segE = wrap.animate([
-                    { left: reportL+'px',                              transform:'translateY(-54%)' },
-                    { left: (bassR2+(reportL-bassR2)*0.5)+'px',        transform:'translateY(-48%)' },
-                    { left: bassR2+'px',                               transform:'translateY(-50%)' },
-                    { left: (bassL+(bassR2-bassL)*0.4)+'px',           transform:'translateY(-42%)' },
-                    { left: (bassL+(bassR2-bassL)*0.7)+'px',           transform:'translateY(-45%)' },
-                    { left: bassL+'px',                                transform:'translateY(-52%)' }
-                  ], { duration: 900, easing:'cubic-bezier(0.2,0,0.3,1)', fill:'forwards' });
-
-                  segE.onfinish = function() {
-                    // Segment F: lazy glide home behind Texas (slow)
-                    setBehind();
-                    var segF = wrap.animate([
-                      { left: bassL+'px',                                transform:'translateY(-52%)' },
-                      { left: (texasR2+(bassL-texasR2)*0.4)+'px',       transform:'translateY(-56%)' },
-                      { left: (texasR2+(bassL-texasR2)*0.7)+'px',       transform:'translateY(-50%)' },
-                      { left: texasR2+'px',                              transform:'translateY(-46%)' },
-                      { left: texasL+'px',                               transform:'translateY(-54%)' },
-                      { left: startX+'px',                               transform:'translateY(-50%)' }
-                    ], { duration: 1000, easing:'cubic-bezier(0.3,0,0.7,1)', fill:'forwards' });
-
-                    segF.onfinish = function() {
-                      stopBubbles();
-                      fishImg.classList.remove('wiggling');
-                      // Crossfade back
-                      wrap.style.opacity = '0';
-                      staticIcon.style.opacity = '1';
-                      busy = false;
-                    };
-                  };
-                };
-              });
-            };
+            fishImg.classList.remove('wiggling');
+            wrap.style.opacity = '0';
+            staticIcon.style.opacity = '1';
+            busy = false;
           };
         };
       };
-    }, 80);
+    };
   }
 
   setInterval(function() {
