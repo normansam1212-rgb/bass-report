@@ -4,8 +4,8 @@
   "description": "Texas bass fishing conditions and forecasts",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#080e18",
-  "theme_color": "#080e18",
+  "background_color": "#1B2A3A",
+  "theme_color": "#2B4F6E",
   "orientation": "portrait",
   "icons": [
     {
