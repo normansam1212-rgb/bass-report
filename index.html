@@ -801,6 +801,77 @@ footer { padding:24px 20px 10px; text-align:center; font-size:10px; color:var(--
 .lake-card:nth-child(4){animation-delay:120ms}
 .lake-card:nth-child(5){animation-delay:160ms}
 .lake-card:nth-child(n+6){animation-delay:200ms}
+
+/* ═══ Bait Shop Links ═══ */
+.bait-link { cursor:pointer; -webkit-tap-highlight-color:rgba(200,184,72,0.15); }
+.bait-link:hover { text-decoration:none; }
+
+.bait-color {
+  font-size:9px; font-weight:600;
+  color:var(--good);
+  opacity:0.85;
+  letter-spacing:.2px;
+}
+.mini-chip .bait-color { font-size:8px; }
+.hero-chip .bait-color { font-size:9px; opacity:0.7; }
+
+.bait-buy {
+  font-size:9px; font-weight:800;
+  color:var(--accent);
+  opacity:0.6;
+  margin-left:3px;
+  letter-spacing:.3px;
+}
+.bait-chip:hover .bait-buy { opacity:1; }
+
+.dbc-buy {
+  font-size:10px; font-weight:800;
+  color:var(--accent);
+  background:rgba(232,221,208,0.12);
+  padding:3px 9px; border-radius:8px;
+  margin-left:4px;
+  letter-spacing:.3px;
+}
+.detail-bait-chip:hover .dbc-buy { background:rgba(232,221,208,0.2); }
+
+.dbc-brand {
+  font-size:9px; font-weight:600;
+  color:var(--dim);
+  font-style:italic;
+  margin-left:2px;
+}
+
+.baits-hdr-sub {
+  font-size:8px; font-weight:600;
+  color:var(--good);
+  opacity:0.7;
+  margin-left:6px;
+  text-transform:none;
+  letter-spacing:.2px;
+}
+
+/* Make <a> bait chips inherit styles */
+a.bait-chip, a.detail-bait-chip {
+  text-decoration:none;
+  color:inherit;
+  display:inline-flex;
+  align-items:baseline;
+  gap:4px;
+}
+
+/* Hover glow on clickable chips */
+.bait-chip:hover, .hero-chip.bait-link:hover {
+  border-color:rgba(200,184,72,0.4);
+  background:rgba(200,185,154,0.15);
+}
+.mini-chip.bait-link:hover {
+  background:rgba(200,185,154,0.12);
+  border-color:rgba(158,139,122,0.35);
+}
+.mini-chip.bait-link:active, .hero-chip.bait-link:active, .bait-chip:active, .detail-bait-chip:active {
+  transform:scale(0.94);
+  opacity:0.8;
+}
 </style>
 </head>
 <body>
@@ -1263,8 +1334,103 @@ function getBaits(weather, trend, waterTemp, moon, hour, srH, ssH) {
   if(waterTemp<60){ baits.push({name:"Jig (slow)",why:"cold bottom"}); baits.push({name:"Jigging Spoon",why:"deep cold fish"}); }
   if(moon.score===3) baits.push({name:"Big Swimbait",why:"peak lunar"});
   if(baits.length<3){ baits.push({name:"Texas Rig",why:"universal"}); baits.push({name:"Wacky Senko",why:"finesse"}); baits.push({name:"Ned Rig",why:"versatile"}); }
+  // Enrich each bait with best color + buy link
+  baits.forEach(function(b){
+    b.color = bestColor(b.name, weather, waterTemp, hour, srH, ssH);
+    b.shop = BAIT_SHOP[b.name] || { brand:"", query:b.name+" bass lure" };
+    b.url = "https://www.amazon.com/s?k=" + encodeURIComponent(b.shop.query + " " + b.color);
+  });
   return baits.slice(0,5);
 }
+
+// ═══════════════════════════════════════════
+// BAIT SHOP — real products + color engine
+// ═══════════════════════════════════════════
+var BAIT_SHOP = {
+  "Topwater Popper":  { brand:"Rapala Skitter Pop",      query:"rapala skitter pop topwater popper bass lure" },
+  "Buzzbait":         { brand:"Strike King Buzz King",   query:"strike king buzz king buzzbait bass" },
+  "Spinnerbait":      { brand:"Strike King Premier",     query:"strike king premier plus spinnerbait bass" },
+  "Chatterbait":      { brand:"Z-Man ChatterBait",       query:"z-man chatterbait bladed jig bass" },
+  "Ned Rig":          { brand:"Z-Man Finesse TRD",       query:"z-man finesse trd ned rig kit bass" },
+  "Drop Shot":        { brand:"Roboworm",                query:"roboworm drop shot worm bass" },
+  "Crankbait":        { brand:"Strike King KVD",         query:"strike king kvd square bill crankbait bass" },
+  "Jerkbait":         { brand:"Rapala X-Rap",            query:"rapala x-rap jerkbait bass" },
+  "Shaky Head":       { brand:"Strike King",             query:"strike king shaky head worm bass" },
+  "Swimbait (slow)":  { brand:"Keitech Fat Swing Impact",query:"keitech fat swing impact swimbait bass" },
+  "Frog":             { brand:"Spro Bronzeye",           query:"spro bronzeye popping frog bass" },
+  "Lipless Crank":    { brand:"Strike King Red Eye Shad",query:"strike king red eye shad lipless crankbait bass" },
+  "Jig (slow)":       { brand:"Strike King Structure Jig",query:"strike king structure jig bass" },
+  "Jigging Spoon":    { brand:"Cotton Cordell",          query:"cotton cordell jigging spoon bass" },
+  "Big Swimbait":     { brand:"Keitech",                 query:"keitech swimbait 6 inch bass" },
+  "Texas Rig":        { brand:"Zoom Ol Monster",         query:"zoom ol monster worm texas rig bass" },
+  "Wacky Senko":      { brand:"Gary Yamamoto Senko",     query:"gary yamamoto senko 5 inch wacky rig" }
+};
+
+function bestColor(baitName, weather, waterTemp, hour, srH, ssH) {
+  var wind = weather.wind_speed_mph || 0;
+  var clouds = weather.cloud_cover_pct || 0;
+  var isNight = hour < srH || hour > ssH;
+  var isDawn = hour >= srH-1 && hour <= srH+1;
+  var isDusk = hour >= ssH-1 && hour <= ssH+1;
+  var lowLight = isNight || isDawn || isDusk;
+
+  // ── Bait-specific color logic ──
+  if (baitName === "Frog") {
+    if (isNight) return "Black";
+    return "White/Chartreuse";
+  }
+  if (baitName === "Buzzbait" || baitName === "Spinnerbait" || baitName === "Chatterbait") {
+    if (lowLight) return "Black/Blue";
+    if (clouds >= 50) return "Chartreuse/White";
+    return "White/Chartreuse";
+  }
+  if (baitName === "Crankbait" || baitName === "Lipless Crank") {
+    if (wind >= 10) return "Craw Red";
+    if (waterTemp < 58) return "Silver/Blue";
+    if (clouds >= 50) return "Fire Tiger";
+    return "Shad Silver";
+  }
+  if (baitName === "Jerkbait") {
+    if (waterTemp < 55) return "Ghost Minnow";
+    if (lowLight) return "Black/Gold";
+    return "Glass Minnow";
+  }
+  if (baitName === "Topwater Popper") {
+    if (isNight) return "Black";
+    if (isDawn || isDusk) return "Bone/Silver";
+    return "Chartreuse/Black";
+  }
+  if (baitName === "Jig (slow)") {
+    if (waterTemp < 55) return "Brown/Purple";
+    if (lowLight) return "Black/Blue";
+    return "Green Pumpkin/Brown";
+  }
+  if (baitName === "Jigging Spoon") {
+    if (lowLight) return "Chrome/Blue";
+    return "Chrome/Gold";
+  }
+  if (baitName === "Swimbait (slow)" || baitName === "Big Swimbait") {
+    if (lowLight) return "Black/Blue";
+    if (clouds >= 50) return "Chartreuse Shad";
+    return "Preston Shad";
+  }
+  // ── Soft plastics (Ned, Drop Shot, Texas, Senko, Shaky) ──
+  if (isNight) return "Black/Blue";
+  if (wind >= 12) return "Black/Blue";   // stirred-up water
+  if (clouds >= 60) return "Junebug";
+  if (waterTemp >= 70 && clouds < 30) return "Green Pumpkin";
+  if (waterTemp < 58) return "Watermelon/Red";
+  return "Green Pumpkin";
+}
+
+function buyBait(name, color, ev) {
+  if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+  var info = BAIT_SHOP[name] || { query: name + " bass lure" };
+  var q = info.query + " " + (color || "");
+  window.open("https://www.amazon.com/s?k=" + encodeURIComponent(q), "_blank");
+  return false;
+}
+function escapeQuote(s) { return String(s).replace(/'/g, "\\'"); }
 
 // ═══════════════════════════════════════════
 // SCORE HISTORY
@@ -1620,7 +1786,7 @@ function renderConditions(w, trend, sun, moon) {
 function renderHero(top, baits, moon) {
   var el=document.getElementById("heroCard");
   var sc=scoreColor(top.score), hex=scoreHex(top.score);
-  var chips=baits.slice(0,3).map(function(b){return '<span class="hero-chip">'+IC.hook+' '+b.name+'</span>';}).join("");
+  var chips=baits.slice(0,3).map(function(b){return '<span class="hero-chip bait-link" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span></span>';}).join("");
   var dist=top.dist<10?top.dist.toFixed(1):Math.round(top.dist);
   el.innerHTML=
     '<div class="hero-lbl"><span style="width:18px;height:18px;display:inline-block;vertical-align:middle">'+IC.trophy+'</span> Best Bet Today</div>'+
@@ -1647,9 +1813,9 @@ function renderHero(top, baits, moon) {
 function renderBaits(baits) {
   var el=document.getElementById("baitsStrip");
   var chips=baits.map(function(b){
-    return '<div class="bait-chip">'+IC.hook+' '+b.name+' <span class="bait-why">'+b.why+'</span></div>';
+    return '<a class="bait-chip bait-link" href="'+b.url+'" target="_blank" rel="noopener" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span> <span class="bait-why">'+b.why+'</span> <span class="bait-buy">Buy →</span></a>';
   }).join("");
-  el.innerHTML='<div class="baits-hdr">'+IC.target+' Recommended Baits Right Now</div><div class="baits-row">'+chips+'</div>';
+  el.innerHTML='<div class="baits-hdr">'+IC.target+' Recommended Baits Right Now <span class="baits-hdr-sub">tap to shop</span></div><div class="baits-row">'+chips+'</div>';
   el.style.display="block";
 }
 
@@ -1765,7 +1931,7 @@ function renderFilteredCards(nearest, weather, trend, moon) {
     }).join("");
 
     var mini=getBaits(weather,trend,lake.wt,moon,new Date().getHours(),srH,ssH)
-      .slice(0,2).map(function(b){return '<span class="mini-chip">'+b.name+'</span>';}).join("");
+      .slice(0,2).map(function(b){return '<span class="mini-chip bait-link" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+b.name+' <span class="bait-color">'+b.color+'</span></span>';}).join("");
 
     var cid = _storeCard({
       name:lake.name, lat:lake.lat, lon:lake.lon, type:lake.type,
@@ -2174,7 +2340,7 @@ function renderNearbyCards(waters, gw, moon) {
         return '<span class="stag '+cls+'">'+b.l+' '+(b.m>0?"+":"")+b.m+'</span>';
       }).join("");
       baits = getBaits(gw.weather, gw.trend, res.wt, moon, hour, srH, ssH)
-        .slice(0,2).map(function(b){ return '<span class="mini-chip">'+b.name+'</span>'; }).join("");
+        .slice(0,2).map(function(b){ return '<span class="mini-chip bait-link" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+b.name+' <span class="bait-color">'+b.color+'</span></span>'; }).join("");
     }
 
     var distLabel = w.dist<0.1 ? Math.round(w.dist*5280)+"ft" :
@@ -2424,8 +2590,18 @@ function openDetail(lake) {
     : [{ name:"Texas Rig", why:"universal" }, { name:"Ned Rig", why:"finesse" }, { name:"Spinnerbait", why:"search bait" }];
 
   document.getElementById("detailBaits").innerHTML = baits.map(function(b) {
-    return '<div class="detail-bait-chip">'+IC.hook+' ' + b.name +
-      ' <span class="dbc-why">' + b.why + '</span></div>';
+    // Ensure bait has color + url (fallback baits may not)
+    if (!b.color) {
+      b.color = bestColor(b.name, (gw&&gw.weather)||{wind_speed_mph:5,cloud_cover_pct:30}, lake.wt||70, hour, srH, ssH);
+      var info = BAIT_SHOP[b.name] || { brand:"", query:b.name+" bass lure" };
+      b.shop = info;
+      b.url = "https://www.amazon.com/s?k=" + encodeURIComponent(info.query + " " + b.color);
+    }
+    return '<a class="detail-bait-chip bait-link" href="'+b.url+'" target="_blank" rel="noopener" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+IC.hook+' ' + b.name +
+      ' <span class="bait-color">'+b.color+'</span>' +
+      ' <span class="dbc-why">' + b.why + '</span>' +
+      (b.shop&&b.shop.brand ? ' <span class="dbc-brand">'+b.shop.brand+'</span>' : '') +
+      ' <span class="dbc-buy">Shop →</span></a>';
   }).join("");
 
   // ── Open overlay ──
