@@ -2099,8 +2099,9 @@ function openDetail(lake) {
   var distStr = (lake.dist != null)
     ? ((lake.dist < 10 ? lake.dist.toFixed(1) : Math.round(lake.dist)) + "mi away · ")
     : "";
-  document.getElementById("detailMeta").textContent =
-    distStr + (lake.region || "") + (lake.wt != null ? " · " + IC.wave + " " + lake.wt + "°F est." : "");
+  var escHtml = function(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s || '')); return d.innerHTML; };
+  document.getElementById("detailMeta").innerHTML =
+    escHtml(distStr) + escHtml(lake.region || "") + (lake.wt != null ? " · " + IC.wave + " " + escHtml(lake.wt) + "°F est." : "");
 
   // ── Score ring ──
   document.getElementById("detailRing").innerHTML =
