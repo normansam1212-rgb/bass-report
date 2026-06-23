@@ -65,7 +65,7 @@ body {
 /* ═══ Header ═══ */
 header {
   padding:14px 20px 16px;
-  display:flex; align-items:center; gap:14px;
+  display:flex; align-items:center; gap:10px;
   background:
     linear-gradient(180deg, rgba(10,30,35,0.85) 0%, rgba(28,30,20,0.72) 100%),
     radial-gradient(ellipse 60% 100% at 20% 50%, rgba(30,80,90,0.18) 0%, transparent 70%),
@@ -75,10 +75,24 @@ header {
   position:sticky; top:0; z-index:300;
   box-shadow:0 1px 0 rgba(74,107,133,0.08) inset, 0 4px 24px rgba(0,10,20,0.30);
 }
+.hdr-icon-side {
+  position:relative;
+  width:56px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.hdr-center {
+  flex:1;
+  display:flex; align-items:center; justify-content:center;
+}
+.hdr-right {
+  flex-shrink:0;
+  display:flex; flex-direction:column; align-items:flex-end; gap:4px;
+}
 .hdr-title {
-  font-size:22px; font-weight:800; letter-spacing:-.7px; flex:1;
+  font-size:30px; font-weight:800; letter-spacing:-.8px;
   display:flex; align-items:center; gap:0;
   position:relative;
+  white-space:nowrap;
 }
 .hdr-title .title-fx {
   position:relative;
@@ -89,10 +103,10 @@ header {
   margin-right:0.35em;
   display:inline-block;
 }
-/* Swimming fish (transparent app icon) — driven by JS, emerges from icon every 30s */
-.hdr-title .swim-fish {
+/* Swimming fish — positioned relative to header, swims across entire width */
+header .swim-fish {
   position:absolute;
-  left:60px;
+  left:14px;
   top:50%;
   transform:translateY(-50%);
   width:32px; height:32px;
@@ -103,8 +117,9 @@ header {
   filter:drop-shadow(0 0 5px rgba(74,107,133,0.6)) drop-shadow(0 1px 2px rgba(0,0,0,0.4));
 }
 .hdr-sub {
-  font-size:10px; color:var(--dim); margin-top:3px;
+  font-size:10px; color:var(--dim);
   letter-spacing:.3px; font-weight:500;
+  text-align:right; white-space:nowrap;
 }
 .geo-btn {
   width:42px; height:42px; border-radius:14px;
@@ -1053,11 +1068,17 @@ a.bait-chip, a.detail-bait-chip {
 <body>
 
 <header>
-  <div class="header-left" style="flex:1">
-    <div class="hdr-title"><img id="staticIcon" src="fish-swim-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;margin-right:10px;border-radius:12px;object-fit:contain;padding:4px;transition:opacity 0.4s ease"><span class="title-fx">Texas Bass Report</span><img class="swim-fish" src="fish-swim-64.png" alt=""></div>
-    <div class="hdr-sub" id="statusText">Loading…</div>
+  <img class="swim-fish" src="fish-swim-64.png" alt="">
+  <div class="hdr-icon-side">
+    <img id="staticIcon" src="fish-swim-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;border-radius:12px;object-fit:contain;padding:4px;transition:opacity 0.4s ease">
   </div>
-  <button class="geo-btn" onclick="useMyLocation()" title="Use GPS location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C9.24 2 7 4.24 7 7c0 4.5 5 11 5 11s5-6.5 5-11c0-2.76-2.24-5-5-5z"/><circle cx="12" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg style="width:22px;height:22px;object-fit:contain"></button>
+  <div class="hdr-center">
+    <div class="hdr-title"><span class="title-fx">Texas Bass Report</span></div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-sub" id="statusText">Loading…</div>
+    <button class="geo-btn" onclick="useMyLocation()" title="Use GPS location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C9.24 2 7 4.24 7 7c0 4.5 5 11 5 11s5-6.5 5-11c0-2.76-2.24-5-5-5z"/><circle cx="12" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg style="width:22px;height:22px;object-fit:contain"></button>
+  </div>
 </header>
 
 <div id="listView">
@@ -3695,9 +3716,9 @@ setInterval(function(){if(document.visibilityState==="visible"&&userLat)loadRepo
 // ═══════════════════════════════════════════════════════════════
 function startFishCycle() {
   var staticIcon = document.getElementById('staticIcon');
-  var swimFish   = document.querySelector('.swim-fish');
-  var titleEl    = document.querySelector('.hdr-title');
-  if (!staticIcon || !swimFish || !titleEl) return;
+  var swimFish   = document.querySelector('header .swim-fish');
+  var headerEl   = document.querySelector('header');
+  if (!staticIcon || !swimFish || !headerEl) return;
 
   var busy = false;
 
@@ -3705,11 +3726,11 @@ function startFishCycle() {
     if (busy) return;
     busy = true;
 
-    // Measure positions relative to title container
+    // Measure positions relative to header
     var iconRect  = staticIcon.getBoundingClientRect();
-    var titleRect = titleEl.getBoundingClientRect();
-    var startX = iconRect.left - titleRect.left + 4;
-    var endX   = titleRect.width - 38;
+    var hdrRect   = headerEl.getBoundingClientRect();
+    var startX = iconRect.left - hdrRect.left + 4;
+    var endX   = hdrRect.width - 80; // stop before the right-side elements
 
     // Hide the static icon fish — dark card2 square remains
     staticIcon.style.opacity = '0';
