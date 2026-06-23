@@ -616,6 +616,88 @@ footer { padding:24px 20px 10px; text-align:center; font-size:10px; color:var(--
 }
 .detail-score-tags { display:flex; flex-wrap:wrap; gap:6px; }
 
+/* ═══ LURE TUTORIAL OVERLAY ═══ */
+.lure-overlay {
+  position:fixed; inset:0; z-index:950;
+  background:rgba(0,0,0,.55);
+  backdrop-filter:blur(3px);
+  display:flex; justify-content:center; align-items:flex-end;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s ease;
+}
+.lure-overlay.open { opacity:1; pointer-events:auto; }
+.lure-sheet {
+  width:100%; max-width:480px; max-height:88vh;
+  background:var(--bg);
+  border-radius:22px 22px 0 0;
+  box-shadow:0 -8px 40px rgba(0,0,0,.4);
+  display:flex; flex-direction:column;
+  transform:translateY(40px);
+  transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  overflow:hidden;
+}
+.lure-overlay.open .lure-sheet { transform:translateY(0); }
+.lure-top {
+  padding:16px 18px 12px;
+  border-bottom:1px solid var(--border,rgba(255,255,255,.08));
+  flex-shrink:0;
+}
+.lure-badge {
+  font-size:11px; font-weight:700; color:var(--accent,#4A6B85);
+  text-transform:uppercase; letter-spacing:1px;
+  margin-bottom:6px; display:flex; align-items:center; gap:5px;
+}
+.lure-badge svg { width:13px; height:13px; opacity:.8; }
+.lure-name {
+  font-size:22px; font-weight:800; color:var(--text,#1a1a2e);
+  margin-bottom:8px; line-height:1.2;
+}
+.lure-color-row { display:flex; flex-wrap:wrap; gap:8px; }
+.lure-color-chip, .lure-why {
+  font-size:12px; font-weight:600; padding:4px 10px;
+  border-radius:20px; display:inline-flex; align-items:center; gap:4px;
+}
+.lure-color-chip {
+  background:var(--accent,#4A6B85); color:#fff;
+}
+.lure-color-chip svg, .lure-why svg { width:11px; height:11px; }
+.lure-why {
+  background:var(--card,#f0ede8); color:var(--text,#1a1a2e);
+}
+.lure-body {
+  padding:14px 18px; overflow-y:auto; flex:1;
+}
+.lure-row { margin-bottom:16px; }
+.lure-row:last-child { margin-bottom:4px; }
+.lure-row-h {
+  font-size:12px; font-weight:700; color:var(--accent,#4A6B85);
+  text-transform:uppercase; letter-spacing:.8px;
+  margin-bottom:5px; display:flex; align-items:center; gap:5px;
+}
+.lure-row-h svg { width:13px; height:13px; opacity:.85; }
+.lure-row-t {
+  font-size:14px; line-height:1.55; color:var(--text,#1a1a2e);
+}
+.lure-actions {
+  padding:12px 18px 16px;
+  border-top:1px solid var(--border,rgba(255,255,255,.08));
+  display:flex; gap:10px; flex-shrink:0;
+}
+.lure-shop-btn {
+  flex:1; padding:13px; border:none; border-radius:13px;
+  background:var(--accent,#4A6B85); color:#fff;
+  font-size:14px; font-weight:700; cursor:pointer;
+  transition:opacity .15s;
+}
+.lure-shop-btn:active { opacity:.8; }
+.lure-done-btn {
+  padding:13px 20px; border:none; border-radius:13px;
+  background:var(--card,#f0ede8); color:var(--text,#1a1a2e);
+  font-size:14px; font-weight:700; cursor:pointer;
+  transition:opacity .15s;
+}
+.lure-done-btn:active { opacity:.8; }
+
 /* Map strip */
 .detail-map-strip { width:100%; height:300px; flex-shrink:0; position:relative; }
 #detailMap { width:100%; height:100%; }
@@ -1152,6 +1234,23 @@ a.bait-chip, a.detail-bait-chip {
   </div>
 </div>
 
+<!-- ── Lure Tutorial Overlay ── -->
+<div class="lure-overlay" id="lureOverlay" onclick="if(event.target===this)closeLureGuide()">
+  <div class="lure-sheet">
+    <div class="lure-top">
+      <button class="detail-close" onclick="closeLureGuide()">‹ Back</button>
+      <div class="lure-badge" id="lureBadge"></div>
+      <div class="lure-name" id="lureName">–</div>
+      <div class="lure-color-row" id="lureColorRow"></div>
+    </div>
+    <div class="lure-body" id="lureBody"></div>
+    <div class="lure-actions">
+      <button class="lure-shop-btn" id="lureShopBtn">Shop this lure →</button>
+      <button class="lure-done-btn" onclick="closeLureGuide()">Got it</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // Global HTML escaper
 var escHtml = function(s) {
@@ -1440,28 +1539,123 @@ function getMoon() {
 // ═══════════════════════════════════════════
 // BAITS
 // ═══════════════════════════════════════════
-function getBaits(weather, trend, waterTemp, moon, hour, srH, ssH) {
-  var baits=[], wind=weather.wind_speed_mph, clouds=weather.cloud_cover_pct;
+// Water-aware priority engine: clarity + depth set the base lure profile so
+// different waters get different recommendations; conditions then tune the list.
+function getBaits(weather, trend, waterTemp, moon, hour, srH, ssH, clarity, depth) {
+  var wind=weather.wind_speed_mph||0, clouds=weather.cloud_cover_pct||0;
   var isNight=hour<srH||hour>ssH;
   var isDawn=hour>=srH-1&&hour<=srH+1;
   var isDusk=hour>=ssH-1&&hour<=ssH+1;
+  var lowLight=isNight||isDawn||isDusk;
   var tr=trend.trend||"stable";
-  if(isDawn||isDusk||isNight){ baits.push({name:"Topwater Popper",why:"low light"}); baits.push({name:"Buzzbait",why:"surface aggression"}); }
-  if(clouds>=50&&wind>=5){ baits.push({name:"Spinnerbait",why:"cloud+chop"}); baits.push({name:"Chatterbait",why:"stained water"}); }
-  if(clouds<30&&wind<5){ baits.push({name:"Ned Rig",why:"clear/calm"}); baits.push({name:"Drop Shot",why:"pressured fish"}); }
-  if(tr.indexOf("falling")!==-1){ baits.push({name:"Crankbait",why:"falling baro"}); baits.push({name:"Jerkbait",why:"pre-front active"}); }
-  if(tr.indexOf("rising")!==-1){ baits.push({name:"Shaky Head",why:"post-front"}); baits.push({name:"Swimbait (slow)",why:"suspended fish"}); }
-  if(waterTemp>=65&&waterTemp<=80){ baits.push({name:"Frog",why:"warm shallow"}); baits.push({name:"Lipless Crank",why:"active summer"}); }
-  if(waterTemp<60){ baits.push({name:"Jig (slow)",why:"cold bottom"}); baits.push({name:"Jigging Spoon",why:"deep cold fish"}); }
-  if(moon.score===3) baits.push({name:"Big Swimbait",why:"peak lunar"});
-  if(baits.length<3){ baits.push({name:"Texas Rig",why:"universal"}); baits.push({name:"Wacky Senko",why:"finesse"}); baits.push({name:"Ned Rig",why:"versatile"}); }
+  clarity=clarity||"stained";
+  depth=depth||"mod";
+
+  var pool={}; // name -> {name,why,pri}
+  function add(name,why,pri){
+    if(!pool[name]||pri>pool[name].pri) pool[name]={name:name,why:why,pri:pri};
+  }
+
+  // ── Water-profile base priorities (this is what varies lake-to-lake) ──
+  if(clarity==="clear" && depth==="deep"){
+    add("Drop Shot","clear deep finesse",12);
+    add("Jerkbait","suspending clear",10);
+    add("Football Jig","deep structure",10);
+    add("Ned Rig","clear finesse",9);
+    add("Swimbait (slow)","deep suspended",8);
+    add("Carolina Rig","deep dragging",7);
+  } else if(clarity==="clear" && depth==="shallow"){
+    add("Wacky Senko","clear shallow finesse",12);
+    add("Weightless Fluke","clear shallow",10);
+    add("Ned Rig","clear finesse",9);
+    add("Tube","clear finesse",8);
+    add("Neko Rig","clear bottom",7);
+  } else if(clarity==="muddy" && depth==="shallow"){
+    add("Jig (slow)","dark bulky",12);
+    add("Buzzbait","dark thump",10);
+    add("Creature Bait","bulk dark profile",10);
+    add("Lipless Crank","loud rattle",9);
+    add("Spinnerbait","big thump",8);
+    add("Frog","over muddy mats",7);
+  } else if(clarity==="muddy"){
+    add("Spinnerbait","vibration",11);
+    add("Chatterbait","vibration",10);
+    add("Jig (slow)","dark bulky",9);
+    add("Lipless Crank","loud rattle",8);
+    add("Creature Bait","bulk profile",7);
+  } else if(depth==="deep"){
+    add("Football Jig","deep structure",11);
+    add("Crankbait","deep diving",10);
+    add("Carolina Rig","deep dragging",9);
+    add("Drop Shot","deep finesse",8);
+    add("Jig (slow)","deep bottom",7);
+  } else if(depth==="shallow"){
+    add("Spinnerbait","shallow search",11);
+    add("Chatterbait","shallow search",10);
+    add("Crankbait","shallow wood",9);
+    add("Texas Rig","shallow cover",8);
+    add("Swim Jig","shallow vegetation",7);
+  } else {
+    // stained / mod (default Texas profile)
+    add("Spinnerbait","stained search",10);
+    add("Chatterbait","stained search",10);
+    add("Crankbait","stained cover",9);
+    add("Texas Rig","universal",8);
+    add("Shaky Head","finesse",7);
+    add("Wacky Senko","finesse",6);
+  }
+
+  // ── Condition modifiers / additions (tune the list per right-now) ──
+  if(lowLight){
+    add("Topwater Popper","low light surface",15);
+    add("Buzzbait","surface aggression",14);
+  }
+  if(clouds>=50 && wind>=5){
+    add("Spinnerbait","cloud+chop",13);
+    add("Chatterbait","stained chop",12);
+  }
+  if(clouds<30 && wind<5){
+    add("Ned Rig","clear/calm",12);
+    add("Drop Shot","pressured fish",11);
+  }
+  if(tr.indexOf("falling")!==-1){
+    add("Crankbait","falling baro",13);
+    add("Jerkbait","pre-front active",12);
+  }
+  if(tr.indexOf("rising")!==-1){
+    add("Shaky Head","post-front",12);
+    add("Swimbait (slow)","suspended fish",11);
+  }
+  if(waterTemp>=65 && waterTemp<=80){
+    add("Frog","warm shallow",12);
+    add("Lipless Crank","active summer",11);
+    add("Swim Jig","warm vegetation",10);
+  }
+  if(waterTemp<60){
+    add("Jig (slow)","cold bottom",13);
+    add("Jigging Spoon","deep cold fish",12);
+    add("Blade Bait","cold vertical",10);
+  }
+  if(moon.score===3) add("Big Swimbait","peak lunar",14);
+
+  // Safety net
+  if(Object.keys(pool).length<3){
+    add("Texas Rig","universal",5);
+    add("Wacky Senko","finesse",4);
+    add("Ned Rig","versatile",3);
+  }
+
+  // Rank by priority, keep top 5
+  var baits=Object.keys(pool).map(function(k){return pool[k];})
+    .sort(function(a,b){return b.pri-a.pri;}).slice(0,5);
+
   // Enrich each bait with best color + buy link
   baits.forEach(function(b){
     b.color = bestColor(b.name, weather, waterTemp, hour, srH, ssH);
     b.shop = BAIT_SHOP[b.name] || { brand:"", query:b.name+" bass lure" };
     b.url = "https://www.amazon.com/s?k=" + encodeURIComponent(b.shop.query + " " + b.color);
   });
-  return baits.slice(0,5);
+  return baits;
 }
 
 // ═══════════════════════════════════════════
@@ -1484,7 +1678,16 @@ var BAIT_SHOP = {
   "Jigging Spoon":    { brand:"Cotton Cordell",          query:"cotton cordell jigging spoon bass" },
   "Big Swimbait":     { brand:"Keitech",                 query:"keitech swimbait 6 inch bass" },
   "Texas Rig":        { brand:"Zoom Ol Monster",         query:"zoom ol monster worm texas rig bass" },
-  "Wacky Senko":      { brand:"Gary Yamamoto Senko",     query:"gary yamamoto senko 5 inch wacky rig" }
+  "Wacky Senko":      { brand:"Gary Yamamoto Senko",     query:"gary yamamoto senko 5 inch wacky rig" },
+  // ── Added for water-to-water variety ──
+  "Football Jig":     { brand:"Strike King Tour Grade",  query:"strike king tour grade football head jig bass" },
+  "Carolina Rig":     { brand:"Strike King",             query:"strike king carolina rig kit bass" },
+  "Swim Jig":         { brand:"Booyah Boo Jig",          query:"booyah boo jig swim jig bass" },
+  "Blade Bait":       { brand:"SteelShad",               query:"steelshad blade bait vibrating bass" },
+  "Creature Bait":    { brand:"Strike King Rodent",      query:"strike king rodent creature bait bass" },
+  "Weightless Fluke": { brand:"Zoom Super Fluke",        query:"zoom super fluke weightless bass" },
+  "Tube":             { brand:"Strike King Coffee Tube", query:"strike king coffee tube bass" },
+  "Neko Rig":         { brand:"Z-Man Finesse Worm",      query:"z-man finesse worm neko rig bass" }
 };
 
 function bestColor(baitName, weather, waterTemp, hour, srH, ssH) {
@@ -1535,6 +1738,27 @@ function bestColor(baitName, weather, waterTemp, hour, srH, ssH) {
     if (clouds >= 50) return "Chartreuse Shad";
     return "Preston Shad";
   }
+  if (baitName === "Football Jig") {
+    if (waterTemp < 55) return "Brown/Purple";
+    if (lowLight) return "Black/Blue";
+    return "Green Pumpkin/Brown";
+  }
+  if (baitName === "Blade Bait") {
+    if (lowLight) return "Chrome/Blue";
+    return "Chrome/Gold";
+  }
+  if (baitName === "Swim Jig") {
+    if (lowLight) return "Black/Blue";
+    if (clouds >= 50) return "Chartreuse/White";
+    return "Green Pumpkin/White";
+  }
+  if (baitName === "Weightless Fluke") {
+    if (isNight) return "Black";
+    if (lowLight) return "Bone";
+    if (clouds >= 50) return "Smoke";
+    if (waterTemp < 58) return "Watermelon/Red";
+    return "Pearl";
+  }
   // ── Soft plastics (Ned, Drop Shot, Texas, Senko, Shaky) ──
   if (isNight) return "Black/Blue";
   if (wind >= 12) return "Black/Blue";   // stirred-up water
@@ -1552,6 +1776,255 @@ function buyBait(name, color, ev) {
   return false;
 }
 function escapeQuote(s) { return String(s).replace(/'/g, "\\'"); }
+
+// ═══════════════════════════════════════════════════════════════
+// LURE TUTORIAL — opens when a bait chip is tapped
+// ═══════════════════════════════════════════════════════════════
+var LURE_GUIDE = {
+  "Topwater Popper": {
+    category:"Topwater", difficulty:"Beginner",
+    rigging:"Tie direct to 30 lb braid or 12-17 lb mono. The concave cup faces forward. No weight — let the bait sit where it lands.",
+    retrieve:"Pop-pause. Twitch the rod tip down so the cup 'bloops', then pause 1-3 seconds. Repeat. Vary the cadence until the fish tell you what they want — usually longer pauses than you think.",
+    depth:"Surface",
+    target:"Active bass in low light over flats, points, and around shallow cover. Deadly at dawn, dusk, and overcast mornings.",
+    tip:"Stripes often come on the pause, not the pop. After a miss, let it sit dead for 5+ seconds before re-popping."
+  },
+  "Buzzbait": {
+    category:"Topwater", difficulty:"Beginner",
+    rigging:"Tie direct to 17-20 lb mono or 40-50 lb braid. The blade must spin freely — test it beside the boat before casting.",
+    retrieve:"Burn it steadily just under the surface so the blade churns a wake. Keep rod tip high to hold it up. Slow down slightly near cover.",
+    depth:"Surface",
+    target:"Aggressive bass in low light over flats, weed edges, and along banks. A true search bait that calls fish up.",
+    tip:"If you get swirls but no hookups, add a trailing stinger hook or slow the retrieve so bass can track it better."
+  },
+  "Spinnerbait": {
+    category:"Moving bait", difficulty:"Beginner",
+    rigging:"Tie direct to 15-20 lb fluorocarbon or 40 lb braid. Use a Colorado/Indiana blade combo in stained water, willow blades in clear.",
+    retrieve:"Steady retrieve just above the cover. Slow-roll it along the bottom in cold water, burn it in warm. Deflect off wood and rock — strikes come on the bounce.",
+    depth:"Mid — adjustable (bottom to just-under-surface)",
+    target:"Bass around wood, grass edges, and banks in stained/choppy water. A go-to in wind and cloud.",
+    tip:"Pause briefly after the bait bumps cover — that hesitation triggers followers into striking."
+  },
+  "Chatterbait": {
+    category:"Moving bait", difficulty:"Beginner",
+    rigging:"Tie direct to 15-20 lb fluorocarbon. The blade must vibrate — you'll feel it in the rod immediately on a good retrieve.",
+    retrieve:"Steady retrieve so the blade chatters. Slow roll near bottom, or burn just under the surface. Add small hops over grass.",
+    depth:"Mid — bottom to sub-surface",
+    target:"Bass in stained water, grass flats, and around wood. Excels when a spinnerbait gets refused.",
+    tip:"If grass fouls the blade, rip it free hard — the sudden vibration often triggers a strike."
+  },
+  "Crankbait": {
+    category:"Moving bait", difficulty:"Intermediate",
+    rigging:"Tie direct to 10-12 lb fluorocarbon (sinks/dives deeper). Use a squarebill for shallow wood, a deeper diver for ledges.",
+    retrieve:"Crank down to the target depth, then grind it into cover — wood, rock, bottom. The deflection is what triggers the bite. Pause for a beat after contact.",
+    depth:"Shallow (squarebill) to deep (diving lip)",
+    target:"Bass on wood, rock, and drop-offs. Best in stained water and during falling barometric pressure.",
+    tip:"If fish are short-striking, switch to a pause-and-go retrieve or downsize to a smaller profile."
+  },
+  "Jerkbait": {
+    category:"Moving bait", difficulty:"Intermediate",
+    rigging:"Tie direct to 10-14 lb fluorocarbon (helps suspending models sink). Slack-line technique — you'll work it with slack.",
+    retrieve:"Snap the rod tip down to dart the bait sideways, then feed slack and pause. Cadence varies: 2-3 twitches, pause 2-10 sec. Longer pauses in cold water.",
+    depth:"Suspending mid-depth (4-8 ft)",
+    target:"Suspended and clear-water bass, especially in cold water (40-60°F). A cold-front staple.",
+    tip:"In cold water, pause far longer than feels right — 8-15 second hangs get the biggest bites."
+  },
+  "Lipless Crank": {
+    category:"Moving bait", difficulty:"Beginner",
+    rigging:"Tie direct to 12-15 lb fluorocarbon. The bait sinks — count it down to the depth you want before retrieving.",
+    retrieve:"Burn it, yo-yo it (lift-drop), or slow-roll it. Let it tick the grass and rip it free when it fouls — that's when strikes happen.",
+    depth:"Variable — count it down to any depth",
+    target:"Active bass over flats and grass in warm water (65-80°F). A great spring and search bait.",
+    tip:"Yo-yo (lift and kill) over grass — bass slam it on the fall far more than on the retrieve."
+  },
+  "Frog": {
+    category:"Topwater", difficulty:"Intermediate",
+    rigging:"Tie direct to 50-65 lb braid. Use a popping frog in open water, a hollow-body over thick mats. Pinch the weedless hooks shut for cleaner hooksets.",
+    retrieve:"Walk it in open pockets with small wrist twitches. Over mats, drag-and-pause across holes. Deadstick in open holes for several seconds.",
+    depth:"Surface — over vegetation and mats",
+    target:"Bass buried in grass, lily pads, and matted vegetation in warm water. A summer grass staple.",
+    tip:"On the strike, wait a full second until you feel the fish before setting the hook — early hooksets lose frogs."
+  },
+  "Ned Rig": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"1/16-1/10 oz mushroom jig head with a 2.75 inch buoyant plastic (Z-Man TRD). Light line, 6-8 lb fluorocarbon.",
+    retrieve:"Drag it slowly on the bottom with long pauses. Small hops. The bait stands up on the bottom — let it sit, then inch it forward.",
+    depth:"Bottom",
+    target:"Pressured, neutral, and clear-water bass. A bite-generator when nothing else works.",
+    tip:"When you think you're going too slow, slow down more. Most bites come on the dead pause."
+  },
+  "Drop Shot": {
+    category:"Finesse", difficulty:"Intermediate",
+    rigging:"Weight on the bottom, hook tied 8-24 inches above it on a Palomar. Small finesse worm, 8-10 lb fluorocarbon. Tag end points down to the weight.",
+    retrieve:"Hold it still and shake the rod tip lightly. Barely move it — the bait dances above the bottom. Drag slowly to new spots and re-shake.",
+    depth:"Bottom — bait suspends above the weight",
+    target:"Deep, suspended, pressured, and clear-water bass. A cold-water and post-frontal staple.",
+    tip:"Don't reel to move the bait — shake in place. If you feel no bites, you're moving it too much."
+  },
+  "Shaky Head": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"1/16-3/16 ball jig head with a 6-7 inch finesse worm, 8-10 lb fluorocarbon. The worm stands up off the bottom.",
+    retrieve:"Drag and shake on the bottom. Move it a few inches, then shake in place. Long pauses between moves.",
+    depth:"Bottom",
+    target:"Post-frontal and pressured bass on points, rock, and brush. A reliable neutral-bait option.",
+    tip:"Bites often feel like mushy weight, not a tick — set the hook on anything that feels 'wrong'."
+  },
+  "Swimbait (slow)": {
+    category:"Moving bait", difficulty:"Intermediate",
+    rigging:"Weighted swimbait hook or jig head matched to the bait size, 12-15 lb fluorocarbon. Paddle-tail soft plastic.",
+    retrieve:"Slow, steady retrieve just above the bottom or grass. The tail thumps — you'll feel it. Slow-roll in cold water.",
+    depth:"Mid — adjust with head weight",
+    target:"Suspended and deep bass, post-frontal fish, and suspended bait schools. A slow-day confidence bait.",
+    tip:"Match the retrieve to the baitfish — if shad are lazy, swim it painfully slow."
+  },
+  "Big Swimbait": {
+    category:"Moving bait", difficulty:"Advanced",
+    rigging:"Heavy swimbait rig (1-2 oz head) on 20+ lb fluorocarbon or braid. 6-8 inch paddle-tail. Use stout gear.",
+    retrieve:"Slow, steady retrieve near the bottom or through suspended fish. Long casts, low patience, big-fish commitment.",
+    depth:"Mid to deep",
+    target:"Trophy-class bass during peak feeding windows (moon peaks, active bites). Low numbers, high quality.",
+    tip:"Commit to it — big swimbaits mean few bites but big fish. Don't switch off after 20 minutes."
+  },
+  "Jig (slow)": {
+    category:"Bottom", difficulty:"Intermediate",
+    rigging:"Flipping/structure jig with a chunk or craw trailer, 15-20 lb fluorocarbon. Match jig weight to depth and cover.",
+    retrieve:"Pitch or cast to cover, let it fall on a semi-slack line, then hop and drag it along the bottom. Slow, deliberate. Many bites come on the fall.",
+    depth:"Bottom — flipping/pitching cover",
+    target:"Bass in wood, brush, docks, and cold deep water. A big-fish cold-water and cover bait.",
+    tip:"Watch the line on the fall — if it ticks or moves sideways, reel down and set the hook."
+  },
+  "Jigging Spoon": {
+    category:"Vertical", difficulty:"Intermediate",
+    rigging:"Tie direct to 12-17 lb fluorocarbon with a loop knot for action. Heavy spoon (1/2-1 oz) to reach deep fish.",
+    retrieve:"Vertical jigging over marked fish. Lift the rod 1-2 feet and let it flutter down on a semi-slack line. Most strikes come on the fall.",
+    depth:"Deep — bottom oriented",
+    target:"Schooling and suspended bass in deep cold water (under 60°F). Find bait and fish on electronics first.",
+    tip:"Don't rip it too hard — a controlled lift-and-fall gets more bites than violent snaps."
+  },
+  "Blade Bait": {
+    category:"Vertical", difficulty:"Intermediate",
+    rigging:"Tie direct to 10-14 lb fluorocarbon with a loop knot. The bait vibrates intensely on the lift.",
+    retrieve:"Vertical lift-and-drop over deep fish. Short hops, then let it fall on slack. Also cast and slow-roll along the bottom.",
+    depth:"Deep — bottom oriented",
+    target:"Cold, deep, and schooling bass (under 55°F). A winter and cold-front weapon.",
+    tip:"Vary the lift height — short 6-inch hops often out-fish big rips in cold water."
+  },
+  "Texas Rig": {
+    category:"Bottom", difficulty:"Beginner",
+    rigging:"Bullet weight above a 3/0-4/0 offset hook, peg the weight in heavy cover. 10-20 lb fluorocarbon depending on cover.",
+    retrieve:"Cast to cover, let it sink, then drag and hop along the bottom. Slow and deliberate. Feel for the bite.",
+    depth:"Bottom — through cover",
+    target:"Bass in wood, grass, brush, and docks. The most versatile cover bait in bass fishing.",
+    tip:"If you feel a tick or the line goes heavy, reel down until you feel the fish, then set the hook hard."
+  },
+  "Wacky Senko": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"Hook a 5 inch stick worm dead-center through the middle with a 1/0 octopus hook. Weightless, 8 lb fluorocarbon.",
+    retrieve:"Let it sink on a semi-slack line — do nothing. The shimmy on the fall IS the action. Twitch and let it sink again.",
+    depth:"Sinking — mid to bottom",
+    target:"Neutral, pressured, and clear-water bass. A bite machine when fish are finicky.",
+    tip:"Resist the urge to work it — let it sink. Bites come on the fall, so watch your line."
+  },
+  "Football Jig": {
+    category:"Bottom", difficulty:"Intermediate",
+    rigging:"Football-head jig with a craw trailer, 12-17 lb fluorocarbon. The head shape lets it rock along hard bottom without rolling.",
+    retrieve:"Long casts, slow drag along the bottom. The head clatters over rock and clay. Pause on transitions and drop-offs.",
+    depth:"Deep bottom — ledges and points",
+    target:"Deep structure bass on rock and hard-bottom ledges. A deep-water big-fish bait.",
+    tip:"Let the head do the work — drag, don't hop. Strikes often come when it stalls on a rock."
+  },
+  "Carolina Rig": {
+    category:"Bottom", difficulty:"Intermediate",
+    rigging:"Heavy sinker (1/2-1 oz) above a swivel, then 2-4 ft leader to a 2/0-3/0 offset hook with a soft plastic. 14-17 lb fluorocarbon.",
+    retrieve:"Cast long, drag the weight along the bottom, and let the bait float and drag behind. Pause frequently — the bait suspends above the weight.",
+    depth:"Deep bottom — dragging structure",
+    target:"Deep bass on flats, points, and offshore humps. Covers water and finds scattered fish.",
+    tip:"The leader length matters — longer in clear water, shorter when fish are pinned to the bottom."
+  },
+  "Swim Jig": {
+    category:"Moving bait", difficulty:"Intermediate",
+    rigging:"Swim jig (3/8-1/2 oz) with a swimbait or grub trailer, 15-20 lb fluorocarbon. Skirt pulsates on the retrieve.",
+    retrieve:"Steady retrieve just under the surface or along grass edges. Slow roll in cold, burn in warm. Comes through grass cleanly.",
+    depth:"Shallow to mid",
+    target:"Bass in and around grass and vegetation. A cleaner-running alternative to a spinnerbait in salad.",
+    tip:"Add a swimbait trailer for action, or a chunk for bulk — match the forage you're seeing."
+  },
+  "Creature Bait": {
+    category:"Bottom", difficulty:"Beginner",
+    rigging:"Texas-rigged (bullet weight + 3/0-4/0 offset hook) or on a jig head. 15-20 lb fluorocarbon. Bulkier profile than a worm.",
+    retrieve:"Pitch to cover, let it fall, then drag and hop along the bottom. The flappers kick on the hop. Slow in cold, quicker in warm.",
+    depth:"Bottom — through heavy cover",
+    target:"Bass in heavy cover, stained/muddy water, and cold fronts. Bulk displaces water and calls fish in low visibility.",
+    tip:"In muddy water, use the biggest, darkest profile you have — bulk and silhouette matter more than color."
+  },
+  "Weightless Fluke": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"4/0-5/0 offset hook, no weight, 12-15 lb fluorocarbon. The bait glides and darts on the twitch.",
+    retrieve:"Twitch-twitch-pause. The fluke darts sideways on the twitch and sinks on the pause. Vary cadence — erratic is better than steady.",
+    depth:"Shallow — sub-surface to mid",
+    target:"Clear-water and pressured shallow bass, and bass chasing baitfish. A great skipping bait under docks.",
+    tip:"Skip it under overhanging cover — the weightless entry gets it places weighted baits can't reach."
+  },
+  "Tube": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"Tube on a 1/8-1/4 oz tube jig head or Texas-rigged in cover, 8-12 lb fluorocarbon. Hollow body glides on the fall.",
+    retrieve:"Hop and drag on the bottom, or swim it with small twitches. The tentacles flutter on the fall — that's when bites come.",
+    depth:"Bottom — adjustable",
+    target:"Clear-water bass, smallmouth, and finicky fish. A great crawfish-imitator on rock bottoms.",
+    tip:"Dead-stick it on rock — let it sit and flutter. Smallmouth especially can't resist a falling tube."
+  },
+  "Neko Rig": {
+    category:"Finesse", difficulty:"Intermediate",
+    rigging:"Stick worm (5-6 inch) with a nail weight in the head and a 1/0-2/0 hook through the body, 8-10 lb fluorocarbon. Bait stands vertical and quivers.",
+    retrieve:"Drag and shake on the bottom. The weighted head hops while the tail dances above. Long pauses between shakes.",
+    depth:"Bottom — bait stands up",
+    target:"Pressured and clear-water bass, especially on hard bottoms. A step up from a shaky head when fish are wary.",
+    tip:"Lighter nail weights let the bait stand taller — match the weight to how the fish want it presented."
+  }
+};
+
+function lureRow(ic, label, text){
+  return '<div class="lure-row"><div class="lure-row-h">'+ic+' '+label+'</div>'+
+         '<div class="lure-row-t">'+escHtml(text)+'</div></div>';
+}
+
+function openLureGuide(name, color, why, ev){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  var g = LURE_GUIDE[name] || {
+    category:"Lure", difficulty:"—",
+    rigging:"Rig per the manufacturer's spec for the conditions you're fishing.",
+    retrieve:"Vary retrieve speed and pause length until strikes come — let the fish tell you.",
+    depth:"Varies with rigging and weight",
+    target:"Bass holding near cover, structure, or feeding transitions.",
+    tip:"Start slow, then experiment. Most bites come on a change — a pause, a speed-up, or a deflection."
+  };
+  document.getElementById("lureName").textContent = name;
+  document.getElementById("lureBadge").innerHTML = IC.hook + ' ' + g.category + ' · ' + g.difficulty;
+  var cr = '<span class="lure-color-chip">'+IC.drop+' Best color now: '+(color||'—')+'</span>' +
+           (why ? '<span class="lure-why">'+IC.bolt+' '+escHtml(why)+'</span>' : '');
+  document.getElementById("lureColorRow").innerHTML = cr;
+  document.getElementById("lureBody").innerHTML =
+    lureRow(IC.hook,'How to rig it', g.rigging) +
+    lureRow(IC.bolt,'How to work it', g.retrieve) +
+    lureRow(IC.water,'Running depth', g.depth) +
+    lureRow(IC.target,'When & where', g.target) +
+    lureRow(IC.trophy,'Pro tip', g.tip);
+  var info = BAIT_SHOP[name] || { query: name + " bass lure" };
+  var q = info.query + " " + (color || "");
+  document.getElementById("lureShopBtn").onclick = function(){
+    window.open("https://www.amazon.com/s?k=" + encodeURIComponent(q), "_blank");
+  };
+  var ov = document.getElementById("lureOverlay");
+  ov.classList.add("open");
+  ov.scrollTop = 0;
+  document.body.style.overflow = "hidden";
+  return false;
+}
+
+function closeLureGuide(){
+  document.getElementById("lureOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
 
 // ═══════════════════════════════════════════
 // SCORE HISTORY
@@ -1907,7 +2380,7 @@ function renderConditions(w, trend, sun, moon) {
 function renderHero(top, baits, moon) {
   var el=document.getElementById("heroCard");
   var sc=scoreColor(top.score), hex=scoreHex(top.score);
-  var chips=baits.slice(0,3).map(function(b){return '<span class="hero-chip bait-link" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span></span>';}).join("");
+  var chips=baits.slice(0,3).map(function(b){return '<span class="hero-chip bait-link" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span></span>';}).join("");
   var dist=top.dist<10?top.dist.toFixed(1):Math.round(top.dist);
   el.innerHTML=
     '<div class="hero-lbl"><span style="width:18px;height:18px;display:inline-block;vertical-align:middle">'+IC.trophy+'</span> Best Bet Today</div>'+
@@ -1934,9 +2407,9 @@ function renderHero(top, baits, moon) {
 function renderBaits(baits) {
   var el=document.getElementById("baitsStrip");
   var chips=baits.map(function(b){
-    return '<a class="bait-chip bait-link" href="'+b.url+'" target="_blank" rel="noopener" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span> <span class="bait-why">'+b.why+'</span> <span class="bait-buy">Buy →</span></a>';
+    return '<a class="bait-chip bait-link" href="'+b.url+'" target="_blank" rel="noopener" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span> <span class="bait-why">'+b.why+'</span> <span class="bait-buy">Guide →</span></a>';
   }).join("");
-  el.innerHTML='<div class="baits-hdr">'+IC.target+' Recommended Baits Right Now <span class="baits-hdr-sub">tap to shop</span></div><div class="baits-row">'+chips+'</div>';
+  el.innerHTML='<div class="baits-hdr">'+IC.target+' Recommended Baits Right Now <span class="baits-hdr-sub">tap for how-to</span></div><div class="baits-row">'+chips+'</div>';
   el.style.display="block";
 }
 
@@ -1987,7 +2460,8 @@ function renderLakes(weather, trend, sun, moon) {
   saveHistory(nearest.map(function(l){return{name:l.name,score:l.score};}));
 
   var srH=nearest[0].srH||6, ssH=nearest[0].ssH||20, hour=new Date().getHours();
-  var baits=getBaits(weather,trend,nearest[0].wt,moon,hour,srH,ssH);
+  var _wa=waterAttributes(nearest[0]);
+  var baits=getBaits(weather,trend,nearest[0].wt,moon,hour,srH,ssH,_wa.c,_wa.d);
   renderHero(nearest[0],baits,moon);
   renderBaits(baits);
   sectionLbl.style.display="block";
@@ -2051,8 +2525,9 @@ function renderFilteredCards(nearest, weather, trend, moon) {
       return '<span class="stag '+cls+'">'+b.l+' '+(b.m>0?"+":"")+b.m+'</span>';
     }).join("");
 
-    var mini=getBaits(weather,trend,lake.wt,moon,new Date().getHours(),srH,ssH)
-      .slice(0,2).map(function(b){return '<span class="mini-chip bait-link" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+b.name+' <span class="bait-color">'+b.color+'</span></span>';}).join("");
+    var _wa2=waterAttributes(lake);
+    var mini=getBaits(weather,trend,lake.wt,moon,new Date().getHours(),srH,ssH,_wa2.c,_wa2.d)
+      .slice(0,2).map(function(b){return '<span class="mini-chip bait-link" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+b.name+' <span class="bait-color">'+b.color+'</span></span>';}).join("");
 
     var cid = _storeCard({
       name:lake.name, lat:lake.lat, lon:lake.lon, type:lake.type,
@@ -2577,8 +3052,9 @@ function renderNearbyCards(waters, gw, moon) {
         var cls=b.m>0?"pos":b.m<0?"neg":"neu";
         return '<span class="stag '+cls+'">'+b.l+' '+(b.m>0?"+":"")+b.m+'</span>';
       }).join("");
-      baits = getBaits(gw.weather, gw.trend, res.wt, moon, hour, srH, ssH)
-        .slice(0,2).map(function(b){ return '<span class="mini-chip bait-link" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+b.name+' <span class="bait-color">'+b.color+'</span></span>'; }).join("");
+      var _wa3=waterAttributes(res);
+      baits = getBaits(gw.weather, gw.trend, res.wt, moon, hour, srH, ssH, _wa3.c, _wa3.d)
+        .slice(0,2).map(function(b){ return '<span class="mini-chip bait-link" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+b.name+' <span class="bait-color">'+b.color+'</span></span>'; }).join("");
     }
 
     var distLabel = w.dist<0.1 ? Math.round(w.dist*5280)+"ft" :
@@ -2883,8 +3359,9 @@ function openDetail(lake) {
     var g = nearestGrid(lake.lat, lake.lon);
     gw = gridWeather[g.key];
   }
+  var _wa4=waterAttributes(lake);
   var baits = gw
-    ? getBaits(gw.weather, gw.trend, lake.wt || 70, moon, hour, srH, ssH)
+    ? getBaits(gw.weather, gw.trend, lake.wt || 70, moon, hour, srH, ssH, _wa4.c, _wa4.d)
     : [{ name:"Texas Rig", why:"universal" }, { name:"Ned Rig", why:"finesse" }, { name:"Spinnerbait", why:"search bait" }];
 
   document.getElementById("detailBaits").innerHTML = baits.map(function(b) {
@@ -2895,11 +3372,11 @@ function openDetail(lake) {
       b.shop = info;
       b.url = "https://www.amazon.com/s?k=" + encodeURIComponent(info.query + " " + b.color);
     }
-    return '<a class="detail-bait-chip bait-link" href="'+b.url+'" target="_blank" rel="noopener" onclick="return buyBait(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',event)">'+IC.hook+' ' + b.name +
+    return '<a class="detail-bait-chip bait-link" href="'+b.url+'" target="_blank" rel="noopener" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+IC.hook+' ' + b.name +
       ' <span class="bait-color">'+b.color+'</span>' +
       ' <span class="dbc-why">' + b.why + '</span>' +
       (b.shop&&b.shop.brand ? ' <span class="dbc-brand">'+b.shop.brand+'</span>' : '') +
-      ' <span class="dbc-buy">Shop →</span></a>';
+      ' <span class="dbc-buy">Guide →</span></a>';
   }).join("");
 
   // ── Open overlay ──
@@ -2991,9 +3468,9 @@ function openGoogleMaps() {
   window.open("https://www.google.com/maps/dir/?api=1&destination=" + _detailLat + "," + _detailLon + "&destination_place_id=" + name, "_blank");
 }
 
-// Swipe-left or Escape to close detail
+// Swipe-left or Escape to close detail / lure guide
 document.addEventListener("keydown", function(e) {
-  if (e.key === "Escape") closeDetail();
+  if (e.key === "Escape") { closeLureGuide(); closeDetail(); }
 });
 
 // ── Strategy builder ──
