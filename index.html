@@ -3825,14 +3825,23 @@ function startFishCycle() {
     }), { duration: dur1, easing: 'linear', fill: 'forwards' });
 
     anim1.onfinish = function() {
-      anim1.cancel();
+      // Fish stays at off-screen-left position via fill:forwards (no cancel yet)
 
       // Small splash as fish exits left
       emitSplash(0, hdrRect.height * 0.5);
 
-      // Off-screen pause — random 500-1400ms (fish cruising around back)
-      var pauseMs = 500 + Math.random() * 900;
+      // ── Fade out while fish is off-screen left ──
+      wrap.style.transition = 'opacity 0.4s ease';
+      wrap.style.opacity = '0';
+
+      // Off-screen pause — random 600-1400ms (fish cruising around back)
+      var pauseMs = 600 + Math.random() * 800;
       setTimeout(function() {
+
+        // ── Cancel Phase 1 (releases the fill) and reposition to right ──
+        anim1.cancel();
+        wrap.style.transition = '';
+        wrap.style.opacity = '0'; // stay invisible until Phase 2 fades it in
 
         // Splash as fish re-enters from the right
         emitSplash(hdrRect.width - 10, hdrRect.height * 0.5);
@@ -3841,9 +3850,20 @@ function startFishCycle() {
         var dist2 = Math.abs(offRight - startX);
         var dur2  = 3500 + Math.random() * 1800;
         setTailSpeed(dist2 / (dur2 / 1000));
-        var anim2 = wrap.animate(swimFrames(offRight, startX, {
+
+        // Build frames with opacity fade-in at start, fade-out at end
+        var phase2Frames = swimFrames(offRight, startX, {
           cycles: 3, bobAmp: 4, ease: 'decel', steps: 50
-        }), { duration: dur2, easing: 'linear', fill: 'forwards' });
+        });
+        phase2Frames.forEach(function(f) {
+          if (f.offset < 0.08)       f.opacity = (f.offset / 0.08);        // fade in
+          else if (f.offset > 0.94)  f.opacity = (1 - f.offset) / 0.06;   // fade out at end
+          else                       f.opacity = 1;
+        });
+
+        var anim2 = wrap.animate(phase2Frames, {
+          duration: dur2, easing: 'linear', fill: 'forwards'
+        });
 
         anim2.onfinish = function() {
           anim2.cancel();
