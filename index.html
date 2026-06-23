@@ -2159,6 +2159,104 @@ function noPhotos(name, cont, score) {
     '</div>';
 }
 
+// ═══════════════════════════════════════════
+// PHOTO LOADER — Google Custom Search (Images)
+// ═══════════════════════════════════════════
+var GOOGLE_CS_KEY = localStorage.getItem('google_cs_key') || '';
+var GOOGLE_CX = localStorage.getItem('google_cs_cx') || '';
+var _photoCache = {};
+try { var _cached = JSON.parse(localStorage.getItem('photo_cache') || '{}'); Object.assign(_photoCache, _cached); } catch(e) {}
+
+function savePhotoCache() {
+  try { localStorage.setItem('photo_cache', JSON.stringify(_photoCache)); } catch(e) {}
+}
+
+function loadLakePhoto(name, cont, score) {
+  var cacheKey = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  
+  // Check cache first
+  if (_photoCache[cacheKey]) {
+    renderLakePhoto(cont, _photoCache[cacheKey].url, _photoCache[cacheKey].credit, score, name);
+    return;
+  }
+  
+  if (GOOGLE_CS_KEY && GOOGLE_CX) {
+    fetchGoogleImages(name, function(url, credit) {
+      if (url) {
+        _photoCache[cacheKey] = { url: url, credit: credit };
+        savePhotoCache();
+        renderLakePhoto(cont, url, credit, score, name);
+      } else {
+        noPhotos(name, cont, score);
+      }
+    });
+  } else {
+    noPhotos(name, cont, score);
+  }
+}
+
+function fetchGoogleImages(name, callback) {
+  var clean = name.replace(/Lake|Reservoir|Lake |Reservoir /gi, '').trim();
+  if (!clean || clean.length < 2) clean = 'texas lake';
+  
+  var url = 'https://www.googleapis.com/customsearch/v1' +
+    '?key=' + encodeURIComponent(GOOGLE_CS_KEY) +
+    '&cx=' + encodeURIComponent(GOOGLE_CX) +
+    '&q=' + encodeURIComponent(clean + ' lake fishing') +
+    '&searchType=image' +
+    '&num=10' +
+    '&safe=active';
+  
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.items && data.items.length > 0) {
+        var best = data.items[0];
+        for (var i = 1; i < data.items.length; i++) {
+          if (data.items[i].image && data.items[i].image.contextLink) {
+            best = data.items[i];
+            break;
+          }
+        }
+        var imgUrl = best.image && best.image.thumbnailLink
+          ? best.image.thumbnailLink.replace(/=s[0-9]+$/, '=s1200')
+          : best.link;
+        var credit = best.image && best.image.source ? 'Image via ' + best.image.source : '';
+        callback(imgUrl, credit);
+      } else {
+        callback(null, null);
+      }
+    })
+    .catch(function() { callback(null, null); });
+}
+
+function renderLakePhoto(cont, imgUrl, credit, score, name) {
+  var label = '';
+  if (score >= 7) label = 'Hot Spot';
+  else if (score >= 5) label = 'Fair Bite';
+  else label = 'Slow Day';
+  var accent = score >= 7 ? 'var(--good)' : score >= 5 ? 'var(--ok)' : 'var(--bad)';
+  var safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  
+  cont.innerHTML = 
+    '<div class="lake-photo-wrapper" style="position:relative;">' +
+      '<img src="' + imgUrl + '" alt="' + safeName + '" style="width:100%;height:160px;object-fit:cover;border-radius:var(--radius);display:block;" loading="lazy">' +
+      '<div class="lake-photo-overlay"></div>' +
+      '<div class="lake-photo-info">' +
+        '<span class="lake-photo-name">' + safeName + '</span>' +
+        '<span class="lake-photo-label" style="color:' + accent + ';">' + label + '</span>' +
+      '</div>' +
+    '</div>' +
+    (credit ? '<div class="detail-photo-credit">' + credit + '</div>' : '');
+  
+  var img = cont.querySelector('img');
+  if (img) {
+    img.onerror = function() {
+      noPhotos(name, cont, score);
+    };
+  }
+}
+
 function openDetail(lake) {
   // Accept a store key string or a raw object
   if (typeof lake === "string") lake = _cardData[lake];
@@ -2226,7 +2324,7 @@ function openDetail(lake) {
 
   // ── Detail map ──
   setTimeout(function() { initDetailMap(lake.lat, lake.lon, lake.name, hex, lake.score); }, 80);
-  noPhotos(lake.name, document.getElementById("detailSceneCard"), lake.score);
+  loadLakePhoto(lake.name, document.getElementById("detailSceneCard"), lake.score);
 }
 
 function closeDetail() {
@@ -2395,28 +2493,31 @@ function buildStrategy(lake, moon, hour, srH, ssH) {
 }
 
 // ═══════════════════════════════════════════
-// SETTINGS — Unsplash API key
+// SETTINGS — Google Custom Search API keys
 // ═══════════════════════════════════════════
 function showSettings() {
-  var key = localStorage.getItem('unsplash_key') || '';
+  var csKey = localStorage.getItem('google_cs_key') || '';
+  var cx = localStorage.getItem('google_cs_cx') || '';
   var modal = document.getElementById('settingsModal');
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'settingsModal';
     modal.className = 'settings-modal';
     modal.innerHTML = '<div class="settings-panel">' +
-      '<h3>Photo Settings</h3>' +
-      '<p>Enter your free Unsplash API key to load real lake photos. <a href="https://unsplash.com/oauth/applications" target="_blank" style="color:var(--good)">Get one here</a> (takes 2 min, free).</p>' +
-      '<input id="apiKeyInput" type="text" placeholder="Client-ID abc123xyz...">' +
-      '<div><button class="settings-save" onclick="saveApiKey()">Save</button>' +
+      '<h3>Photo API Settings</h3>' +
+      '<p>Enter your Google Custom Search API keys to load real lake photos. <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--good)">Get API key</a> & <a href="https://programmablesearchengine.google.com/" target="_blank" style="color:var(--good)">Search Engine ID</a></p>' +
+      '<input id="apiKeyInput" type="text" placeholder="API key (AIzaSy...)">' +
+      '<input id="cxInput" type="text" placeholder="Search Engine ID (CAX...)">' +
+      '<div><button class="settings-save" onclick="saveApiKeys()">Save</button>' +
       '<button class="settings-close" onclick="hideSettings()">Close</button></div>' +
       '<div class="settings-status disconnected" id="settingsStatus">Not connected</div>' +
       '</div>';
     document.body.appendChild(modal);
     modal.addEventListener('click', function(e) { if (e.target === modal) hideSettings(); });
   }
-  document.getElementById('apiKeyInput').value = key;
-  updateSettingsStatus(key);
+  document.getElementById('apiKeyInput').value = csKey;
+  document.getElementById('cxInput').value = cx;
+  updateSettingsStatus(csKey, cx);
   modal.classList.add('open');
 }
 
@@ -2425,22 +2526,23 @@ function hideSettings() {
   if (modal) modal.classList.remove('open');
 }
 
-function saveApiKey() {
-  var input = document.getElementById('apiKeyInput');
-  var key = input.value.trim();
-  localStorage.setItem('unsplash_key', key);
-  updateSettingsStatus(key);
+function saveApiKeys() {
+  var csKey = document.getElementById('apiKeyInput').value.trim();
+  var cx = document.getElementById('cxInput').value.trim();
+  localStorage.setItem('google_cs_key', csKey);
+  localStorage.setItem('google_cs_cx', cx);
+  updateSettingsStatus(csKey, cx);
 }
 
-function updateSettingsStatus(key) {
+function updateSettingsStatus(csKey, cx) {
   var el = document.getElementById('settingsStatus');
   if (!el) return;
-  if (key && key.length > 5) {
+  if (csKey && csKey.length > 10 && cx && cx.length > 10) {
     el.className = 'settings-status connected';
-    el.textContent = '✓ API key saved';
+    el.textContent = '✓ Google Photos ready — open a lake to load images';
   } else {
     el.className = 'settings-status disconnected';
-    el.textContent = 'Not connected — photos will use Wikipedia fallback';
+    el.textContent = 'Not connected — photos will show lake info card';
   }
 }
 
