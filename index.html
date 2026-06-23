@@ -89,27 +89,28 @@ header {
   margin-right:0.35em;
   display:inline-block;
 }
-/* Swimming fish that sweeps across the title */
+/* Swimming fish (app icon) that sweeps across the title */
 .hdr-title .swim-fish {
   position:absolute;
   left:60px;
   top:50%;
   transform:translateY(-50%);
-  font-size:16px;
+  width:28px; height:28px;
+  object-fit:contain;
   pointer-events:none;
   opacity:0;
-  animation:swimAcross 4s ease-in-out infinite;
+  animation:swimAcross 5s ease-in-out infinite;
   z-index:2;
-  filter:drop-shadow(0 0 4px rgba(74,107,133,0.5));
+  filter:drop-shadow(0 0 5px rgba(74,107,133,0.6)) drop-shadow(0 1px 2px rgba(0,0,0,0.4));
 }
 @keyframes swimAcross {
-  0%   { left:60px;  opacity:0; transform:translateY(-50%) scaleX(-1) rotate(-5deg); }
-  10%  { opacity:0.85; }
-  45%  { transform:translateY(-30%) scaleX(-1) rotate(3deg); }
-  50%  { transform:translateY(-50%) scaleX(-1) rotate(0deg); }
-  55%  { transform:translateY(-70%) scaleX(-1) rotate(-3deg); }
-  90%  { opacity:0.85; }
-  100% { left:calc(100% - 10px); opacity:0; transform:translateY(-50%) scaleX(-1) rotate(5deg); }
+  0%   { left:60px;  opacity:0; transform:translateY(-50%) scaleX(-1) rotate(-4deg); }
+  8%   { opacity:0.9; }
+  25%  { transform:translateY(-35%) scaleX(-1) rotate(3deg); }
+  50%  { transform:translateY(-55%) scaleX(-1) rotate(-2deg); }
+  75%  { transform:translateY(-40%) scaleX(-1) rotate(2deg); }
+  92%  { opacity:0.9; }
+  100% { left:calc(100% - 20px); opacity:0; transform:translateY(-50%) scaleX(-1) rotate(4deg); }
 }
 .hdr-sub {
   font-size:10px; color:var(--dim); margin-top:3px;
@@ -1063,7 +1064,7 @@ a.bait-chip, a.detail-bait-chip {
 
 <header>
   <div class="header-left" style="flex:1">
-    <div class="hdr-title"><img src="icon-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;margin-right:10px;border-radius:12px;object-fit:contain;background:var(--card2);padding:4px"><span class="title-fx">Texas Bass Report</span><span class="swim-fish">🐟</span></div>
+    <div class="hdr-title"><img src="icon-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;margin-right:10px;border-radius:12px;object-fit:contain;background:var(--card2);padding:4px"><span class="title-fx">Texas Bass Report</span><img class="swim-fish" src="icon-64.png" alt=""></div>
     <div class="hdr-sub" id="statusText">Loading…</div>
   </div>
   <button class="geo-btn" onclick="useMyLocation()" title="Use GPS location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C9.24 2 7 4.24 7 7c0 4.5 5 11 5 11s5-6.5 5-11c0-2.76-2.24-5-5-5z"/><circle cx="12" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg style="width:22px;height:22px;object-fit:contain"></button>
