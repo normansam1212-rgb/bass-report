@@ -103,14 +103,16 @@ header {
   margin-right:0.35em;
   display:inline-block;
 }
-/* Solid backdrop behind words the fish hides behind — matches header bg */
+/* Solid backdrop behind words the fish hides behind — matches header bg.
+   Colors are the header's gradient pre-composited over the body (#0a0a08)
+   so the box is invisible against the header. */
 .hdr-title .title-fx.blocking::before {
   content:"";
   position:absolute;
-  left:-4px; right:-4px;
-  top:-3px; bottom:-3px;
-  background:linear-gradient(180deg, rgba(10,30,35,0.92) 0%, rgba(20,22,16,0.92) 100%);
-  border-radius:5px;
+  left:-6px; right:-6px;
+  top:-4px; bottom:-4px;
+  background:linear-gradient(180deg, rgb(10,27,31) 0%, rgb(23,24,17) 100%);
+  border-radius:6px;
   z-index:-1;
 }
 /* Swimming fish — wrapper uses translateX (GPU-accelerated), img wiggles via CSS */
