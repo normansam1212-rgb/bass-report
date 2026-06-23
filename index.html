@@ -2208,7 +2208,7 @@ function fetchGoogleImages(name, callback) {
     '&num=10' +
     '&safe=active';
   
-  fetch(url)
+  fetch(url, { referrerPolicy: 'origin' })
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.items && data.items.length > 0) {
