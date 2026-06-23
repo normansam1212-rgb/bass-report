@@ -1556,87 +1556,87 @@ function getBaits(weather, trend, waterTemp, moon, hour, srH, ssH, clarity, dept
     if(!pool[name]||pri>pool[name].pri) pool[name]={name:name,why:why,pri:pri};
   }
 
-  // ── Water-profile base priorities (this is what varies lake-to-lake) ──
-  if(clarity==="clear" && depth==="deep"){
-    add("Drop Shot","clear deep finesse",12);
-    add("Jerkbait","suspending clear",10);
-    add("Football Jig","deep structure",10);
-    add("Ned Rig","clear finesse",9);
-    add("Swimbait (slow)","deep suspended",8);
-    add("Carolina Rig","deep dragging",7);
-  } else if(clarity==="clear" && depth==="shallow"){
-    add("Wacky Senko","clear shallow finesse",12);
-    add("Weightless Fluke","clear shallow",10);
-    add("Ned Rig","clear finesse",9);
-    add("Tube","clear finesse",8);
-    add("Neko Rig","clear bottom",7);
-  } else if(clarity==="muddy" && depth==="shallow"){
-    add("Jig (slow)","dark bulky",12);
-    add("Buzzbait","dark thump",10);
-    add("Creature Bait","bulk dark profile",10);
-    add("Lipless Crank","loud rattle",9);
-    add("Spinnerbait","big thump",8);
-    add("Frog","over muddy mats",7);
-  } else if(clarity==="muddy"){
-    add("Spinnerbait","vibration",11);
-    add("Chatterbait","vibration",10);
-    add("Jig (slow)","dark bulky",9);
-    add("Lipless Crank","loud rattle",8);
-    add("Creature Bait","bulk profile",7);
-  } else if(depth==="deep"){
-    add("Football Jig","deep structure",11);
-    add("Crankbait","deep diving",10);
-    add("Carolina Rig","deep dragging",9);
-    add("Drop Shot","deep finesse",8);
-    add("Jig (slow)","deep bottom",7);
-  } else if(depth==="shallow"){
-    add("Spinnerbait","shallow search",11);
-    add("Chatterbait","shallow search",10);
-    add("Crankbait","shallow wood",9);
-    add("Texas Rig","shallow cover",8);
-    add("Swim Jig","shallow vegetation",7);
-  } else {
-    // stained / mod (default Texas profile)
-    add("Spinnerbait","stained search",10);
-    add("Chatterbait","stained search",10);
-    add("Crankbait","stained cover",9);
-    add("Texas Rig","universal",8);
-    add("Shaky Head","finesse",7);
-    add("Wacky Senko","finesse",6);
-  }
+  // ── Water-profile base priorities (the foundation — varies lake-to-lake) ──
+    if(clarity==="clear" && depth==="deep"){
+      add("Drop Shot","clear deep finesse",19);
+      add("Jerkbait","suspending clear",17);
+      add("Football Jig","deep structure",17);
+      add("Ned Rig","clear finesse",16);
+      add("Swimbait (slow)","deep suspended",15);
+      add("Carolina Rig","deep dragging",14);
+    } else if(clarity==="clear" && depth==="shallow"){
+      add("Wacky Senko","clear shallow finesse",19);
+      add("Weightless Fluke","clear shallow",17);
+      add("Ned Rig","clear finesse",16);
+      add("Tube","clear finesse",15);
+      add("Neko Rig","clear bottom",14);
+    } else if(clarity==="muddy" && depth==="shallow"){
+      add("Jig (slow)","dark bulky",19);
+      add("Buzzbait","dark thump",17);
+      add("Creature Bait","bulk dark profile",17);
+      add("Lipless Crank","loud rattle",16);
+      add("Spinnerbait","big thump",15);
+      add("Frog","over muddy mats",14);
+    } else if(clarity==="muddy"){
+      add("Spinnerbait","vibration",18);
+      add("Chatterbait","vibration",17);
+      add("Jig (slow)","dark bulky",16);
+      add("Lipless Crank","loud rattle",15);
+      add("Creature Bait","bulk profile",14);
+    } else if(depth==="deep"){
+      add("Football Jig","deep structure",18);
+      add("Crankbait","deep diving",17);
+      add("Carolina Rig","deep dragging",16);
+      add("Drop Shot","deep finesse",15);
+      add("Jig (slow)","deep bottom",14);
+    } else if(depth==="shallow"){
+      add("Spinnerbait","shallow search",18);
+      add("Chatterbait","shallow search",17);
+      add("Crankbait","shallow wood",16);
+      add("Texas Rig","shallow cover",15);
+      add("Swim Jig","shallow vegetation",14);
+    } else {
+      // stained / mod (default Texas profile)
+      add("Spinnerbait","stained search",17);
+      add("Chatterbait","stained search",16);
+      add("Crankbait","stained cover",15);
+      add("Texas Rig","universal",14);
+      add("Shaky Head","finesse",13);
+      add("Wacky Senko","finesse",12);
+    }
 
-  // ── Condition modifiers / additions (tune the list per right-now) ──
-  if(lowLight){
-    add("Topwater Popper","low light surface",15);
-    add("Buzzbait","surface aggression",14);
-  }
-  if(clouds>=50 && wind>=5){
-    add("Spinnerbait","cloud+chop",13);
-    add("Chatterbait","stained chop",12);
-  }
-  if(clouds<30 && wind<5){
-    add("Ned Rig","clear/calm",12);
-    add("Drop Shot","pressured fish",11);
-  }
-  if(tr.indexOf("falling")!==-1){
-    add("Crankbait","falling baro",13);
-    add("Jerkbait","pre-front active",12);
-  }
-  if(tr.indexOf("rising")!==-1){
-    add("Shaky Head","post-front",12);
-    add("Swimbait (slow)","suspended fish",11);
-  }
-  if(waterTemp>=65 && waterTemp<=80){
-    add("Frog","warm shallow",12);
-    add("Lipless Crank","active summer",11);
-    add("Swim Jig","warm vegetation",10);
-  }
-  if(waterTemp<60){
-    add("Jig (slow)","cold bottom",13);
-    add("Jigging Spoon","deep cold fish",12);
-    add("Blade Bait","cold vertical",10);
-  }
-  if(moon.score===3) add("Big Swimbait","peak lunar",14);
+    // ── Condition modifiers (tune the top 1-2 slots per right-now weather) ──
+    if(lowLight){
+      add("Topwater Popper","low light surface",16);
+      add("Buzzbait","surface aggression",15);
+    }
+    if(clouds>=50 && wind>=5){
+      add("Spinnerbait","cloud+chop",16);
+      add("Chatterbait","stained chop",15);
+    }
+    if(clouds<30 && wind<5){
+      add("Ned Rig","clear/calm",15);
+      add("Drop Shot","pressured fish",14);
+    }
+    if(tr.indexOf("falling")!==-1){
+      add("Crankbait","falling baro",16);
+      add("Jerkbait","pre-front active",15);
+    }
+    if(tr.indexOf("rising")!==-1){
+      add("Shaky Head","post-front",15);
+      add("Swimbait (slow)","suspended fish",14);
+    }
+    if(waterTemp>=65 && waterTemp<=80){
+      add("Frog","warm shallow",15);
+      add("Lipless Crank","active summer",14);
+      add("Swim Jig","warm vegetation",13);
+    }
+    if(waterTemp<60){
+      add("Jig (slow)","cold bottom",16);
+      add("Jigging Spoon","deep cold fish",15);
+      add("Blade Bait","cold vertical",14);
+    }
+    if(moon.score===3) add("Big Swimbait","peak lunar",16);
 
   // Safety net
   if(Object.keys(pool).length<3){
