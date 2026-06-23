@@ -584,9 +584,10 @@ footer { padding:24px 20px 10px; text-align:center; font-size:10px; color:var(--
 
 /* Top info */
 .detail-top {
-  padding:calc(var(--st) + 18px) 20px 0;
-  background:linear-gradient(180deg, rgba(28,30,20,0.92) 70%, transparent);
+  padding:calc(var(--st) + 18px) 20px 20px;
+  background:linear-gradient(180deg, rgba(28,30,20,0.95) 60%, rgba(28,30,20,0.75) 85%, transparent);
   position:relative;
+  border-bottom:1px solid rgba(255,255,255,.04);
 }
 .detail-close {
   display:inline-flex; align-items:center; gap:5px;
@@ -598,8 +599,9 @@ footer { padding:24px 20px 10px; text-align:center; font-size:10px; color:var(--
 .detail-close:active { opacity:.5; transform:translateX(-3px); }
 .detail-badge {
   display:inline-flex; align-items:center; gap:6px;
-  font-size:10px; font-weight:800; letter-spacing:2.2px;
-  text-transform:uppercase; color:var(--mid); margin-bottom:12px;
+  font-size:11px; font-weight:700; letter-spacing:1.8px;
+  text-transform:uppercase; color:var(--mid); opacity:.75;
+  margin-bottom:14px;
 }
 .detail-name {
   font-size:30px; font-weight:900; letter-spacing:-.8px;
@@ -753,19 +755,20 @@ footer { padding:24px 20px 10px; text-align:center; font-size:10px; color:var(--
 }
 
 /* Detail scenic card fallback */
-/* Settings button */
+/* Settings button — top-right corner */
 .detail-settings-btn {
+  position:absolute; top:calc(var(--st) + 16px); right:20px;
   background: var(--card2);
   border: 1px solid var(--border);
   color: var(--mid);
-  width: 34px; height: 34px;
-  border-radius: 10px;
-  font-size: 16px;
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  font-size: 17px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  margin-left: 6px;
   transition: all .2s var(--ease);
   box-shadow: var(--inner-glow);
+  z-index:2;
 }
 .detail-settings-btn:hover { background: var(--card-hi); color: var(--text); border-color: rgba(110,128,64,0.45); }
 
@@ -1189,7 +1192,7 @@ a.bait-chip, a.detail-bait-chip {
     <div class="detail-top" id="detailTop">
             <button class="detail-close" onclick="closeDetail()">‹ Back</button>
       <button class="detail-settings-btn" onclick="showSettings()" title="Settings">⚙</button>
-      <div class="detail-badge" id="detailBadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;object-fit:contain">Water Detail</div>
+      <div class="detail-badge" id="detailBadge">–</div>
       <div class="detail-name" id="detailName">–</div>
       <div class="detail-meta" id="detailMeta">–</div>
       <div class="detail-score-row">
@@ -3322,7 +3325,7 @@ function openDetail(lake) {
   var ssH  = lake.ssH || 20;
 
   // ── Badge & name ──
-  document.getElementById("detailBadge").innerHTML = IC.fish + " " + (lake.type || "Water");
+  document.getElementById("detailBadge").innerHTML = IC.lake + " " + (lake.type || "Lake");
   document.getElementById("detailName").textContent  = lake.name;
 
   // Meta line
@@ -3330,7 +3333,7 @@ function openDetail(lake) {
     ? ((lake.dist < 10 ? lake.dist.toFixed(1) : Math.round(lake.dist)) + "mi away · ")
     : "";
   document.getElementById("detailMeta").innerHTML =
-    escHtml(distStr) + escHtml(lake.region || "") + (lake.wt != null ? " · " + IC.wave + " " + escHtml(lake.wt) + "°F est." : "");
+      escHtml(distStr) + escHtml(lake.region || "") + (lake.wt != null ? " · " + IC.wave + " ~" + escHtml(lake.wt) + "°F" : "");
 
   // ── Score ring ──
   document.getElementById("detailRing").innerHTML =
