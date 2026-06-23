@@ -96,16 +96,19 @@ header {
 }
 .hdr-title .title-fx {
   position:relative; z-index:3;
+  margin-right:0.35em;
+  display:inline-block;
+}
+.hdr-title .title-inner {
   background:linear-gradient(180deg, #E8DDD0 0%, #9E8B7A 35%, #4A6B85 65%, #2B4F6E 100%);
   -webkit-background-clip:text;
   background-clip:text;
   -webkit-text-fill-color:transparent;
-  margin-right:0.35em;
   display:inline-block;
 }
 /* Solid backdrop behind words the fish hides behind — matches header bg.
-   Colors are the header's gradient pre-composited over the body (#0a0a08)
-   so the box is invisible against the header. */
+   The gradient is now on .title-inner (a child), so it paints on top of
+   this backdrop instead of being covered by it. */
 .hdr-title .title-fx.blocking::before {
   content:"";
   position:absolute;
@@ -1116,7 +1119,7 @@ a.bait-chip, a.detail-bait-chip {
     <img id="staticIcon" src="fish-swim-64.png" alt="Bass" style="width:48px;height:48px;vertical-align:middle;border-radius:12px;object-fit:contain;padding:4px;transition:opacity 0.4s ease">
   </div>
   <div class="hdr-center">
-    <div class="hdr-title"><span class="title-fx blocking">Texas</span> <span class="title-fx">Bass</span> <span class="title-fx blocking">Report</span></div>
+    <div class="hdr-title"><span class="title-fx blocking"><span class="title-inner">Texas</span></span> <span class="title-fx"><span class="title-inner">Bass</span></span> <span class="title-fx blocking"><span class="title-inner">Report</span></span></div>
   </div>
   <div class="hdr-right">
     <div class="hdr-sub" id="statusText">Loading…</div>
