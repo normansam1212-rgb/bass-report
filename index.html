@@ -755,24 +755,6 @@ footer { padding:24px 20px 10px; text-align:center; font-size:10px; color:var(--
 }
 
 /* Detail scenic card fallback */
-/* Settings button — top-right corner */
-.detail-settings-btn {
-  position:absolute; top:calc(var(--st) + 16px); right:20px;
-  background: var(--card2);
-  border: 1px solid var(--border);
-  color: var(--mid);
-  width: 36px; height: 36px;
-  border-radius: 12px;
-  font-size: 17px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .2s var(--ease);
-  box-shadow: var(--inner-glow);
-  z-index:2;
-}
-.detail-settings-btn:hover { background: var(--card-hi); color: var(--text); border-color: rgba(110,128,64,0.45); }
-
-/* Settings modal */
 .settings-modal {
   position: fixed; inset: 0; z-index: 1000;
   background: rgba(0,0,0,.75);
@@ -1191,7 +1173,6 @@ a.bait-chip, a.detail-bait-chip {
     <!-- TOP: name, score, breakdown -->
     <div class="detail-top" id="detailTop">
             <button class="detail-close" onclick="closeDetail()">‹ Back</button>
-      <button class="detail-settings-btn" onclick="showSettings()" title="Settings">⚙</button>
       <div class="detail-badge" id="detailBadge">–</div>
       <div class="detail-name" id="detailName">–</div>
       <div class="detail-meta" id="detailMeta">–</div>
