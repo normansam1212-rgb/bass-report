@@ -658,6 +658,17 @@ footer { padding:24px 20px 10px; text-align:center; font-size:10px; color:var(--
   display: block; font-size: 11px; font-weight: 700; margin-top: 3px;
   text-shadow: 0 1px 4px rgba(0,0,0,.7);
 }
+.sat-badge {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(10,10,8,0.85);
+  border: 1px solid rgba(110,128,64,0.4);
+  color: #c8e4f5;
+  font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 6px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  letter-spacing: 0.3px;
+}
 
 /* Detail scenic card fallback */
 /* Settings button */
@@ -2664,10 +2675,8 @@ function noPhotos(name, cont, score) {
 }
 
 // ═══════════════════════════════════════════
-// PHOTO LOADER — Google Custom Search (Images)
+// PHOTO LOADER — Wikimedia Commons + Esri Satellite (no API keys needed)
 // ═══════════════════════════════════════════
-var GOOGLE_CS_KEY = 'AIzaSyBYUR7xuduupvfsqOcYPxUUcdNy_9y-zJg';
-var GOOGLE_CX = '877feaa6f0bc64aab';
 var _photoCache = {};
 try { var _cached = JSON.parse(localStorage.getItem('photo_cache') || '{}'); Object.assign(_photoCache, _cached); } catch(e) {}
 
@@ -2675,77 +2684,139 @@ function savePhotoCache() {
   try { localStorage.setItem('photo_cache', JSON.stringify(_photoCache)); } catch(e) {}
 }
 
-function loadLakePhoto(name, cont, score) {
+function loadLakePhoto(name, cont, score, lat, lon) {
   var cacheKey = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-  
+
   // Check cache first
   if (_photoCache[cacheKey]) {
-    renderLakePhoto(cont, _photoCache[cacheKey].url, _photoCache[cacheKey].credit, score, name);
+    renderLakePhoto(cont, _photoCache[cacheKey].url, _photoCache[cacheKey].credit, score, name, _photoCache[cacheKey].satellite);
     return;
   }
-  
-  if (GOOGLE_CS_KEY && GOOGLE_CX) {
-    fetchGoogleImages(name, function(url, credit) {
-      if (url) {
-        _photoCache[cacheKey] = { url: url, credit: credit };
-        savePhotoCache();
-        renderLakePhoto(cont, url, credit, score, name);
-      } else {
-        noPhotos(name, cont, score);
-      }
-    });
-  } else {
-    noPhotos(name, cont, score);
-  }
+
+  // Layer 1: Try Wikimedia Commons (real photos, no API key)
+  fetchWikimediaPhoto(name, function(wmUrl, wmCredit) {
+    if (wmUrl) {
+      _photoCache[cacheKey] = { url: wmUrl, credit: wmCredit, satellite: false };
+      savePhotoCache();
+      renderLakePhoto(cont, wmUrl, wmCredit, score, name, false);
+    } else {
+      // Layer 2: Esri satellite static image (guaranteed fallback, no API key)
+      var satUrl = buildSatelliteImage(lat, lon, name);
+      var satCredit = 'Satellite imagery via Esri World Imagery';
+      _photoCache[cacheKey] = { url: satUrl, credit: satCredit, satellite: true };
+      savePhotoCache();
+      renderLakePhoto(cont, satUrl, satCredit, score, name, true);
+    }
+  });
 }
 
-function fetchGoogleImages(name, callback) {
-  var clean = name.replace(/Lake|Reservoir|Lake |Reservoir /gi, '').trim();
-  if (!clean || clean.length < 2) clean = 'texas lake';
-  
-  var url = 'https://www.googleapis.com/customsearch/v1' +
-    '?key=' + encodeURIComponent(GOOGLE_CS_KEY) +
-    '&cx=' + encodeURIComponent(GOOGLE_CX) +
-    '&q=' + encodeURIComponent(clean + ' lake fishing') +
-    '&searchType=image' +
-    '&num=10' +
-    '&safe=active';
-  
-  fetch(url, { referrerPolicy: 'origin' })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.items && data.items.length > 0) {
-        var best = data.items[0];
-        for (var i = 1; i < data.items.length; i++) {
-          if (data.items[i].image && data.items[i].image.contextLink) {
-            best = data.items[i];
-            break;
-          }
+// ── Layer 1: Wikimedia Commons API ──
+function fetchWikimediaPhoto(name, callback) {
+  // Clean up the lake name for better search results
+  var searchTerms = [
+    name + ' Texas',
+    name,
+    name.replace(/Lake |Reservoir /i, '').trim() + ' lake Texas'
+  ];
+
+  var termIdx = 0;
+
+  function tryNext() {
+    if (termIdx >= searchTerms.length) {
+      callback(null, null);
+      return;
+    }
+    var term = searchTerms[termIdx++];
+    var url = 'https://commons.wikimedia.org/w/api.php?action=query&format=json' +
+      '&generator=search&gsrsearch=' + encodeURIComponent(term) +
+      '&gsrnamespace=6&gsrlimit=8' +
+      '&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=1200' +
+      '&origin=*';
+
+    fetch(url, { referrerPolicy: 'origin' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var pages = data.query && data.query.pages;
+        if (!pages) { tryNext(); return; }
+
+        // Filter: only accept actual photos (jpg/png), skip maps, diagrams, logos
+        var candidates = [];
+        for (var key in pages) {
+          var p = pages[key];
+          var info = p.imageinfo && p.imageinfo[0];
+          if (!info || !info.thumburl) continue;
+
+          var title = (p.title || '').toLowerCase();
+          var imgUrl = (info.url || '').toLowerCase();
+
+          // Skip non-photo files
+          if (title.indexOf('map') >= 0 || title.indexOf('logo') >= 0 ||
+              title.indexOf('diagram') >= 0 || title.indexOf('chart') >= 0 ||
+              title.indexOf('svg') >= 0 || title.indexOf('.gif') >= 0) continue;
+
+          // Only accept jpg/png/jpeg
+          if (imgUrl.indexOf('.jpg') < 0 && imgUrl.indexOf('.jpeg') < 0 &&
+              imgUrl.indexOf('.png') < 0) continue;
+
+          // Extract credit info
+          var meta = info.extmetadata || {};
+          var artist = meta.Artist ? stripHtml(meta.Artist.value) : '';
+          var license = meta.LicenseShortName ? meta.LicenseShortName.value : '';
+          var credit = artist ? 'Photo: ' + artist : 'Wikimedia Commons';
+          if (license) credit += ' · ' + license;
+
+          candidates.push({ url: info.thumburl, credit: credit });
         }
-        var imgUrl = best.image && best.image.thumbnailLink
-          ? best.image.thumbnailLink.replace(/=s[0-9]+$/, '=s1200')
-          : best.link;
-        var credit = best.image && best.image.source ? 'Image via ' + best.image.source : '';
-        callback(imgUrl, credit);
-      } else {
-        callback(null, null);
-      }
-    })
-    .catch(function() { callback(null, null); });
+
+        if (candidates.length > 0) {
+          callback(candidates[0].url, candidates[0].credit);
+        } else {
+          tryNext();
+        }
+      })
+      .catch(function() { tryNext(); });
+  }
+
+  tryNext();
 }
 
-function renderLakePhoto(cont, imgUrl, credit, score, name) {
+function stripHtml(html) {
+  var tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return (tmp.textContent || tmp.innerText || '').trim().substring(0, 60);
+}
+
+// ── Layer 2: Esri Satellite Static Image ──
+function buildSatelliteImage(lat, lon, name) {
+  // Calculate a bounding box around the lake center
+  // ~0.06 degrees ≈ 4 miles — tight enough to show the water body clearly
+  var pad = 0.06;
+  var bbox = (lon - pad) + ',' + (lat - pad) + ',' + (lon + pad) + ',' + (lat + pad);
+  var url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export' +
+    '?bbox=' + bbox +
+    '&bboxSR=4326' +
+    '&size=800,400' +
+    '&format=jpg' +
+    '&f=image' +
+    '&imageSR=4326' +
+    '&dpi=96';
+  return url;
+}
+
+function renderLakePhoto(cont, imgUrl, credit, score, name, isSatellite) {
   var label = '';
   if (score >= 7) label = 'Hot Spot';
   else if (score >= 5) label = 'Fair Bite';
   else label = 'Slow Day';
   var accent = score >= 7 ? 'var(--good)' : score >= 5 ? 'var(--ok)' : 'var(--bad)';
   var safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  var satBadge = isSatellite ? '<span class="sat-badge">🛰 Satellite</span>' : '';
   
   cont.innerHTML = 
     '<div class="lake-photo-wrapper" style="position:relative;">' +
       '<img src="' + imgUrl + '" alt="' + safeName + '" style="width:100%;height:160px;object-fit:cover;border-radius:var(--radius);display:block;" loading="lazy">' +
       '<div class="lake-photo-overlay"></div>' +
+      satBadge +
       '<div class="lake-photo-info">' +
         '<span class="lake-photo-name">' + safeName + '</span>' +
         '<span class="lake-photo-label" style="color:' + accent + ';">' + label + '</span>' +
@@ -2838,7 +2909,7 @@ function openDetail(lake) {
 
   // ── Detail map ──
   setTimeout(function() { initDetailMap(lake.lat, lake.lon, lake.name, hex, lake.score); }, 80);
-  loadLakePhoto(lake.name, document.getElementById("detailSceneCard"), lake.score);
+  loadLakePhoto(lake.name, document.getElementById("detailSceneCard"), lake.score, lake.lat, lake.lon);
 }
 
 function closeDetail() {
