@@ -129,16 +129,16 @@ header .swim-fish-wrap .swim-fish {
    transform conflicts. skewX amplitude reduced (4°) and slowed (0.5s) for
    a smoother, less frenetic swish. */
 @keyframes tailWiggleRight {
-  0%, 100% { transform:scaleX(1) skewX(0deg); }
-  25%      { transform:scaleX(1) skewX(-4deg); }
-  50%      { transform:scaleX(1) skewX(0deg); }
-  75%      { transform:scaleX(1) skewX(4deg); }
-}
-@keyframes tailWiggleLeft {
   0%, 100% { transform:scaleX(-1) skewX(0deg); }
   25%      { transform:scaleX(-1) skewX(-4deg); }
   50%      { transform:scaleX(-1) skewX(0deg); }
-  75% { transform:scaleX(-1) skewX(4deg); }
+  75%      { transform:scaleX(-1) skewX(4deg); }
+}
+@keyframes tailWiggleLeft {
+  0%, 100% { transform:scaleX(1) skewX(0deg); }
+  25%      { transform:scaleX(1) skewX(-4deg); }
+  50%      { transform:scaleX(1) skewX(0deg); }
+  75% { transform:scaleX(1) skewX(4deg); }
 }
 .swim-fish.wiggle-right { animation:tailWiggleRight 0.5s ease-in-out infinite; }
 .swim-fish.wiggle-left  { animation:tailWiggleLeft 0.5s ease-in-out infinite; }
@@ -3873,9 +3873,9 @@ function startFishCycle() {
         // Smooth flip — quick scaleX through ~0.1, not a full squash to 0
         fishImg.classList.remove('wiggle-right');
         var flip = fishImg.animate([
-          { transform:'scaleX(1) skewX(0deg)' },
+          { transform:'scaleX(-1) skewX(0deg)' },
           { transform:'scaleX(0.1) skewX(0deg)' },
-          { transform:'scaleX(-1) skewX(0deg)' }
+          { transform:'scaleX(1) skewX(0deg)' }
         ], { duration: 280, easing:'cubic-bezier(0.4,0,0.6,1)', fill:'forwards' });
 
         flip.onfinish = function() {
