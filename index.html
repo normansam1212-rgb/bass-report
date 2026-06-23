@@ -129,15 +129,25 @@ header .swim-fish-wrap .swim-fish {
   object-fit:contain;
   filter:drop-shadow(0 0 8px rgba(74,107,133,0.7)) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
   transform-origin:55% 50%;
+  will-change:transform;
 }
-/* Tail wiggle — pure CSS on the img, runs independently of wrapper transform */
-@keyframes tailWiggle {
-  0%, 100% { transform:skewX(0deg); }
-  25%      { transform:skewX(-5deg); }
-  50%      { transform:skewX(0deg); }
-  75%      { transform:skewX(5deg); }
+/* Tail wiggle — facing direction baked into keyframes
+   transform conflicts. skewX amplitude reduced (4°) and slowed (0.5s) for
+   a smoother, less frenetic swish. */
+@keyframes tailWiggleRight {
+  0%, 100% { transform:scaleX(1) skewX(0deg); }
+  25%      { transform:scaleX(1) skewX(-4deg); }
+  50%      { transform:scaleX(1) skewX(0deg); }
+  75%      { transform:scaleX(1) skewX(4deg); }
 }
-.swim-fish.wiggling { animation:tailWiggle 0.4s ease-in-out infinite; }
+@keyframes tailWiggleLeft {
+  0%, 100% { transform:scaleX(-1) skewX(0deg); }
+  25%      { transform:scaleX(-1) skewX(-4deg); }
+  50%      { transform:scaleX(-1) skewX(0deg); }
+  75% { transform:scaleX(-1) skewX(4deg); }
+}
+.swim-fish.wiggle-right { animation:tailWiggleRight 0.5s ease-in-out infinite; }
+.swim-fish.wiggle-left  { animation:tailWiggleLeft 0.5s ease-in-out infinite; }
 /* Bubble trail */
 .fish-bubble {
   position:absolute;
@@ -3770,46 +3780,45 @@ function startFishCycle() {
 
     var iconRect = staticIcon.getBoundingClientRect();
     var hdrRect  = headerEl.getBoundingClientRect();
-    var tR = titleWords[0].getBoundingClientRect();
-    var bR = titleWords[1].getBoundingClientRect();
     var rR = titleWords[2].getBoundingClientRect();
 
-    var startX   = iconRect.left - hdrRect.left + 2;
-    var texasL   = tR.left - hdrRect.left;
-    var texasR   = tR.right - hdrRect.left;
-    var bassL    = bR.left - hdrRect.left;
-    var bassR    = bR.right - hdrRect.left;
-    var reportL  = rR.left - hdrRect.left;
-    var reportR  = rR.right - hdrRect.left;
-    var endX     = reportR + 14;
-    var gap1Mid  = (texasR + bassL) / 2;
-    var gap2Mid  = (bassR + reportL) / 2;
+    var startX = iconRect.left - hdrRect.left + 2;
+    var endX   = rR.right - hdrRect.left + 14;
+
+    // Reset facing — always start facing right
+    fishImg.classList.remove('wiggle-left', 'wiggle-right');
+    fishImg.classList.add('wiggle-right');
 
     staticIcon.style.opacity = '0';
     wrap.style.opacity = '1';
     wrap.style.zIndex = '2';
-    fishImg.classList.add('wiggling');
 
-    // ── RIGHT: single animation, all translateX/Y (GPU) ──
-    var dur1 = 4000;
-    var anim1 = wrap.animate([
-      { transform:'translate('+startX+'px,-50%)' },
-      { transform:'translate('+(startX+(texasL-startX)*0.7)+'px,-46%)', offset:0.12 },
-      { transform:'translate('+texasL+'px,-54%)', offset:0.20 },
-      { transform:'translate('+gap1Mid+'px,-48%)', offset:0.28 },
-      { transform:'translate('+bassL+'px,-50%)', offset:0.38 },
-      { transform:'translate('+((bassL+bassR)/2)+'px,-42%)', offset:0.48 },
-      { transform:'translate('+bassR+'px,-52%)', offset:0.58 },
-      { transform:'translate('+gap2Mid+'px,-56%)', offset:0.68 },
-      { transform:'translate('+reportL+'px,-48%)', offset:0.78 },
-      { transform:'translate('+reportR+'px,-54%)', offset:0.88 },
-      { transform:'translate('+endX+'px,-50%)' }
-    ], { duration: dur1, easing:'cubic-bezier(0.45,0,0.55,1)', fill:'forwards' });
+    // ── Generate smooth sinusoidal swim keyframes ──
+    // X moves linearly (constant swim speed — no easing stutter).
+    // Y bobs in a gentle sine wave: ±3% amplitude, 3 cycles per pass.
+    // 24 keyframes give a smooth curve without hand-tuned jitter.
+    function swimFrames(xFrom, xTo, cycles) {
+      var frames = [];
+      var n = 24;
+      for (var i = 0; i <= n; i++) {
+        var t = i / n;
+        var x = xFrom + (xTo - xFrom) * t;
+        var y = -50 + 3 * Math.sin(t * Math.PI * 2 * cycles);
+        frames.push({ transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(2)+'%)', offset:t });
+      }
+      return frames;
+    }
 
-    // Frame-accurate z-index swaps
+    // ── RIGHT: smooth swim across the title ──
+    var dur1 = 4200;
+    var anim1 = wrap.animate(swimFrames(startX, endX, 3), {
+      duration: dur1, easing:'linear', fill:'forwards'
+    });
+
+    // Frame-accurate z-index swaps (fish goes behind "Texas" & "Report")
     var swaps1 = [
-      { t: dur1 * 0.34, fn: setFront },
-      { t: dur1 * 0.64, fn: setBehind }
+      { t: dur1 * 0.30, fn: setFront },
+      { t: dur1 * 0.62, fn: setBehind }
     ];
     var si1 = 0;
     function checkSwaps1() {
@@ -3820,44 +3829,39 @@ function startFishCycle() {
     requestAnimationFrame(checkSwaps1);
 
     anim1.onfinish = function() {
-      // Hover
-      wrap.animate([
+      // Gentle hover — single smooth bob at the right edge (no jitter)
+      var hoverDur = 500;
+      var hover = wrap.animate([
         { transform:'translate('+endX+'px,-50%)' },
-        { transform:'translate('+endX+'px,-46%)' },
-        { transform:'translate('+endX+'px,-53%)' },
-        { transform:'translate('+endX+'px,-48%)' },
+        { transform:'translate('+endX+'px,-46.5%)', offset:0.5 },
         { transform:'translate('+endX+'px,-50%)' }
-      ], { duration: 700, easing:'ease-in-out', fill:'forwards' }).onfinish = function() {
+      ], { duration: hoverDur, easing:'ease-in-out', fill:'forwards' });
 
-        // Flip
-        fishImg.classList.remove('wiggling');
-        fishImg.animate([
-          { transform:'scaleX(-1)' },
-          { transform:'scaleX(0)' },
-          { transform:'scaleX(1)' }
-        ], { duration: 300, easing:'ease-in-out', fill:'forwards' }).onfinish = function() {
-          fishImg.classList.add('wiggling');
+      hover.onfinish = function() {
+        hover.cancel();  // release hold so return swim overrides cleanly
+
+        // Smooth flip — quick scaleX through ~0.1, not a full squash to 0
+        fishImg.classList.remove('wiggle-right');
+        var flip = fishImg.animate([
+          { transform:'scaleX(1) skewX(0deg)' },
+          { transform:'scaleX(0.1) skewX(0deg)' },
+          { transform:'scaleX(-1) skewX(0deg)' }
+        ], { duration: 280, easing:'cubic-bezier(0.4,0,0.6,1)', fill:'forwards' });
+
+        flip.onfinish = function() {
+          flip.cancel();  // release WAAPI hold so CSS wiggle takes over
+          fishImg.classList.add('wiggle-left');  // CSS has scaleX(-1) baked in
           setBehind();
 
-          // ── LEFT ──
-          var dur2 = 4000;
-          var anim2 = wrap.animate([
-            { transform:'translate('+endX+'px,-50%)' },
-            { transform:'translate('+reportR+'px,-46%)', offset:0.12 },
-            { transform:'translate('+reportL+'px,-54%)', offset:0.20 },
-            { transform:'translate('+gap2Mid+'px,-48%)', offset:0.28 },
-            { transform:'translate('+bassR+'px,-50%)', offset:0.38 },
-            { transform:'translate('+((bassL+bassR)/2)+'px,-42%)', offset:0.48 },
-            { transform:'translate('+bassL+'px,-52%)', offset:0.58 },
-            { transform:'translate('+gap1Mid+'px,-56%)', offset:0.68 },
-            { transform:'translate('+texasR+'px,-48%)', offset:0.78 },
-            { transform:'translate('+texasL+'px,-54%)', offset:0.88 },
-            { transform:'translate('+startX+'px,-50%)' }
-          ], { duration: dur2, easing:'cubic-bezier(0.45,0,0.55,1)', fill:'forwards' });
+          // ── LEFT: smooth swim back to the icon ──
+          var dur2 = 4200;
+          var anim2 = wrap.animate(swimFrames(endX, startX, 3), {
+            duration: dur2, easing:'linear', fill:'forwards'
+          });
 
           var swaps2 = [
-            { t: dur2 * 0.34, fn: setFront },
-            { t: dur2 * 0.64, fn: setBehind }
+            { t: dur2 * 0.30, fn: setFront },
+            { t: dur2 * 0.62, fn: setBehind }
           ];
           var si2 = 0;
           function checkSwaps2() {
@@ -3868,7 +3872,7 @@ function startFishCycle() {
           requestAnimationFrame(checkSwaps2);
 
           anim2.onfinish = function() {
-            fishImg.classList.remove('wiggling');
+            fishImg.classList.remove('wiggle-left');
             wrap.style.opacity = '0';
             staticIcon.style.opacity = '1';
             busy = false;
