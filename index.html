@@ -1897,7 +1897,7 @@ function buyBait(name, color, ev) {
   window.open("https://www.amazon.com/s?k=" + encodeURIComponent(q), "_blank");
   return false;
 }
-function escapeQuote(s) { return String(s).replace(/'/g, "\\'"); }
+function escapeQuote(s) { return String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'"); }
 
 // ═══════════════════════════════════════════════════════════════
 // LURE TUTORIAL — opens when a bait chip is tapped
@@ -2895,7 +2895,7 @@ function showLoading() {
   document.getElementById("noNearby").style.display="none";
 }
 function showError(msg) {
-  document.getElementById("lakesList").innerHTML='<div class="error-msg">'+IC.warn+'<br><br><button class="refresh-btn" onclick="loadReport()">↻ Try Again</button></div>';
+  document.getElementById("lakesList").innerHTML='<div class="error-msg">'+IC.warn+' '+escHtml(msg||'Something went wrong')+'<br><br><button class="refresh-btn" onclick="loadReport()">↻ Try Again</button></div>';
 }
 
 // ═══════════════════════════════════════════
@@ -2903,10 +2903,10 @@ function showError(msg) {
 // ═══════════════════════════════════════════
 function loadReport() {
   if(!userLat||!userLon){
-    document.getElementById("lakesList").innerHTML=
-      '<div class="loading-screen"><span style="font-size:22px;display:inline-block;vertical-align:middle">'+IC.search+'</span><span>Search for a city or tap '+IC.pin+' to start</span></div>';
-    return;
-  }
+      document.getElementById("lakesList").innerHTML=
+        '<div class="loading-screen"><span style="font-size:22px;display:inline-block;vertical-align:middle">'+IC.search+'</span><span>Search for a city or tap '+IC.pin+' to start</span></div>';
+      return Promise.resolve();
+    }
   showLoading();
   var g=nearestGrid(userLat,userLon);
   return Promise.all([fetchWeather(userLat,userLon),fetchTrend(userLat,userLon),fetchSun(userLat,userLon)])
