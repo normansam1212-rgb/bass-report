@@ -3446,20 +3446,21 @@ function closeDetail() {
 }
 
 function initDetailMap(lat, lon, name, hex, score) {
-  // Zoom levels — tighter so the actual water body is clearly visible on satellite
+  // Zoom levels — wide enough to show the full lake even if the stored
+  // coordinate is a dam or town center rather than the exact geographic center.
   var type = (name||"").toLowerCase();
   var zoom;
   if (type.indexOf("river")>=0 || type.indexOf("creek")>=0 || type.indexOf("stream")>=0)
-    zoom = 15;
-  else if (type.indexOf("pond")>=0)
     zoom = 14;
+  else if (type.indexOf("pond")>=0)
+    zoom = 13;
   else if (type.indexOf("reservoir")>=0 || type.indexOf("lake")>=0) {
     if (KNOWN_WATERS[name] && KNOWN_WATERS[name].d === "deep")
-      zoom = 12;
+      zoom = 11;
     else
-      zoom = 13;
+      zoom = 12;
   } else {
-    zoom = 14;
+    zoom = 13;
   }
 
   if (!detailMap) {
