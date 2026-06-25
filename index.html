@@ -688,6 +688,45 @@ img[src^="icons/"] { mix-blend-mode:screen; opacity:0.85; }
 .area-src.none {
   background:rgba(180,80,80,0.1); color:var(--bad);
 }
+/* Live score ring */
+.hotspot-score-ring {
+  width:42px; height:42px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50%; position:relative;
+}
+.hotspot-score-ring svg { position:absolute; top:0; left:0; }
+.hotspot-score-val {
+  font-size:15px; font-weight:900; letter-spacing:-.5px;
+  position:relative; z-index:1;
+}
+.hotspot-score-ring + .hotspot-bar-wrap { width:60px; }
+/* Fishery quality badge */
+.hotspot-quality-badge {
+  display:inline-block; padding:2px 8px; border-radius:5px;
+  font-size:10px; font-weight:800; letter-spacing:.3px; text-transform:uppercase;
+}
+.hotspot-quality-badge.trophy { background:rgba(200,184,72,0.15); color:var(--hot); }
+.hotspot-quality-badge.strong { background:rgba(110,128,64,0.15); color:var(--good); }
+.hotspot-quality-badge.average { background:rgba(130,130,130,0.12); color:var(--dim); }
+.hotspot-quality-badge.marginal { background:rgba(180,80,80,0.12); color:var(--bad); }
+/* Loading state for live scores */
+.hotspots-loading {
+  text-align:center; padding:40px 20px; color:var(--dim);
+}
+.hotspots-loading .spinner {
+  margin:0 auto 12px;
+}
+/* Tag pills for live score factors */
+.hotspot-factors {
+  display:flex; flex-wrap:wrap; gap:3px; margin-top:3px;
+}
+.hotspot-factor {
+  font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px;
+  letter-spacing:.2px;
+}
+.hotspot-factor.pos { background:rgba(110,128,64,0.12); color:var(--good); }
+.hotspot-factor.neg { background:rgba(180,80,80,0.1); color:var(--bad); }
+.hotspot-factor.neu { background:rgba(130,130,130,0.1); color:var(--dim); }
 .hotspot-sort-toggle {
   display:flex; gap:6px; margin-top:10px;
 }
@@ -703,6 +742,11 @@ img[src^="icons/"] { mix-blend-mode:screen; opacity:0.85; }
   .hotspot-bar-wrap { width:64px; }
   .hotspot-bar { width:64px; }
   .hotspot-count { font-size:16px; }
+  .hotspot-score-ring { width:36px; height:36px; }
+  .hotspot-score-ring svg { width:36px; height:36px; }
+  .hotspot-score-val { font-size:13px; }
+  .hotspot-factors { gap:2px; }
+  .hotspot-factor { font-size:8px; padding:1px 4px; }
 }
 
 /* ═══ Nearby ═══ */
@@ -1401,19 +1445,19 @@ a.bait-chip, a.detail-bait-chip {
 <div class="hotspots-view" id="hotspotsView">
   <div class="hotspots-hdr">
     <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.12"/></svg> Bass Activity</h3>
-    <span class="hotspots-sub">by observations per km²</span>
+    <span class="hotspots-sub" id="hotspotsSub">live fishing conditions across Texas</span>
   </div>
-  <div class="hotspots-info">
-    <b>How this works:</b> Bass observation counts from <span class="src-tag">iNaturalist</span> within 20km of each lake,
-    normalized by lake surface area (acres → km²) to give <b>obs/km²</b> — a proxy for bass activity per unit of water.
-    Data covers the genus <i>Micropterus</i> (black basses — largemouth, smallmouth, spotted, Guadalupe).
-    Surface areas from <span class="src-tag">TWDB</span> and <span class="src-tag">TPWD</span>.
-    This measures <b>observed & reported</b> bass activity, not a population census. Remote trophy waters (Fork, Falcon, Rayburn)
-    have fewer iNaturalist users per km², so they rank lower on density — toggle to raw count to see absolute activity.
-    <div class="hotspot-sort-toggle">
-      <button class="sort-btn active" id="sortDensity" onclick="hotspotToggleSort('density')">obs/km²</button>
-      <button class="sort-btn" id="sortRaw" onclick="hotspotToggleSort('raw')">raw count</button>
-    </div>
+  <div class="hotspot-sort-toggle">
+    <button class="sort-btn active" id="sortLive" onclick="hotspotToggleSort('live')">Live Score</button>
+    <button class="sort-btn" id="sortQuality" onclick="hotspotToggleSort('quality')">Fishery Quality</button>
+    <button class="sort-btn" id="sortObserved" onclick="hotspotToggleSort('observed')">Observed</button>
+  </div>
+  <div class="hotspots-info" id="hotspotsInfo">
+    <b>How this works:</b> All 109 Texas lakes are scored using the same real-time forecast model as the Report tab —
+    weather, barometric trend, water temperature, wind, moon phase, and each lake's intrinsic characteristics.
+    <b>Live Score</b> = where to fish <i>right now</i>. <b>Fishery Quality</b> = intrinsic reputation (trophy waters,
+    structure, clarity). <b>Observed</b> = citizen-science bass sightings from <span class="src-tag">iNaturalist</span>,
+    which skews toward urban lakes with more nature photographers.
   </div>
   <div id="hotspotsList"></div>
 </div>
@@ -1430,7 +1474,7 @@ a.bait-chip, a.detail-bait-chip {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10a11 11 0 0 1 15 0" stroke-opacity="0.4"/><path d="M7 13.5a7 7 0 0 1 10 0" stroke-opacity="0.6"/><path d="M9.5 17a3 3 0 0 1 5 0"/><circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none"/><path d="M12 19.5v-3" stroke-opacity="0.3" stroke-dasharray="1.5 1.5"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Nearby
   </button>
   <button class="tab-btn" id="tabHotspots" onclick="switchView('hotspots')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.08"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Activity
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.08"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Hotspots
   </button>
 
 </nav>
@@ -3017,6 +3061,14 @@ function switchView(v) {
   }
   if(v==="hotspots"){
     renderHotspots();
+    // Load grid weather for live scoring if not already cached
+    var remaining = GRID.filter(function(g){ return !gridWeather[g.key]; });
+    if(remaining.length > 0) {
+      loadGridWeatherForHotspots();
+    } else if(weatherData) {
+      // Grid already loaded, re-render with scores
+      renderHotspots();
+    }
   }
 }
 
@@ -3062,6 +3114,7 @@ function refreshData() {
   var btn=document.getElementById("refreshBtn");
   btn.classList.add("loading");
   btn.innerHTML='<span class="ri">↻</span> Refreshing…';
+  hotspotLiveScores = null; // invalidate cache
   loadReport().then(function(){
     btn.classList.remove("loading");
     btn.innerHTML='<span class="ri">↻</span> Refresh Conditions';
@@ -4352,116 +4405,290 @@ var LAKE_AREAS = {
   "Bluestem Lake":{area:null,src:null},
 };
 var ACRES_TO_KM2 = 0.00404686;
-var hotspotSortMode = "density"; // "density" or "raw"
+var hotspotSortMode = "live"; // "live", "quality", or "observed"
+var hotspotLiveScores = null; // cached scores from grid weather
+
+function loadGridWeatherForHotspots() {
+  var list = document.getElementById("hotspotsList");
+  if (list && hotspotSortMode === "live") {
+    list.innerHTML = '<div class="hotspots-loading"><div class="spinner"></div><span>Loading live conditions across Texas…</span></div>';
+  }
+  var remaining = GRID.filter(function(g){ return !gridWeather[g.key]; });
+  if(!remaining.length) {
+    computeHotspotLiveScores();
+    renderHotspots();
+    return;
+  }
+  var promises = remaining.map(function(g){
+    return Promise.all([fetchWeather(g.lat,g.lon),fetchTrend(g.lat,g.lon),fetchSun(g.lat,g.lon)])
+      .then(function(res){gridWeather[g.key]={weather:res[0],trend:res[1],sun:res[2]};})
+      .catch(function(e){ console.error("Grid fetch failed for "+g.key, e); });
+  });
+  Promise.all(promises).then(function() {
+    computeHotspotLiveScores();
+    renderHotspots();
+  }).catch(function(e){ console.error("Grid weather for hotspots:", e); });
+}
+
+function computeHotspotLiveScores() {
+  var moon = getMoon();
+  var scores = {};
+  ALL_LAKES.forEach(function(lake){
+    var g = nearestGrid(lake.lat, lake.lon);
+    var gw = gridWeather[g.key];
+    if(gw) {
+      var res = scoreLake(lake, gw.weather, gw.trend, gw.sun, moon);
+      scores[lake.name] = { score: res.score, bd: res.bd, wt: res.wt };
+    }
+  });
+  hotspotLiveScores = scores;
+}
 
 function renderHotspots() {
   var list = document.getElementById("hotspotsList");
   if (!list) return;
 
-  // Build array from ALL_LAKES + INAT_DENSITY + LAKE_AREAS
-  var entries = [];
-  ALL_LAKES.forEach(function(lake) {
-    var d = INAT_DENSITY[lake.name];
-    if (d) {
-      var a = LAKE_AREAS[lake.name];
-      var areaAcres = a ? a.area : null;
-      var areaSrc = a ? a.src : null;
-      var areaKm2 = (areaAcres && areaAcres > 0) ? areaAcres * ACRES_TO_KM2 : null;
-      var obsPerKm2 = (areaKm2 && areaKm2 > 0) ? d.obs / areaKm2 : null;
-      entries.push({
+  // ── LIVE SCORE MODE ──
+  if (hotspotSortMode === "live") {
+    document.getElementById("hotspotsSub").textContent = "live fishing conditions across Texas";
+    var infoEl = document.getElementById("hotspotsInfo");
+    infoEl.innerHTML = '<b>How this works:</b> All 109 Texas lakes scored with the same real-time forecast model as the Report tab — ' +
+      'weather, barometric trend, water temperature, wind, moon phase, and each lake\'s intrinsic characteristics. ' +
+      'This is <b>not</b> a population census — it predicts which lakes have the best fishing conditions <i>right now</i>. ' +
+      'Trophy waters naturally rank higher due to fishery reputation bonuses.';
+
+    if (!hotspotLiveScores) {
+      loadGridWeatherForHotspots();
+      return;
+    }
+
+    var entries = [];
+    ALL_LAKES.forEach(function(lake){
+      var ls = hotspotLiveScores[lake.name];
+      if (ls) {
+        entries.push({
+          name: lake.name, lat: lake.lat, lon: lake.lon,
+          region: lake.region, type: lake.type,
+          score: ls.score, bd: ls.bd, wt: ls.wt
+        });
+      }
+    });
+    entries.sort(function(a,b){ return b.score - a.score; });
+
+    var maxScore = entries.length > 0 ? entries[0].score : 1;
+    if (maxScore === 0) maxScore = 1;
+
+    var html = "";
+    entries.forEach(function(e, i) {
+      var rank = i + 1;
+      var isTop3 = rank <= 3;
+      var hex = scoreHex(e.score);
+      var pct = Math.round((e.score / 10) * 100);
+      var circ = 2 * Math.PI * 18;
+      var dashLen = (circ * e.score / 10).toFixed(1);
+
+      // Top 3 factors
+      var factorsHtml = "";
+      var topFactors = e.bd.slice(0, 4);
+      topFactors.forEach(function(b){
+        var cls = b.m > 0 ? "pos" : b.m < 0 ? "neg" : "neu";
+        var sign = b.m > 0 ? "+" : "";
+        factorsHtml += '<span class="hotspot-factor ' + cls + '">' + escHtml(b.l) + ' ' + sign + b.m + '</span>';
+      });
+
+      var safeName = e.name.replace(/'/g, "\\'");
+      html += '<div class="hotspot-card' + (isTop3 ? ' top-3' : '') + '" onclick="hotspotTap(\'' + safeName + '\')">';
+      html += '<div class="hotspot-rank">' + rank + '</div>';
+      html += '<div class="hotspot-body">';
+      html += '<div class="hotspot-name">' + escHtml(e.name) + '</div>';
+      html += '<div class="hotspot-meta"><span>' + escHtml(e.region) + '</span><span>• ' + (e.wt ? e.wt + '°F water' : '') + '</span></div>';
+      html += '<div class="hotspot-factors">' + factorsHtml + '</div>';
+      html += '</div>';
+      html += '<div class="hotspot-score-ring">';
+      html += '<svg width="42" height="42" viewBox="0 0 42 42">';
+      html += '<circle cx="21" cy="21" r="18" fill="none" stroke="var(--border)" stroke-width="4"/>';
+      html += '<circle cx="21" cy="21" r="18" fill="none" stroke="' + hex + '" stroke-width="4"';
+      html += ' stroke-dasharray="' + dashLen + ' ' + circ.toFixed(1) + '" stroke-linecap="round" transform="rotate(-90 21 21)"/>';
+      html += '</svg>';
+      html += '<div class="hotspot-score-val" style="color:' + hex + '">' + e.score + '</div>';
+      html += '</div>';
+      html += '</div>';
+    });
+
+    list.innerHTML = html;
+    return;
+  }
+
+  // ── FISHERY QUALITY MODE ──
+  if (hotspotSortMode === "quality") {
+    document.getElementById("hotspotsSub").textContent = "intrinsic fishery reputation";
+    var infoEl2 = document.getElementById("hotspotsInfo");
+    infoEl2.innerHTML = '<b>How this works:</b> Each lake is rated by its intrinsic bass fishery quality based on ' +
+      'TPWD fisheries knowledge, lake characteristics, and established angler reputation. ' +
+      '<b>Trophy</b> = known big-bass factory (Fork, Rayburn, Toledo Bend, Falcon, Choke Canyon). ' +
+      '<b>Strong</b> = solid fishery with good structure and bass habitat. ' +
+      '<b>Average</b> = decent fishing, nothing special. ' +
+      '<b>Marginal</b> = pressured, small, or poor habitat. ' +
+      'This is a static reputation ranking — it doesn\'t change with weather.';
+
+    var qEntries = [];
+    ALL_LAKES.forEach(function(lake){
+      var attr = waterAttributes(lake);
+      var qualityLabel = attr.q === 2 ? "Trophy" : attr.q === 1 ? "Strong" : attr.q === -1 ? "Marginal" : "Average";
+      var qualityClass = attr.q === 2 ? "trophy" : attr.q === 1 ? "strong" : attr.q === -1 ? "marginal" : "average";
+      var inat = INAT_DENSITY[lake.name];
+      var obsCount = inat ? inat.obs : 0;
+      qEntries.push({
         name: lake.name, lat: lake.lat, lon: lake.lon,
         region: lake.region, type: lake.type,
-        obs: d.obs, rg: d.rg, sp: d.sp,
-        areaAcres: areaAcres, areaKm2: areaKm2,
-        obsPerKm2: obsPerKm2, areaSrc: areaSrc
+        q: attr.q, qualityLabel: qualityLabel, qualityClass: qualityClass,
+        clarity: attr.c, depth: attr.d, obs: obsCount
       });
-    }
-  });
+    });
+    // Sort by quality desc, then by obs desc as tiebreaker
+    qEntries.sort(function(a,b){
+      if (b.q !== a.q) return b.q - a.q;
+      return b.obs - a.obs;
+    });
 
-  // Sort by selected mode
-  if (hotspotSortMode === "density") {
+    var html2 = "";
+    qEntries.forEach(function(e, i) {
+      var rank = i + 1;
+      var isTop3 = rank <= 3;
+      var safeName = e.name.replace(/'/g, "\\'");
+      var clarityLabel = e.clarity.charAt(0).toUpperCase() + e.clarity.slice(1);
+      var depthLabel = e.depth === "mod" ? "Mid-depth" : e.depth.charAt(0).toUpperCase() + e.depth.slice(1);
+
+      html2 += '<div class="hotspot-card' + (isTop3 ? ' top-3' : '') + '" onclick="hotspotTap(\'' + safeName + '\')">';
+      html2 += '<div class="hotspot-rank">' + rank + '</div>';
+      html2 += '<div class="hotspot-body">';
+      html2 += '<div class="hotspot-name">' + escHtml(e.name) + '</div>';
+      html2 += '<div class="hotspot-meta">';
+      html2 += '<span>' + escHtml(e.region) + '</span>';
+      html2 += '<span>• ' + clarityLabel + ' water</span>';
+      html2 += '<span>• ' + depthLabel + '</span>';
+      if (e.obs > 0) html2 += '<span>• ' + e.obs + ' iNat obs</span>';
+      html2 += '</div>';
+      html2 += '</div>';
+      html2 += '<div class="hotspot-bar-wrap">';
+      html2 += '<span class="hotspot-quality-badge ' + e.qualityClass + '">' + e.qualityLabel + '</span>';
+      html2 += '</div>';
+      html2 += '</div>';
+    });
+
+    list.innerHTML = html2;
+    return;
+  }
+
+  // ── OBSERVED MODE (iNaturalist) ──
+  if (hotspotSortMode === "observed") {
+    document.getElementById("hotspotsSub").textContent = "iNaturalist observations per km²";
+    var infoEl3 = document.getElementById("hotspotsInfo");
+    infoEl3.innerHTML = '<b>How this works:</b> Bass observation counts from <span class="src-tag">iNaturalist</span> ' +
+      'within 20km of each lake, normalized by lake surface area. ' +
+      '⚠️ <b>This measures photographer activity, not bass density.</b> ' +
+      'Urban lakes (Austin area) rank high because young, tech-savvy people post there. ' +
+      'Remote trophy waters (Lake Fork, Falcon) rank low despite being world-class bass fisheries. ' +
+      'Use this as a secondary signal only.';
+
+    var oEntries = [];
+    ALL_LAKES.forEach(function(lake) {
+      var d = INAT_DENSITY[lake.name];
+      if (d) {
+        var a = LAKE_AREAS[lake.name];
+        var areaAcres = a ? a.area : null;
+        var areaSrc = a ? a.src : null;
+        var areaKm2 = (areaAcres && areaAcres > 0) ? areaAcres * ACRES_TO_KM2 : null;
+        var obsPerKm2 = (areaKm2 && areaKm2 > 0) ? d.obs / areaKm2 : null;
+        oEntries.push({
+          name: lake.name, lat: lake.lat, lon: lake.lon,
+          region: lake.region, type: lake.type,
+          obs: d.obs, rg: d.rg, sp: d.sp,
+          areaAcres: areaAcres, areaKm2: areaKm2,
+          obsPerKm2: obsPerKm2, areaSrc: areaSrc
+        });
+      }
+    });
     // Sort by obs/km² descending; nulls go to bottom
-    entries.sort(function(a, b) {
+    oEntries.sort(function(a, b) {
       if (a.obsPerKm2 === null && b.obsPerKm2 === null) return b.obs - a.obs;
       if (a.obsPerKm2 === null) return 1;
       if (b.obsPerKm2 === null) return -1;
       return b.obsPerKm2 - a.obsPerKm2;
     });
-  } else {
-    entries.sort(function(a, b) { return b.obs - a.obs; });
+
+    var maxObs = oEntries.length > 0 ? oEntries[0].obs : 1;
+    if (maxObs === 0) maxObs = 1;
+    var maxDensity = 0;
+    oEntries.forEach(function(e) {
+      if (e.obsPerKm2 !== null && e.obsPerKm2 > maxDensity) maxDensity = e.obsPerKm2;
+    });
+    if (maxDensity === 0) maxDensity = 1;
+
+    var html3 = "";
+    oEntries.forEach(function(e, i) {
+      var rank = i + 1;
+      var isTop3 = rank <= 3;
+      var pct = Math.round((e.obs / maxObs) * 100);
+      var conf = e.rg >= 50 ? "High" : e.rg >= 15 ? "Medium" : e.rg > 0 ? "Low" : "None";
+      var confColor = e.rg >= 50 ? "var(--good)" : e.rg >= 15 ? "var(--ok)" : "var(--bad)";
+
+      var spDisplay = e.sp;
+      if (spDisplay && spDisplay !== "—") {
+        spDisplay = spDisplay.replace(/^Micropterus\s+/, "M. ");
+        spDisplay = spDisplay.replace(/[()]/g, "");
+      }
+
+      var metricHtml;
+      if (e.obsPerKm2 !== null) {
+        var densityPct = Math.round((e.obsPerKm2 / maxDensity) * 100);
+        metricHtml = '<div class="hotspot-density">' + e.obsPerKm2.toFixed(1) + '<small> obs/km²</small></div>'
+          + '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + densityPct + '%"></div></div>'
+          + '<div class="hotspot-raw-count">' + e.obs + ' total</div>';
+      } else {
+        metricHtml = '<div class="hotspot-count">' + e.obs + '<small> obs</small></div>'
+          + '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + pct + '%"></div></div>'
+          + '<div class="hotspot-raw-count">no area data</div>';
+      }
+
+      var areaBadge = '';
+      if (e.areaSrc) {
+        areaBadge = '<span class="area-src">' + e.areaSrc + '</span>';
+      } else if (e.obs > 0) {
+        areaBadge = '<span class="area-src none">no area</span>';
+      }
+
+      var safeName = e.name.replace(/'/g, "\\'");
+      html3 += '<div class="hotspot-card' + (isTop3 ? ' top-3' : '') + '" onclick="hotspotTap(\'' + safeName + '\')">';
+      html3 += '<div class="hotspot-rank">' + rank + '</div>';
+      html3 += '<div class="hotspot-body">';
+      html3 += '<div class="hotspot-name">' + escHtml(e.name) + '</div>';
+      html3 += '<div class="hotspot-meta">';
+      html3 += '<span>' + escHtml(e.region) + '</span>';
+      if (spDisplay && spDisplay !== "—") {
+        html3 += '<span class="sp">• ' + escHtml(spDisplay) + '</span>';
+      }
+      html3 += '<span>• ' + e.rg + ' verified</span>';
+      html3 += areaBadge;
+      html3 += '</div>';
+      html3 += '</div>';
+      html3 += '<div class="hotspot-bar-wrap">';
+      html3 += metricHtml;
+      html3 += '<div class="hotspot-confidence" style="color:' + confColor + '">' + conf + ' conf</div>';
+      html3 += '</div>';
+      html3 += '</div>';
+    });
+
+    list.innerHTML = html3;
+    return;
   }
-
-  var maxObs = entries.length > 0 ? entries[0].obs : 1;
-  if (maxObs === 0) maxObs = 1;
-  var maxDensity = 0;
-  entries.forEach(function(e) {
-    if (e.obsPerKm2 !== null && e.obsPerKm2 > maxDensity) maxDensity = e.obsPerKm2;
-  });
-  if (maxDensity === 0) maxDensity = 1;
-
-  var html = "";
-  entries.forEach(function(e, i) {
-    var rank = i + 1;
-    var isTop3 = rank <= 3;
-    var pct = Math.round((e.obs / maxObs) * 100);
-    var conf = e.rg >= 50 ? "High" : e.rg >= 15 ? "Medium" : e.rg > 0 ? "Low" : "None";
-    var confColor = e.rg >= 50 ? "var(--good)" : e.rg >= 15 ? "var(--ok)" : "var(--bad)";
-
-    var spDisplay = e.sp;
-    if (spDisplay && spDisplay !== "—") {
-      spDisplay = spDisplay.replace(/^Micropterus\s+/, "M. ");
-      spDisplay = spDisplay.replace(/[()]/g, "");
-    }
-
-    // Build metric display
-    var metricHtml;
-    if (hotspotSortMode === "density" && e.obsPerKm2 !== null) {
-      var densityPct = Math.round((e.obsPerKm2 / maxDensity) * 100);
-      metricHtml = '<div class="hotspot-density">' + e.obsPerKm2.toFixed(1) + '<small> obs/km²</small></div>'
-        + '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + densityPct + '%"></div></div>'
-        + '<div class="hotspot-raw-count">' + e.obs + ' total</div>';
-    } else {
-      metricHtml = '<div class="hotspot-count">' + e.obs + '<small> obs</small></div>'
-        + '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + pct + '%"></div></div>'
-        + (e.obsPerKm2 !== null ? '<div class="hotspot-raw-count">' + e.obsPerKm2.toFixed(1) + '/km²</div>' : '<div class="hotspot-raw-count">—</div>');
-    }
-
-    // Area source badge
-    var areaBadge = '';
-    if (e.areaSrc) {
-      areaBadge = '<span class="area-src">' + e.areaSrc + '</span>';
-    } else if (e.obs > 0) {
-      areaBadge = '<span class="area-src none">no area</span>';
-    }
-
-    var safeName = e.name.replace(/'/g, "\\'");
-    html += '<div class="hotspot-card' + (isTop3 ? ' top-3' : '') + '" onclick="hotspotTap(\'' + safeName + '\')">';
-    html += '<div class="hotspot-rank">' + rank + '</div>';
-    html += '<div class="hotspot-body">';
-    html += '<div class="hotspot-name">' + escHtml(e.name) + '</div>';
-    html += '<div class="hotspot-meta">';
-    html += '<span>' + escHtml(e.region) + '</span>';
-    if (spDisplay && spDisplay !== "—") {
-      html += '<span class="sp">• ' + escHtml(spDisplay) + '</span>';
-    }
-    html += '<span>• ' + e.rg + ' verified</span>';
-    html += areaBadge;
-    html += '</div>';
-    html += '</div>';
-    html += '<div class="hotspot-bar-wrap">';
-    html += metricHtml;
-    html += '<div class="hotspot-confidence" style="color:' + confColor + '">' + conf + ' conf</div>';
-    html += '</div>';
-    html += '</div>';
-  });
-
-  list.innerHTML = html;
 }
 
 function hotspotToggleSort(mode) {
   hotspotSortMode = mode;
-  document.getElementById("sortDensity").classList.toggle("active", mode === "density");
-  document.getElementById("sortRaw").classList.toggle("active", mode === "raw");
+  document.getElementById("sortLive").classList.toggle("active", mode === "live");
+  document.getElementById("sortQuality").classList.toggle("active", mode === "quality");
+  document.getElementById("sortObserved").classList.toggle("active", mode === "observed");
   renderHotspots();
 }
 
