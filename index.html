@@ -4821,20 +4821,46 @@ function hotspotToggleSort(mode) {
 }
 
 function hotspotTap(name) {
-  // Find the lake and jump to it in the report view
+  // Find the lake
   var lake = null;
   for (var i = 0; i < ALL_LAKES.length; i++) {
     if (ALL_LAKES[i].name === name) { lake = ALL_LAKES[i]; break; }
   }
-  if (lake) {
-    // Set location to this lake and switch to report
-    userLat = lake.lat;
-    userLon = lake.lon;
-    userLabel = lake.name + " (" + lake.region + ")";
-    document.getElementById("searchInput").value = userLabel;
-    switchView('list');
-    loadReport();
+  if (!lake) return;
+
+  // Set location context (so closing the detail lands on the right spot)
+  userLat = lake.lat;
+  userLon = lake.lon;
+  userLabel = lake.name + " (" + lake.region + ")";
+  document.getElementById("searchInput").value = userLabel;
+
+  // Get score data — prefer cached live scores, else compute from grid weather
+  var score = 5, bd = [], wt = null;
+  if (hotspotLiveScores && hotspotLiveScores[name]) {
+    score = hotspotLiveScores[name].score;
+    bd = hotspotLiveScores[name].bd;
+    wt = hotspotLiveScores[name].wt;
+  } else {
+    var g = nearestGrid(lake.lat, lake.lon);
+    var gw = gridWeather[g.key];
+    if (gw) {
+      var moon = getMoon();
+      var res = scoreLake(lake, gw.weather, gw.trend, gw.sun, moon);
+      score = res.score;
+      bd = res.bd;
+      wt = res.wt;
+    }
   }
+
+  // Store card and open the detail/breakdown overlay
+  var cid = _storeCard({
+    name: lake.name, lat: lake.lat, lon: lake.lon,
+    type: lake.type, region: lake.region,
+    score: score, bd: bd, wt: wt,
+    srH: lake.srH, ssH: lake.ssH,
+    dist: null
+  });
+  openDetail(cid);
 }
 
 // Start the swimming fish cycle
