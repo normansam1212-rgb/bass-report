@@ -4405,6 +4405,112 @@ var LAKE_AREAS = {
   "Bluestem Lake":{area:null,src:null},
 };
 var ACRES_TO_KM2 = 0.00404686;
+
+// TPWD stocking database — real bass stocking history per lake (scraped from tpwd.texas.gov)
+// fl=Florida strain, sl=ShareLunker trophy genetics, ls=Lone Star bass program
+var TPWD_STOCK = {
+  "Sam Rayburn Reservoir":{total:41473970,recent:4394846,lastYr:2026,fl:true,sl:true,ls:true},
+  "Toledo Bend Reservoir":{total:24780767,recent:4460808,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Ray Hubbard":{total:21433881,recent:189802,lastYr:2025,fl:true,sl:true,ls:true},
+  "Lake Lewisville":{total:18329577,recent:938632,lastYr:2024,fl:true,sl:true,ls:true},
+  "Lake Fork":{total:18031910,recent:3411995,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Palestine":{total:16753133,recent:1929246,lastYr:2025,fl:true,sl:true,ls:true},
+  "Amistad Reservoir":{total:15695727,recent:1656106,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Tawakoni":{total:12221311,recent:1361310,lastYr:2026,fl:true,sl:true,ls:false},
+  "Lake Conroe":{total:10473068,recent:733089,lastYr:2026,fl:true,sl:true,ls:true},
+  "Falcon Reservoir":{total:10256345,recent:1752205,lastYr:2026,fl:true,sl:true,ls:true},
+  "Caddo Lake":{total:10075569,recent:809976,lastYr:2025,fl:true,sl:true,ls:true},
+  "Hubbard Creek Reservoir":{total:6317709,recent:264474,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Corpus Christi":{total:6161109,recent:613842,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Austin":{total:6152008,recent:561863,lastYr:2026,fl:true,sl:true,ls:true},
+  "Somerville Lake":{total:6128712,recent:427941,lastYr:2025,fl:true,sl:true,ls:true},
+  "Choke Canyon Reservoir":{total:6086577,recent:1333997,lastYr:2024,fl:true,sl:true,ls:true},
+  "Possum Kingdom Lake":{total:6006515,recent:590419,lastYr:2025,fl:true,sl:true,ls:true},
+  "Lake Arrowhead":{total:5017749,recent:1407042,lastYr:2025,fl:true,sl:false,ls:false},
+  "Lake Livingston":{total:4630467,recent:146736,lastYr:2024,fl:true,sl:true,ls:true},
+  "Lake Ray Roberts":{total:4597272,recent:469782,lastYr:2024,fl:true,sl:true,ls:true},
+  "Lake Granbury":{total:4519893,recent:166157,lastYr:2026,fl:true,sl:false,ls:true},
+  "Benbrook Lake":{total:4407868,recent:68454,lastYr:2026,fl:true,sl:false,ls:true},
+  "Walter E. Long Lake":{total:4370796,recent:101157,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lake Bob Sandlin":{total:4130438,recent:453630,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Brownwood":{total:4083759,recent:348999,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Worth":{total:3996979,recent:83640,lastYr:2023,fl:true,sl:false,ls:true},
+  "Calaveras Lake":{total:3875914,recent:0,lastYr:2014,fl:true,sl:false,ls:false},
+  "Lake Athens":{total:3693560,recent:407216,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Proctor":{total:3579102,recent:0,lastYr:2019,fl:true,sl:false,ls:false},
+  "Eagle Mountain Lake":{total:3557125,recent:153253,lastYr:2025,fl:true,sl:true,ls:true},
+  "Bardwell Lake":{total:3527922,recent:0,lastYr:2017,fl:true,sl:false,ls:false},
+  "Lake Fort Phantom Hill":{total:3509073,recent:417834,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Texana":{total:3418759,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Lake J.B. Thomas":{total:3418759,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Lavon Lake":{total:3380149,recent:198761,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Whitney":{total:3281736,recent:475600,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lake Meredith":{total:3241687,recent:48162,lastYr:2026,fl:true,sl:false,ls:false},
+  "Lake Grapevine":{total:3231174,recent:96000,lastYr:2021,fl:true,sl:false,ls:false},
+  "Lake Houston":{total:3046720,recent:419430,lastYr:2026,fl:true,sl:false,ls:true},
+  "Waco Lake":{total:2980550,recent:585957,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Texoma":{total:2932606,recent:178447,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Travis":{total:2825076,recent:284967,lastYr:2026,fl:true,sl:true,ls:true},
+  "Twin Buttes Reservoir":{total:2745957,recent:459873,lastYr:2025,fl:true,sl:true,ls:true},
+  "Lake Graham":{total:2368974,recent:126735,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Jacksonville":{total:2331237,recent:39130,lastYr:2020,fl:true,sl:true,ls:false},
+  "Canyon Lake":{total:2303515,recent:339348,lastYr:2023,fl:true,sl:false,ls:true},
+  "Medina Lake":{total:2086876,recent:0,lastYr:2018,fl:true,sl:false,ls:false},
+  "Joe Pool Lake":{total:2012809,recent:238492,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Buchanan":{total:1898059,recent:0,lastYr:2019,fl:true,sl:false,ls:false},
+  "Lake Casa Blanca":{total:1854748,recent:346630,lastYr:2026,fl:true,sl:true,ls:true},
+  "Stillhouse Hollow Lake":{total:1751053,recent:213515,lastYr:2024,fl:true,sl:false,ls:true},
+  "Coleto Creek Reservoir":{total:1623586,recent:455512,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lake Kickapoo":{total:1595822,recent:1169132,lastYr:2026,fl:false,sl:false,ls:false},
+  "Lake Nasworthy":{total:1585251,recent:0,lastYr:2019,fl:true,sl:false,ls:false},
+  "Martin Creek Lake":{total:1520005,recent:129123,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Limestone":{total:1506481,recent:283501,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Arlington":{total:1489268,recent:38421,lastYr:2023,fl:true,sl:false,ls:true},
+  "Lake Murvaul":{total:1341079,recent:240946,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Nacogdoches":{total:1292623,recent:190874,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Cypress Springs":{total:1210187,recent:156323,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Colorado City":{total:1151196,recent:44249,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Winters":{total:1127170,recent:0,lastYr:2019,fl:true,sl:false,ls:false},
+  "Millers Creek Reservoir":{total:1109281,recent:179665,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Palo Pinto":{total:1081650,recent:48719,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Alan Henry":{total:894389,recent:48750,lastYr:2026,fl:true,sl:true,ls:false},
+  "Lake Sweetwater":{total:889337,recent:61658,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Daniel":{total:856794,recent:52905,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Amon G. Carter":{total:841810,recent:74859,lastYr:2025,fl:true,sl:true,ls:true},
+  "Lake Mexia":{total:818520,recent:249965,lastYr:2025,fl:true,sl:false,ls:false},
+  "White River Lake":{total:806427,recent:66356,lastYr:2026,fl:true,sl:false,ls:true},
+  "Squaw Creek Reservoir":{total:729536,recent:0,lastYr:1996,fl:true,sl:false,ls:false},
+  "Champion Creek Reservoir":{total:709587,recent:138652,lastYr:2024,fl:true,sl:false,ls:true},
+  "Lake Weatherford":{total:685249,recent:16435,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Striker":{total:593424,recent:0,lastYr:1999,fl:true,sl:false,ls:false},
+  "White Rock Lake":{total:581206,recent:15635,lastYr:2024,fl:true,sl:true,ls:true},
+  "Lake Placid":{total:571799,recent:61823,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Kirby":{total:549219,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Aquilla Lake":{total:531960,recent:98748,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lady Bird Lake":{total:478840,recent:14787,lastYr:2025,fl:true,sl:true,ls:false},
+  "Nocona Lake":{total:467090,recent:49110,lastYr:2026,fl:true,sl:true,ls:true},
+  "Inks Lake":{total:458956,recent:20606,lastYr:2024,fl:true,sl:true,ls:false},
+  "Lake Abilene":{total:434635,recent:10293,lastYr:2021,fl:true,sl:false,ls:false},
+  "Lake Pflugerville":{total:407652,recent:305538,lastYr:2022,fl:true,sl:true,ls:true},
+  "Lake Mackenzie":{total:315706,recent:0,lastYr:2017,fl:true,sl:false,ls:false},
+  "Lake Dunlap":{total:270495,recent:168208,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Bryan":{total:218787,recent:114682,lastYr:2026,fl:true,sl:false,ls:true},
+  "Bluestem Lake":{total:215242,recent:0,lastYr:2018,fl:true,sl:false,ls:false},
+  "Lake Marble Falls":{total:202252,recent:103632,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Georgetown":{total:168671,recent:30331,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lake Throckmorton":{total:109313,recent:15812,lastYr:2021,fl:true,sl:false,ls:false},
+  "Lake McQueeney":{total:59652,recent:0,lastYr:2007,fl:true,sl:true,ls:false},
+  "Mountain Creek Lake":{total:21641,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Lake Coleman":{total:19764,recent:1621,lastYr:2023,fl:true,sl:true,ls:true},
+  "OC Fisher Lake":{total:12013,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Lake Stamford":{total:7000,recent:0,lastYr:1970,fl:false,sl:false,ls:false},
+  "Gibbons Creek Reservoir":{total:2466,recent:1000,lastYr:2026,fl:true,sl:false,ls:false},
+  "Brushy Creek Lake":{total:1928,recent:0,lastYr:1992,fl:true,sl:false,ls:false},
+  "Braunig Lake":{total:1875,recent:0,lastYr:2015,fl:true,sl:false,ls:false},
+  "Richland Chambers Reservoir":{total:1500,recent:0,lastYr:1976,fl:true,sl:false,ls:false},
+  "Lake O the Pines":{total:600,recent:0,lastYr:1970,fl:false,sl:false,ls:false},
+  "Lake LBJ":{total:407,recent:0,lastYr:1996,fl:false,sl:false,ls:false},
+};
 var hotspotSortMode = "live"; // "live", "quality", or "observed"
 var hotspotLiveScores = null; // cached scores from grid weather
 
@@ -4529,7 +4635,9 @@ function renderHotspots() {
       '<b>Strong</b> = solid fishery with good structure and bass habitat. ' +
       '<b>Average</b> = decent fishing, nothing special. ' +
       '<b>Marginal</b> = pressured, small, or poor habitat. ' +
-      'This is a static reputation ranking — it doesn\'t change with weather.';
+      'Stocking data from <span class="src-tag">TPWD</span> shows total bass stocked, genetics programs ' +
+      '(FL strain, ShareLunker trophy genetics, Lone Star bass), and recent activity since 2020. ' +
+      'This is a static ranking — it doesn\'t change with weather.';
 
     var qEntries = [];
     ALL_LAKES.forEach(function(lake){
@@ -4538,17 +4646,21 @@ function renderHotspots() {
       var qualityClass = attr.q === 2 ? "trophy" : attr.q === 1 ? "strong" : attr.q === -1 ? "marginal" : "average";
       var inat = INAT_DENSITY[lake.name];
       var obsCount = inat ? inat.obs : 0;
+      var stock = TPWD_STOCK[lake.name];
       qEntries.push({
         name: lake.name, lat: lake.lat, lon: lake.lon,
         region: lake.region, type: lake.type,
         q: attr.q, qualityLabel: qualityLabel, qualityClass: qualityClass,
-        clarity: attr.c, depth: attr.d, obs: obsCount
+        clarity: attr.c, depth: attr.d, obs: obsCount,
+        stock: stock
       });
     });
-    // Sort by quality desc, then by obs desc as tiebreaker
+    // Sort by quality desc, then by stocking total desc as tiebreaker
     qEntries.sort(function(a,b){
       if (b.q !== a.q) return b.q - a.q;
-      return b.obs - a.obs;
+      var at = a.stock ? a.stock.total : 0;
+      var bt = b.stock ? b.stock.total : 0;
+      return bt - at;
     });
 
     var html2 = "";
@@ -4559,6 +4671,22 @@ function renderHotspots() {
       var clarityLabel = e.clarity.charAt(0).toUpperCase() + e.clarity.slice(1);
       var depthLabel = e.depth === "mod" ? "Mid-depth" : e.depth.charAt(0).toUpperCase() + e.depth.slice(1);
 
+      // Stocking info
+      var stockHtml = "";
+      if (e.stock) {
+        var stockTotal = e.stock.total;
+        var stockStr = stockTotal >= 1000000 ? (stockTotal / 1000000).toFixed(1) + 'M' : stockTotal >= 1000 ? Math.round(stockTotal / 1000) + 'K' : stockTotal;
+        var genetics = [];
+        if (e.stock.sl) genetics.push('ShareLunker');
+        if (e.stock.fl) genetics.push('FL strain');
+        if (e.stock.ls) genetics.push('LoneStar');
+        var genStr = genetics.length > 0 ? ' • ' + genetics.join(', ') : '';
+        var recentStr = e.stock.recent > 0 ? ' • ' + (e.stock.recent >= 1000000 ? (e.stock.recent / 1000000).toFixed(1) + 'M' : Math.round(e.stock.recent / 1000) + 'K') + ' since 2020' : '';
+        stockHtml = '<span>• ' + stockStr + ' stocked' + genStr + recentStr + '</span>';
+      } else {
+        stockHtml = '<span class="sp">• no TPWD stocking</span>';
+      }
+
       html2 += '<div class="hotspot-card' + (isTop3 ? ' top-3' : '') + '" onclick="hotspotTap(\'' + safeName + '\')">';
       html2 += '<div class="hotspot-rank">' + rank + '</div>';
       html2 += '<div class="hotspot-body">';
@@ -4567,7 +4695,7 @@ function renderHotspots() {
       html2 += '<span>' + escHtml(e.region) + '</span>';
       html2 += '<span>• ' + clarityLabel + ' water</span>';
       html2 += '<span>• ' + depthLabel + '</span>';
-      if (e.obs > 0) html2 += '<span>• ' + e.obs + ' iNat obs</span>';
+      html2 += stockHtml;
       html2 += '</div>';
       html2 += '</div>';
       html2 += '<div class="hotspot-bar-wrap">';
