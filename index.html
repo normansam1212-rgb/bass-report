@@ -670,6 +670,35 @@ img[src^="icons/"] { mix-blend-mode:screen; opacity:0.85; }
   font-size:9px; color:var(--dim); font-weight:600;
   text-transform:uppercase; letter-spacing:.4px;
 }
+.hotspot-density {
+  font-size:18px; font-weight:800; color:var(--accent);
+  letter-spacing:-.5px; line-height:1;
+}
+.hotspot-card.top-3 .hotspot-density { color:var(--hot); }
+.hotspot-density small { font-size:10px; font-weight:600; color:var(--dim); }
+.hotspot-raw-count {
+  font-size:9px; color:var(--dim); font-weight:600;
+  text-transform:uppercase; letter-spacing:.3px;
+}
+.area-src {
+  display:inline-block; padding:1px 5px; border-radius:4px;
+  background:rgba(110,128,64,0.1); color:var(--ok);
+  font-size:9px; font-weight:700; letter-spacing:.3px;
+}
+.area-src.none {
+  background:rgba(180,80,80,0.1); color:var(--bad);
+}
+.hotspot-sort-toggle {
+  display:flex; gap:6px; margin-top:10px;
+}
+.sort-btn {
+  padding:5px 12px; border-radius:8px; border:1px solid var(--border);
+  background:transparent; color:var(--dim);
+  font-size:11px; font-weight:600; cursor:pointer; transition:all .2s;
+}
+.sort-btn.active {
+  background:var(--accent); color:var(--card); border-color:var(--accent);
+}
 @media (max-width:430px) {
   .hotspot-bar-wrap { width:64px; }
   .hotspot-bar { width:64px; }
@@ -1371,13 +1400,20 @@ a.bait-chip, a.detail-bait-chip {
 <!-- Hotspots -->
 <div class="hotspots-view" id="hotspotsView">
   <div class="hotspots-hdr">
-    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.12"/></svg> Bass Hotspots</h3>
-    <span class="hotspots-sub">by observation density</span>
+    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.12"/></svg> Bass Activity</h3>
+    <span class="hotspots-sub">by observations per km²</span>
   </div>
   <div class="hotspots-info">
-    <b>How this works:</b> Bass observation counts from <span class="src-tag">iNaturalist</span> within 20km of each lake.
-    Higher counts = more documented bass sightings by citizen scientists. This measures <b>observed & reported</b> bass activity —
-    not a population census. Remote lakes may have great fishing but low observation counts due to fewer iNaturalist users.
+    <b>How this works:</b> Bass observation counts from <span class="src-tag">iNaturalist</span> within 20km of each lake,
+    normalized by lake surface area (acres → km²) to give <b>obs/km²</b> — a proxy for bass activity per unit of water.
+    Data covers the genus <i>Micropterus</i> (black basses — largemouth, smallmouth, spotted, Guadalupe).
+    Surface areas from <span class="src-tag">TWDB</span> and <span class="src-tag">TPWD</span>.
+    This measures <b>observed & reported</b> bass activity, not a population census. Remote trophy waters (Fork, Falcon, Rayburn)
+    have fewer iNaturalist users per km², so they rank lower on density — toggle to raw count to see absolute activity.
+    <div class="hotspot-sort-toggle">
+      <button class="sort-btn active" id="sortDensity" onclick="hotspotToggleSort('density')">obs/km²</button>
+      <button class="sort-btn" id="sortRaw" onclick="hotspotToggleSort('raw')">raw count</button>
+    </div>
   </div>
   <div id="hotspotsList"></div>
 </div>
@@ -1394,7 +1430,7 @@ a.bait-chip, a.detail-bait-chip {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10a11 11 0 0 1 15 0" stroke-opacity="0.4"/><path d="M7 13.5a7 7 0 0 1 10 0" stroke-opacity="0.6"/><path d="M9.5 17a3 3 0 0 1 5 0"/><circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none"/><path d="M12 19.5v-3" stroke-opacity="0.3" stroke-dasharray="1.5 1.5"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Nearby
   </button>
   <button class="tab-btn" id="tabHotspots" onclick="switchView('hotspots')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.08"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Hotspots
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.08"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Activity
   </button>
 
 </nav>
@@ -4203,33 +4239,165 @@ var INAT_DENSITY = {
   "Lake Daniel":{obs:0,rg:0,sp:"—"},
 };
 
+// Lake surface areas (acres) from TWDB + TPWD
+var LAKE_AREAS = {
+  "Lake Meredith":{area:8640.07,src:"TWDB"},
+  "Lake Mackenzie":{area:250.0,src:"TWDB"},
+  "White River Lake":{area:751.5,src:"TWDB"},
+  "Lake Alan Henry":{area:2271.7,src:"TWDB"},
+  "Lake Colorado City":{area:1618.0,src:"TPWD"},
+  "Champion Creek Reservoir":{area:821.5,src:"TWDB"},
+  "E.V. Spence Reservoir":{area:3584.58,src:"TWDB"},
+  "OC Fisher Lake":{area:1295.89,src:"TWDB"},
+  "Twin Buttes Reservoir":{area:1444.3,src:"TWDB"},
+  "Lake Nasworthy":{area:1233.7,src:"TWDB"},
+  "O.H. Ivie Reservoir":{area:19149.0,src:"TPWD"},
+  "Lake J.B. Thomas":{area:3369.39,src:"TWDB"},
+  "Lake Sweetwater":{area:233.1,src:"TWDB"},
+  "Lake Stamford":{area:3870.6,src:"TWDB"},
+  "Lake Fort Phantom Hill":{area:3242.2,src:"TWDB"},
+  "Lake Abilene":{area:147.4,src:"TWDB"},
+  "Lake Brownwood":{area:6233.91,src:"TWDB"},
+  "Lake Coleman":{area:1729.74,src:"TWDB"},
+  "Lake Proctor":{area:4230.06,src:"TWDB"},
+  "Possum Kingdom Lake":{area:17096.17,src:"TWDB"},
+  "Lake Palo Pinto":{area:2166.04,src:"TWDB"},
+  "Lake Graham":{area:2151.11,src:"TWDB"},
+  "Hubbard Creek Reservoir":{area:9002.97,src:"TWDB"},
+  "Millers Creek Reservoir":{area:1519.2,src:"TWDB"},
+  "Lake Texoma":{area:84125.21,src:"TWDB"},
+  "Lake Arrowhead":{area:13082.37,src:"TWDB"},
+  "Lake Kickapoo":{area:5534.23,src:"TWDB"},
+  "Lake Amon G. Carter":{area:1394.1,src:"TWDB"},
+  "Nocona Lake":{area:1249.44,src:"TWDB"},
+  "Lake Ray Roberts":{area:25600.0,src:"TPWD"},
+  "Lake Lewisville":{area:29592.0,src:"TPWD"},
+  "Lavon Lake":{area:21600.15,src:"TWDB"},
+  "Lake Ray Hubbard":{area:21073.62,src:"TWDB"},
+  "Lake Tawakoni":{area:37879.0,src:"TPWD"},
+  "Lake Grapevine":{area:6684.0,src:"TPWD"},
+  "Eagle Mountain Lake":{area:8900.34,src:"TWDB"},
+  "Lake Worth":{area:3179.24,src:"TWDB"},
+  "Benbrook Lake":{area:3635.0,src:"TPWD"},
+  "Lake Weatherford":{area:926.19,src:"TWDB"},
+  "Lake Granbury":{area:8142.99,src:"TWDB"},
+  "White Rock Lake":{area:1088.0,src:"TPWD"},
+  "Joe Pool Lake":{area:6782.99,src:"TWDB"},
+  "Lake Arlington":{area:1899.61,src:"TWDB"},
+  "Mountain Creek Lake":{area:2971.2,src:"TWDB"},
+  "Squaw Creek Reservoir":{area:3272.0,src:"TPWD"},
+  "Lake Whitney":{area:23500.0,src:"TPWD"},
+  "Aquilla Lake":{area:3099.99,src:"TWDB"},
+  "Waco Lake":{area:8580.25,src:"TWDB"},
+  "Lake Fork":{area:25244.73,src:"TWDB"},
+  "Lake Bob Sandlin":{area:8755.41,src:"TWDB"},
+  "Lake Cypress Springs":{area:3207.28,src:"TWDB"},
+  "Lake O the Pines":{area:19780.0,src:"TPWD"},
+  "Caddo Lake":{area:28533.9,src:"TWDB"},
+  "Martin Creek Lake":{area:4903.34,src:"TWDB"},
+  "Lake Murvaul":{area:3397.0,src:"TPWD"},
+  "Lake Palestine":{area:23013.87,src:"TWDB"},
+  "Lake Tyler East":{area:2302.8,src:"TWDB"},
+  "Lake Tyler West":{area:2302.8,src:"TWDB"},
+  "Lake Nacogdoches":{area:2145.24,src:"TWDB"},
+  "Lake Striker":{area:1938.75,src:"TWDB"},
+  "Lake Jacksonville":{area:1320.0,src:"TPWD"},
+  "Lake Athens":{area:1799.0,src:"TPWD"},
+  "Sam Rayburn Reservoir":{area:91088.8,src:"TWDB"},
+  "Toledo Bend Reservoir":{area:177129.6,src:"TWDB"},
+  "Lake Limestone":{area:12553.0,src:"TPWD"},
+  "Lake Mexia":{area:1048.0,src:"TPWD"},
+  "Richland Chambers Reservoir":{area:43202.9,src:"TWDB"},
+  "Bardwell Lake":{area:3395.4,src:"TWDB"},
+  "Lake Conroe":{area:19878.15,src:"TWDB"},
+  "Lake Houston":{area:11433.78,src:"TWDB"},
+  "Lake Livingston":{area:90000.0,src:"TPWD"},
+  "Somerville Lake":{area:11456.0,src:"TPWD"},
+  "Lake Bryan":{area:829.0,src:"TPWD"},
+  "Gibbons Creek Reservoir":{area:2527.74,src:"TWDB"},
+  "Lake Travis":{area:17075.63,src:"TWDB"},
+  "Lake Austin":{area:1560.38,src:"TWDB"},
+  "Lake Buchanan":{area:22425.54,src:"TWDB"},
+  "Inks Lake":{area:790.06,src:"TWDB"},
+  "Lake LBJ":{area:6406.48,src:"TWDB"},
+  "Lake Marble Falls":{area:599.23,src:"TWDB"},
+  "Canyon Lake":{area:5996.75,src:"TWDB"},
+  "Stillhouse Hollow Lake":{area:6429.0,src:"TPWD"},
+  "Belton Lake":{area:12385.0,src:"TPWD"},
+  "Medina Lake":{area:1101.58,src:"TWDB"},
+  "Calaveras Lake":{area:3624.0,src:"TPWD"},
+  "Braunig Lake":{area:1350.0,src:"TPWD"},
+  "Lake Dunlap":{area:410.0,src:"TPWD"},
+  "Lake Placid":{area:198.0,src:"TPWD"},
+  "Coleto Creek Reservoir":{area:2350.93,src:"TWDB"},
+  "Lake Texana":{area:10240.09,src:"TWDB"},
+  "Choke Canyon Reservoir":{area:5778.3,src:"TWDB"},
+  "Lake Corpus Christi":{area:10780.93,src:"TWDB"},
+  "Falcon Reservoir":{area:30465.4,src:"TWDB"},
+  "Lake Casa Blanca":{area:1680.0,src:"TPWD"},
+  "Amistad Reservoir":{area:16538.69,src:"TWDB"},
+  "Lady Bird Lake":{area:468.0,src:"TPWD"},
+  "Walter E. Long Lake":{area:1269.0,src:"TPWD"},
+  "Lake Georgetown":{area:1297.0,src:"TPWD"},
+  "Lake Kirby":{area:740.0,src:"TPWD"},
+  "Lake Daniel":{area:950.0,src:"TPWD"},
+  "Lake Winters":{area:337.0,src:"TPWD"},
+  "Brushy Creek Lake":{area:null,src:null},
+  "Lake Pflugerville":{area:null,src:null},
+  "Lake McQueeney":{area:null,src:null},
+  "Lake Cherokee":{area:null,src:null},
+  "Lake Diversion":{area:null,src:null},
+  "Lake Eddleman":{area:null,src:null},
+  "Lake Throckmorton":{area:null,src:null},
+  "Bluestem Lake":{area:null,src:null},
+};
+var ACRES_TO_KM2 = 0.00404686;
+var hotspotSortMode = "density"; // "density" or "raw"
+
 function renderHotspots() {
   var list = document.getElementById("hotspotsList");
   if (!list) return;
 
-  // Build array from ALL_LAKES + INAT_DENSITY
+  // Build array from ALL_LAKES + INAT_DENSITY + LAKE_AREAS
   var entries = [];
   ALL_LAKES.forEach(function(lake) {
     var d = INAT_DENSITY[lake.name];
     if (d) {
+      var a = LAKE_AREAS[lake.name];
+      var areaAcres = a ? a.area : null;
+      var areaSrc = a ? a.src : null;
+      var areaKm2 = (areaAcres && areaAcres > 0) ? areaAcres * ACRES_TO_KM2 : null;
+      var obsPerKm2 = (areaKm2 && areaKm2 > 0) ? d.obs / areaKm2 : null;
       entries.push({
-        name: lake.name,
-        lat: lake.lat,
-        lon: lake.lon,
-        region: lake.region,
-        type: lake.type,
-        obs: d.obs,
-        rg: d.rg,
-        sp: d.sp
+        name: lake.name, lat: lake.lat, lon: lake.lon,
+        region: lake.region, type: lake.type,
+        obs: d.obs, rg: d.rg, sp: d.sp,
+        areaAcres: areaAcres, areaKm2: areaKm2,
+        obsPerKm2: obsPerKm2, areaSrc: areaSrc
       });
     }
   });
 
-  // Sort by observation count descending
-  entries.sort(function(a, b) { return b.obs - a.obs; });
+  // Sort by selected mode
+  if (hotspotSortMode === "density") {
+    // Sort by obs/km² descending; nulls go to bottom
+    entries.sort(function(a, b) {
+      if (a.obsPerKm2 === null && b.obsPerKm2 === null) return b.obs - a.obs;
+      if (a.obsPerKm2 === null) return 1;
+      if (b.obsPerKm2 === null) return -1;
+      return b.obsPerKm2 - a.obsPerKm2;
+    });
+  } else {
+    entries.sort(function(a, b) { return b.obs - a.obs; });
+  }
 
   var maxObs = entries.length > 0 ? entries[0].obs : 1;
   if (maxObs === 0) maxObs = 1;
+  var maxDensity = 0;
+  entries.forEach(function(e) {
+    if (e.obsPerKm2 !== null && e.obsPerKm2 > maxDensity) maxDensity = e.obsPerKm2;
+  });
+  if (maxDensity === 0) maxDensity = 1;
 
   var html = "";
   entries.forEach(function(e, i) {
@@ -4241,10 +4409,29 @@ function renderHotspots() {
 
     var spDisplay = e.sp;
     if (spDisplay && spDisplay !== "—") {
-      // Shorten species name: "Micropterus nigricans" → "M. nigricans"
       spDisplay = spDisplay.replace(/^Micropterus\s+/, "M. ");
-      // Remove parentheses
       spDisplay = spDisplay.replace(/[()]/g, "");
+    }
+
+    // Build metric display
+    var metricHtml;
+    if (hotspotSortMode === "density" && e.obsPerKm2 !== null) {
+      var densityPct = Math.round((e.obsPerKm2 / maxDensity) * 100);
+      metricHtml = '<div class="hotspot-density">' + e.obsPerKm2.toFixed(1) + '<small> obs/km²</small></div>'
+        + '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + densityPct + '%"></div></div>'
+        + '<div class="hotspot-raw-count">' + e.obs + ' total</div>';
+    } else {
+      metricHtml = '<div class="hotspot-count">' + e.obs + '<small> obs</small></div>'
+        + '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + pct + '%"></div></div>'
+        + (e.obsPerKm2 !== null ? '<div class="hotspot-raw-count">' + e.obsPerKm2.toFixed(1) + '/km²</div>' : '<div class="hotspot-raw-count">—</div>');
+    }
+
+    // Area source badge
+    var areaBadge = '';
+    if (e.areaSrc) {
+      areaBadge = '<span class="area-src">' + e.areaSrc + '</span>';
+    } else if (e.obs > 0) {
+      areaBadge = '<span class="area-src none">no area</span>';
     }
 
     var safeName = e.name.replace(/'/g, "\\'");
@@ -4258,17 +4445,24 @@ function renderHotspots() {
       html += '<span class="sp">• ' + escHtml(spDisplay) + '</span>';
     }
     html += '<span>• ' + e.rg + ' verified</span>';
+    html += areaBadge;
     html += '</div>';
     html += '</div>';
     html += '<div class="hotspot-bar-wrap">';
-    html += '<div class="hotspot-count">' + e.obs + '<small> obs</small></div>';
-    html += '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + pct + '%"></div></div>';
+    html += metricHtml;
     html += '<div class="hotspot-confidence" style="color:' + confColor + '">' + conf + ' conf</div>';
     html += '</div>';
     html += '</div>';
   });
 
   list.innerHTML = html;
+}
+
+function hotspotToggleSort(mode) {
+  hotspotSortMode = mode;
+  document.getElementById("sortDensity").classList.toggle("active", mode === "density");
+  document.getElementById("sortRaw").classList.toggle("active", mode === "raw");
+  renderHotspots();
 }
 
 function hotspotTap(name) {
