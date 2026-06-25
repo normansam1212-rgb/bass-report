@@ -600,6 +600,82 @@ img[src^="icons/"] { mix-blend-mode:screen; opacity:0.85; }
 }
 .tab-btn:active { opacity:.6; }
 
+
+/* ═══ Hotspots ═══ */
+.hotspots-view { display:none; flex-direction:column; padding:14px 20px; }
+.hotspots-view.active { display:flex; flex-direction:column; }
+.hotspots-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.hotspots-hdr h3 { font-size:14px; font-weight:800; color:var(--text); letter-spacing:-.2px; display:flex; align-items:center; gap:5px; }
+.hotspots-hdr .hotspots-sub { font-size:11px; color:var(--dim); font-weight:500; }
+.hotspots-info {
+  background:linear-gradient(160deg, var(--card), var(--card2));
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:14px;
+  font-size:11px; color:var(--dim); line-height:1.5;
+}
+.hotspots-info b { color:var(--mid); font-weight:700; }
+.hotspots-info .src-tag {
+  display:inline-block; padding:2px 7px; border-radius:5px;
+  background:rgba(200,184,72,0.12); color:var(--hot);
+  font-size:10px; font-weight:700; letter-spacing:.3px; margin-left:4px;
+}
+.hotspot-card {
+  display:flex; align-items:center; gap:12px;
+  background:linear-gradient(160deg, var(--card), var(--card2));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:13px 15px;
+  margin-bottom:9px;
+  transition:all .2s var(--ease);
+  cursor:pointer;
+  box-shadow:var(--inner-glow);
+}
+.hotspot-card:active { opacity:.7; transform:scale(.98); }
+.hotspot-rank {
+  font-size:20px; font-weight:900; color:var(--dim);
+  min-width:32px; text-align:center;
+  letter-spacing:-1px;
+}
+.hotspot-card.top-3 .hotspot-rank { color:var(--hot); }
+.hotspot-body { flex:1; min-width:0; }
+.hotspot-name { font-size:14px; font-weight:700; color:var(--text); letter-spacing:-.2px; margin-bottom:2px; }
+.hotspot-meta { font-size:11px; color:var(--dim); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.hotspot-meta .sp { font-style:italic; opacity:.7; }
+.hotspot-bar-wrap {
+  width:80px; flex-shrink:0;
+  display:flex; flex-direction:column; align-items:flex-end; gap:3px;
+}
+.hotspot-count {
+  font-size:18px; font-weight:800; color:var(--accent);
+  letter-spacing:-.5px; line-height:1;
+}
+.hotspot-card.top-3 .hotspot-count { color:var(--hot); }
+.hotspot-count small { font-size:10px; font-weight:600; color:var(--dim); }
+.hotspot-bar {
+  width:80px; height:5px; border-radius:3px;
+  background:rgba(110,128,64,0.12);
+  overflow:hidden;
+}
+.hotspot-bar-fill {
+  height:100%; border-radius:3px;
+  background:linear-gradient(90deg, var(--ok), var(--hot));
+  transition:width .6s var(--ease);
+}
+.hotspot-card.top-3 .hotspot-bar-fill {
+  background:linear-gradient(90deg, var(--hot), var(--good));
+}
+.hotspot-confidence {
+  font-size:9px; color:var(--dim); font-weight:600;
+  text-transform:uppercase; letter-spacing:.4px;
+}
+@media (max-width:430px) {
+  .hotspot-bar-wrap { width:64px; }
+  .hotspot-bar { width:64px; }
+  .hotspot-count { font-size:16px; }
+}
+
 /* ═══ Nearby ═══ */
 .nearby-view { display:none; flex-direction:column; padding:14px 20px; }
 .nearby-view.active { display:flex; flex-direction:column; }
@@ -1291,6 +1367,21 @@ a.bait-chip, a.detail-bait-chip {
   </div>
 </div>
 
+
+<!-- Hotspots -->
+<div class="hotspots-view" id="hotspotsView">
+  <div class="hotspots-hdr">
+    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.12"/></svg> Bass Hotspots</h3>
+    <span class="hotspots-sub">by observation density</span>
+  </div>
+  <div class="hotspots-info">
+    <b>How this works:</b> Bass observation counts from <span class="src-tag">iNaturalist</span> within 20km of each lake.
+    Higher counts = more documented bass sightings by citizen scientists. This measures <b>observed & reported</b> bass activity —
+    not a population census. Remote lakes may have great fishing but low observation counts due to fewer iNaturalist users.
+  </div>
+  <div id="hotspotsList"></div>
+</div>
+
 <!-- Tab bar -->
 <nav class="tab-bar">
   <button class="tab-btn active" id="tabList" onclick="switchView('list')">
@@ -1302,6 +1393,10 @@ a.bait-chip, a.detail-bait-chip {
   <button class="tab-btn" id="tabNearby" onclick="switchView('nearby')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10a11 11 0 0 1 15 0" stroke-opacity="0.4"/><path d="M7 13.5a7 7 0 0 1 10 0" stroke-opacity="0.6"/><path d="M9.5 17a3 3 0 0 1 5 0"/><circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none"/><path d="M12 19.5v-3" stroke-opacity="0.3" stroke-dasharray="1.5 1.5"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Nearby
   </button>
+  <button class="tab-btn" id="tabHotspots" onclick="switchView('hotspots')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.08"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Hotspots
+  </button>
+
 </nav>
 
 <!-- ── Detail Panel Overlay ── -->
@@ -2873,14 +2968,19 @@ function switchView(v) {
   document.getElementById("tabList").classList.toggle("active",v==="list");
   document.getElementById("tabMap").classList.toggle("active",v==="map");
   document.getElementById("tabNearby").classList.toggle("active",v==="nearby");
+  document.getElementById("tabHotspots").classList.toggle("active",v==="hotspots");
   document.getElementById("listView").style.display=v==="list"?"block":"none";
   document.getElementById("mapView").classList.toggle("active",v==="map");
   document.getElementById("nearbyView").classList.toggle("active",v==="nearby");
+  document.getElementById("hotspotsView").classList.toggle("active",v==="hotspots");
   if(v==="map"){
     if(map)setTimeout(function(){map.invalidateSize();},100);
     loadGridWeather();
     // Trigger Overpass water body overlay after map is ready
     setTimeout(fetchMapWaterBodies, 500);
+  }
+  if(v==="hotspots"){
+    renderHotspots();
   }
 }
 
@@ -3985,6 +4085,207 @@ function startFishCycle() {
   if (!reduceMotion) scheduleNext();
   // Start continuous bubble emitter (harmless even when swim is disabled)
   scheduleBubble();
+}
+
+
+// ═══════════════════════════════════════════
+// BASS HOTSPOTS — iNaturalist observation density
+// ═══════════════════════════════════════════
+var INAT_DENSITY = {
+  "Lady Bird Lake":{obs:757,rg:543,sp:"Micropterus nigricans"},
+  "Lake Austin":{obs:745,rg:534,sp:"Micropterus nigricans"},
+  "Walter E. Long Lake":{obs:719,rg:522,sp:"Micropterus nigricans"},
+  "Brushy Creek Lake":{obs:608,rg:434,sp:"Micropterus nigricans"},
+  "Lake Pflugerville":{obs:420,rg:311,sp:"Micropterus nigricans"},
+  "Lake Worth":{obs:367,rg:285,sp:"Micropterus nigricans"},
+  "Lake Georgetown":{obs:322,rg:225,sp:"Micropterus nigricans"},
+  "Lake Lewisville":{obs:249,rg:180,sp:"Micropterus nigricans"},
+  "Eagle Mountain Lake":{obs:240,rg:172,sp:"Micropterus nigricans"},
+  "Lake Arlington":{obs:234,rg:186,sp:"Micropterus nigricans"},
+  "White Rock Lake":{obs:228,rg:160,sp:"Micropterus nigricans"},
+  "Lake Houston":{obs:223,rg:207,sp:"Micropterus nigricans"},
+  "Benbrook Lake":{obs:221,rg:172,sp:"Micropterus nigricans"},
+  "Lake Grapevine":{obs:200,rg:149,sp:"Micropterus nigricans"},
+  "Lake Dunlap":{obs:183,rg:129,sp:"Micropterus nigricans"},
+  "Canyon Lake":{obs:173,rg:116,sp:"Micropterus nigricans"},
+  "Lake McQueeney":{obs:172,rg:119,sp:"Micropterus nigricans"},
+  "Lake Travis":{obs:166,rg:119,sp:"Micropterus nigricans"},
+  "Joe Pool Lake":{obs:164,rg:108,sp:"Micropterus nigricans"},
+  "Lake Granbury":{obs:160,rg:125,sp:"Micropterus nigricans"},
+  "Mountain Creek Lake":{obs:153,rg:99,sp:"Micropterus nigricans"},
+  "Lake Nacogdoches":{obs:150,rg:117,sp:"Micropterus nigricans"},
+  "Lake Placid":{obs:146,rg:103,sp:"Micropterus nigricans"},
+  "Lake Ray Hubbard":{obs:132,rg:98,sp:"Micropterus nigricans"},
+  "Waco Lake":{obs:127,rg:94,sp:"Micropterus nigricans"},
+  "Lake Conroe":{obs:100,rg:74,sp:"Micropterus nigricans"},
+  "Lake Bryan":{obs:96,rg:69,sp:"Micropterus nigricans"},
+  "Stillhouse Hollow Lake":{obs:87,rg:53,sp:"Micropterus nigricans"},
+  "Squaw Creek Reservoir":{obs:84,rg:75,sp:"Micropterus nigricans"},
+  "Lake Weatherford":{obs:81,rg:68,sp:"Micropterus nigricans"},
+  "Belton Lake":{obs:79,rg:46,sp:"Micropterus nigricans"},
+  "Inks Lake":{obs:69,rg:58,sp:"Micropterus nigricans"},
+  "Lake LBJ":{obs:67,rg:53,sp:"Micropterus nigricans"},
+  "Lake Buchanan":{obs:65,rg:55,sp:"Micropterus nigricans"},
+  "Lake Tyler East":{obs:63,rg:42,sp:"Micropterus nigricans"},
+  "Braunig Lake":{obs:62,rg:52,sp:"Micropterus nigricans"},
+  "Lake Ray Roberts":{obs:59,rg:46,sp:"Micropterus nigricans"},
+  "Gibbons Creek Reservoir":{obs:59,rg:45,sp:"Micropterus nigricans"},
+  "Calaveras Lake":{obs:57,rg:45,sp:"Micropterus nigricans"},
+  "Lake Tyler West":{obs:56,rg:36,sp:"Micropterus nigricans"},
+  "Lake Marble Falls":{obs:44,rg:35,sp:"Micropterus nigricans"},
+  "Lake Kirby":{obs:40,rg:31,sp:"Micropterus nigricans"},
+  "Lavon Lake":{obs:39,rg:32,sp:"Micropterus nigricans"},
+  "Caddo Lake":{obs:34,rg:24,sp:"Micropterus nigricans"},
+  "Lake Cherokee":{obs:33,rg:33,sp:"Micropterus nigricans"},
+  "Lake Athens":{obs:33,rg:28,sp:"Micropterus nigricans"},
+  "Medina Lake":{obs:32,rg:22,sp:"Micropterus nigricans"},
+  "Lake Abilene":{obs:29,rg:23,sp:"Micropterus nigricans"},
+  "Possum Kingdom Lake":{obs:29,rg:23,sp:"Micropterus nigricans"},
+  "Lake Texoma":{obs:25,rg:22,sp:"Micropterus nigricans"},
+  "Sam Rayburn Reservoir":{obs:25,rg:17,sp:"Micropterus nigricans"},
+  "Somerville Lake":{obs:24,rg:17,sp:"Micropterus nigricans"},
+  "Lake Fort Phantom Hill":{obs:23,rg:19,sp:"Micropterus nigricans"},
+  "Lake Palo Pinto":{obs:23,rg:19,sp:"Micropterus nigricans"},
+  "Lake Whitney":{obs:23,rg:19,sp:"Micropterus nigricans"},
+  "Aquilla Lake":{obs:23,rg:19,sp:"Micropterus nigricans"},
+  "Lake Striker":{obs:23,rg:21,sp:"Micropterus nigricans"},
+  "Lake Jacksonville":{obs:23,rg:20,sp:"Micropterus nigricans"},
+  "Lake Casa Blanca":{obs:23,rg:20,sp:"Micropterus nigricans"},
+  "Twin Buttes Reservoir":{obs:22,rg:19,sp:"Micropterus nigricans"},
+  "Lake Nasworthy":{obs:22,rg:19,sp:"Micropterus nigricans"},
+  "Lake O the Pines":{obs:22,rg:18,sp:"Micropterus nigricans"},
+  "Lake Diversion":{obs:21,rg:19,sp:"Micropterus nigricans"},
+  "Richland Chambers Reservoir":{obs:21,rg:16,sp:"Micropterus nigricans"},
+  "Lake Fork":{obs:19,rg:19,sp:"Micropterus nigricans"},
+  "Lake Corpus Christi":{obs:18,rg:17,sp:"Micropterus nigricans"},
+  "Lake Amon G. Carter":{obs:17,rg:14,sp:"Micropterus nigricans"},
+  "Lake Tawakoni":{obs:17,rg:11,sp:"Micropterus nigricans"},
+  "Lake Bob Sandlin":{obs:17,rg:14,sp:"Micropterus nigricans"},
+  "Toledo Bend Reservoir":{obs:17,rg:15,sp:"Micropterus nigricans"},
+  "Nocona Lake":{obs:16,rg:15,sp:"Micropterus nigricans"},
+  "Lake Palestine":{obs:13,rg:4,sp:"Micropterus nigricans"},
+  "Lake Texana":{obs:13,rg:9,sp:"Micropterus nigricans"},
+  "OC Fisher Lake":{obs:12,rg:9,sp:"Micropterus nigricans"},
+  "Falcon Reservoir":{obs:12,rg:12,sp:"Micropterus nigricans"},
+  "Lake Brownwood":{obs:11,rg:8,sp:"Micropterus nigricans"},
+  "Martin Creek Lake":{obs:10,rg:10,sp:"Micropterus nigricans"},
+  "Lake Livingston":{obs:10,rg:8,sp:"Micropterus nigricans"},
+  "Coleto Creek Reservoir":{obs:10,rg:6,sp:"Micropterus nigricans"},
+  "Amistad Reservoir":{obs:10,rg:9,sp:"Micropterus nigricans"},
+  "Hubbard Creek Reservoir":{obs:8,rg:7,sp:"Micropterus nigricans"},
+  "Lake Coleman":{obs:7,rg:5,sp:"Micropterus nigricans"},
+  "Lake Cypress Springs":{obs:6,rg:6,sp:"Micropterus nigricans"},
+  "Lake Limestone":{obs:6,rg:5,sp:"Micropterus nigricans"},
+  "Lake Alan Henry":{obs:5,rg:1,sp:"(Micropterus punctulatus)"},
+  "E.V. Spence Reservoir":{obs:5,rg:5,sp:"(Micropterus salmoides)"},
+  "Lake Proctor":{obs:4,rg:2,sp:"Micropterus nigricans"},
+  "Lake Eddleman":{obs:4,rg:2,sp:"Micropterus nigricans"},
+  "Lake Throckmorton":{obs:4,rg:4,sp:"Micropterus nigricans"},
+  "Bardwell Lake":{obs:4,rg:1,sp:"(Micropterus)"},
+  "Choke Canyon Reservoir":{obs:4,rg:4,sp:"Micropterus nigricans"},
+  "White River Lake":{obs:3,rg:3,sp:"Micropterus nigricans"},
+  "Lake Graham":{obs:3,rg:1,sp:"(Micropterus salmoides)"},
+  "Millers Creek Reservoir":{obs:3,rg:3,sp:"Micropterus nigricans"},
+  "Lake Murvaul":{obs:3,rg:3,sp:"Micropterus nigricans"},
+  "Lake Mexia":{obs:3,rg:2,sp:"Micropterus nigricans"},
+  "Bluestem Lake":{obs:2,rg:1,sp:"(Micropterus salmoides)"},
+  "Lake Arrowhead":{obs:2,rg:1,sp:"Micropterus nigricans"},
+  "Lake Colorado City":{obs:1,rg:1,sp:"Micropterus nigricans"},
+  "O.H. Ivie Reservoir":{obs:1,rg:1,sp:"Micropterus nigricans"},
+  "Lake J.B. Thomas":{obs:1,rg:1,sp:"Micropterus nigricans"},
+  "Lake Sweetwater":{obs:1,rg:1,sp:"(Micropterus salmoides)"},
+  "Lake Stamford":{obs:1,rg:0,sp:"(Micropterus salmoides)"},
+  "Lake Winters":{obs:1,rg:0,sp:"Micropterus nigricans"},
+  "Lake Kickapoo":{obs:1,rg:1,sp:"Micropterus nigricans"},
+  "Lake Meredith":{obs:0,rg:0,sp:"—"},
+  "Lake Mackenzie":{obs:0,rg:0,sp:"—"},
+  "Champion Creek Reservoir":{obs:0,rg:0,sp:"—"},
+  "Lake Daniel":{obs:0,rg:0,sp:"—"},
+};
+
+function renderHotspots() {
+  var list = document.getElementById("hotspotsList");
+  if (!list) return;
+
+  // Build array from ALL_LAKES + INAT_DENSITY
+  var entries = [];
+  ALL_LAKES.forEach(function(lake) {
+    var d = INAT_DENSITY[lake.name];
+    if (d) {
+      entries.push({
+        name: lake.name,
+        lat: lake.lat,
+        lon: lake.lon,
+        region: lake.region,
+        type: lake.type,
+        obs: d.obs,
+        rg: d.rg,
+        sp: d.sp
+      });
+    }
+  });
+
+  // Sort by observation count descending
+  entries.sort(function(a, b) { return b.obs - a.obs; });
+
+  var maxObs = entries.length > 0 ? entries[0].obs : 1;
+  if (maxObs === 0) maxObs = 1;
+
+  var html = "";
+  entries.forEach(function(e, i) {
+    var rank = i + 1;
+    var isTop3 = rank <= 3;
+    var pct = Math.round((e.obs / maxObs) * 100);
+    var conf = e.rg >= 50 ? "High" : e.rg >= 15 ? "Medium" : e.rg > 0 ? "Low" : "None";
+    var confColor = e.rg >= 50 ? "var(--good)" : e.rg >= 15 ? "var(--ok)" : "var(--bad)";
+
+    var spDisplay = e.sp;
+    if (spDisplay && spDisplay !== "—") {
+      // Shorten species name: "Micropterus nigricans" → "M. nigricans"
+      spDisplay = spDisplay.replace(/^Micropterus\s+/, "M. ");
+      // Remove parentheses
+      spDisplay = spDisplay.replace(/[()]/g, "");
+    }
+
+    var safeName = e.name.replace(/'/g, "\\'");
+    html += '<div class="hotspot-card' + (isTop3 ? ' top-3' : '') + '" onclick="hotspotTap(\'' + safeName + '\')">';
+    html += '<div class="hotspot-rank">' + rank + '</div>';
+    html += '<div class="hotspot-body">';
+    html += '<div class="hotspot-name">' + escHtml(e.name) + '</div>';
+    html += '<div class="hotspot-meta">';
+    html += '<span>' + escHtml(e.region) + '</span>';
+    if (spDisplay && spDisplay !== "—") {
+      html += '<span class="sp">• ' + escHtml(spDisplay) + '</span>';
+    }
+    html += '<span>• ' + e.rg + ' verified</span>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="hotspot-bar-wrap">';
+    html += '<div class="hotspot-count">' + e.obs + '<small> obs</small></div>';
+    html += '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + pct + '%"></div></div>';
+    html += '<div class="hotspot-confidence" style="color:' + confColor + '">' + conf + ' conf</div>';
+    html += '</div>';
+    html += '</div>';
+  });
+
+  list.innerHTML = html;
+}
+
+function hotspotTap(name) {
+  // Find the lake and jump to it in the report view
+  var lake = null;
+  for (var i = 0; i < ALL_LAKES.length; i++) {
+    if (ALL_LAKES[i].name === name) { lake = ALL_LAKES[i]; break; }
+  }
+  if (lake) {
+    // Set location to this lake and switch to report
+    userLat = lake.lat;
+    userLon = lake.lon;
+    userLabel = lake.name + " (" + lake.region + ")";
+    document.getElementById("searchInput").value = userLabel;
+    switchView('list');
+    loadReport();
+  }
 }
 
 // Start the swimming fish cycle
