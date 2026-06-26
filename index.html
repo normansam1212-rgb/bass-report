@@ -5507,7 +5507,7 @@ function renderBankFishing() {
     }).join("");
     var accessNote = item.access ? '<span class="bank-tag good">📍 '+(item.access.points.length)+' Access Point'+(item.access.points.length>1?'s':'')+'</span>' : '';
 
-    html += '<button class="bank-card'+(isTop?" top-3":"")+'" onclick="bankTap('+JSON.stringify(item.lake.name)+')">'
+    html += '<button class="bank-card'+(isTop?" top-3":"")+'" data-lake="'+item.lake.name.replace(/"/g,'&quot;')+'">'
       + '<div class="bank-rank">'+(isTop?"🏆":"#"+rank)+'</div>'
       + '<div class="bank-body">'
         + '<div class="bank-name">'+item.lake.name+'</div>'
@@ -5523,6 +5523,11 @@ function renderBankFishing() {
   });
 
   list.innerHTML = html;
+  // Event delegation: handle taps on any bank card
+  list.onclick = function(e) {
+    var btn = e.target.closest('.bank-card');
+    if(btn) bankTap(btn.getAttribute('data-lake'));
+  };
 }
 
 function bankTap(name) {
