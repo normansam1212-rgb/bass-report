@@ -1636,7 +1636,7 @@ a.bait-chip, a.detail-bait-chip {
 
       <!-- Bank Access section — shown only when opened from Bank tab -->
       <div id="detailBankAccess" style="display:none">
-        <div class="detail-section-title">🏦 Bank Access Points</div>
+        <div class="detail-section-title">🏦 Bank Fishing Guide</div>
         <div class="bank-access-block" id="detailBankAccessContent"></div>
       </div>
 
@@ -3756,25 +3756,63 @@ function openDetail(lake) {
   // ── Bank Access section ──
   var bankAccessEl = document.getElementById("detailBankAccess");
   var bankAccessContent = document.getElementById("detailBankAccessContent");
-  if(lake.bankAccess && lake.bankAccess.points && lake.bankAccess.points.length > 0) {
+  if(lake.bankAccess || lake.bankData) {
     var ba = lake.bankAccess;
+    var bd2 = lake.bankData;
     var typeIcon = { park:"🌳", pier:"🎣", ramp:"🚗", wade:"🚶", bank:"📍" };
     var typeLabel = { park:"Park / Shore", pier:"Fishing Pier", ramp:"Boat Ramp Bank", wade:"Wade Area", bank:"Bank Access" };
-    var html = '<div class="bank-access-summary">'+escHtml(ba.summary)+'</div>';
-    ba.points.forEach(function(pt, i) {
-      var icon = typeIcon[pt.type] || "📍";
-      var lbl  = typeLabel[pt.type] || pt.type;
-      var navUrl = "https://maps.google.com/?q="+pt.lat+","+pt.lon;
-      html += '<div class="bank-access-point">'
-        + '<div class="bap-icon">'+icon+'</div>'
-        + '<div class="bap-body">'
-          + '<div class="bap-name">'+(i+1)+'. '+escHtml(pt.name)+'</div>'
-          + '<span class="bap-type '+pt.type+'">'+lbl+'</span>'
-          + '<div class="bap-notes">'+escHtml(pt.notes)+'</div>'
-        + '</div>'
-        + '<button class="bap-nav-btn" onclick="window.open(\''+navUrl+'\',\'_blank\')">Nav →</button>'
-        + '</div>';
-    });
+    var html = "";
+
+    if(ba && ba.summary) {
+      html += '<div class="bank-access-summary">'+escHtml(ba.summary)+'</div>';
+    } else if(bd2) {
+      // Generate summary from scoring data
+      var tips = [];
+      if(bd2.wade) tips.push("wade-in access available");
+      if(bd2.tags) bd2.tags.forEach(function(t){ if(t.cls==="good") tips.push(t.label.toLowerCase()); });
+      var gradeDesc = bd2.grade==="A" ? "Excellent bank fishing" : bd2.grade==="B" ? "Good bank fishing" : bd2.grade==="C" ? "Moderate bank access" : "Limited bank fishing";
+      html += '<div class="bank-access-summary"><b>'+gradeDesc+'</b>'+(tips.length ? " — "+tips.join(", ")+"." : ".")+'</div>';
+    }
+
+    if(ba && ba.points && ba.points.length > 0) {
+      ba.points.forEach(function(pt, i) {
+        var icon = typeIcon[pt.type] || "📍";
+        var lbl  = typeLabel[pt.type] || pt.type;
+        var navUrl = "https://maps.google.com/?q="+pt.lat+","+pt.lon;
+        html += '<div class="bank-access-point">'
+          + '<div class="bap-icon">'+icon+'</div>'
+          + '<div class="bap-body">'
+            + '<div class="bap-name">'+(i+1)+'. '+escHtml(pt.name)+'</div>'
+            + '<span class="bap-type '+pt.type+'">'+lbl+'</span>'
+            + '<div class="bap-notes">'+escHtml(pt.notes)+'</div>'
+          + '</div>'
+          + '<button class="bap-nav-btn" onclick="window.open(\''+navUrl+'\',\'_blank\')">Nav →</button>'
+          + '</div>';
+      });
+    } else if(bd2) {
+      // Generic tips based on scoring dimensions
+      var rows = [];
+      if(bd2.wade) rows.push({ icon:"🚶", type:"wade", label:"Wade Area", note:"Shallow, accessible bottom — wade out to reach structure and grass edges." });
+      if(bd2.tags) bd2.tags.forEach(function(t){
+        if(t.label==="Fishing Pier" || t.label==="Good Shore Access") rows.push({ icon:"🌳", type:"park", label:"Shore Access", note:"Public shoreline with good casting room." });
+        if(t.label==="Lots of Structure") rows.push({ icon:"📍", type:"bank", label:"Bank Structure", note:"Docks, points, and laydowns reachable from the bank — target these with jigs or Texas-rigged plastics." });
+        if(t.label==="Easy Parking") rows.push({ icon:"🚗", type:"ramp", label:"Boat Ramp Area", note:"Ramp area with adjacent bank — fish the riprap and wing walls early morning." });
+      });
+      if(rows.length === 0) rows.push({ icon:"📍", type:"bank", label:"General Bank Access", note:"Search for public parks, boat ramps, and fishing piers around this lake for shore access." });
+      rows.slice(0,4).forEach(function(r, i) {
+        var navUrl = "https://maps.google.com/?q="+escHtml(lake.name)+"+fishing+"+r.type+"+Texas";
+        html += '<div class="bank-access-point">'
+          + '<div class="bap-icon">'+r.icon+'</div>'
+          + '<div class="bap-body">'
+            + '<div class="bap-name">'+(i+1)+'. '+r.label+'</div>'
+            + '<span class="bap-type '+r.type+'">'+typeLabel[r.type]||r.type+'</span>'
+            + '<div class="bap-notes">'+r.note+'</div>'
+          + '</div>'
+          + '<button class="bap-nav-btn" onclick="window.open(\''+navUrl+'\',\'_blank\')">Search →</button>'
+          + '</div>';
+      });
+    }
+
     bankAccessContent.innerHTML = html;
     bankAccessEl.style.display = "";
   } else {
@@ -5502,7 +5540,8 @@ function bankTap(name) {
     name: lake.name, type: lake.type, lat: lake.lat, lon: lake.lon,
     score: bd.score, bd: [], wt: null,
     srH: lake.srH, ssH: lake.ssH, dist: null,
-    bankAccess: bd.access   // ← pass access points into the detail card
+    bankAccess: bd.access,   // named access points (26 lakes)
+    bankData: bd             // full scoring data (all lakes)
   });
   openDetail(cid);
 }
