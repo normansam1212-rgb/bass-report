@@ -637,6 +637,7 @@ img[src^="icons/"] { mix-blend-mode:screen; opacity:0.85; }
   cursor:pointer;
   box-shadow:var(--inner-glow);
   transition:all .2s var(--ease);
+  width:100%; text-align:left; color:var(--text); font-family:inherit; font-size:inherit;
 }
 .bank-card:active { opacity:.7; transform:scale(.98); }
 .bank-rank { font-size:20px; font-weight:900; color:var(--dim); min-width:32px; text-align:center; letter-spacing:-1px; }
@@ -5506,7 +5507,7 @@ function renderBankFishing() {
     }).join("");
     var accessNote = item.access ? '<span class="bank-tag good">📍 '+(item.access.points.length)+' Access Point'+(item.access.points.length>1?'s':'')+'</span>' : '';
 
-    html += '<div class="bank-card'+(isTop?" top-3":"")+'" onclick="bankTap('+JSON.stringify(item.lake.name)+')">'
+    html += '<button class="bank-card'+(isTop?" top-3":"")+'" onclick="bankTap('+JSON.stringify(item.lake.name)+')">'
       + '<div class="bank-rank">'+(isTop?"🏆":"#"+rank)+'</div>'
       + '<div class="bank-body">'
         + '<div class="bank-name">'+item.lake.name+'</div>'
@@ -5518,7 +5519,7 @@ function renderBankFishing() {
         + '<div class="bank-score-bar"><div class="bank-score-fill" style="width:'+barPct+'%"></div></div>'
         + '<span class="bank-grade '+item.grade+'">Grade '+item.grade+'</span>'
       + '</div>'
-      + '</div>';
+      + '</button>';
   });
 
   list.innerHTML = html;
