@@ -582,13 +582,15 @@ svg[style*="width"] { width:auto; height:auto; }
 }
 .tab-btn {
   flex:1; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:4px;
+  align-items:center; justify-content:center; gap:3px;
   border:none; background:none; color:var(--dim); cursor:pointer;
-  font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.7px;
+  font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
   transition:color .25s var(--ease);
   position:relative;
+  min-width:0; padding:0 2px;
 }
-.tab-btn .ti { font-size:22px; line-height:1; transition:transform .3s var(--ease-bounce); }
+.tab-btn .ti { font-size:20px; line-height:1; transition:transform .3s var(--ease-bounce); }
+.tab-btn svg { width:20px!important; height:20px!important; }
 img[src^="icons/"] { mix-blend-mode:screen; opacity:0.85; }
 .tab-btn.active { color:var(--accent); }
 .tab-btn.active .ti { transform:scale(1.15) translateY(-1px); }
@@ -601,6 +603,69 @@ img[src^="icons/"] { mix-blend-mode:screen; opacity:0.85; }
 .tab-btn:active { opacity:.6; }
 
 
+/* ═══ Bank Fishing ═══ */
+.bank-view { display:none; flex-direction:column; padding:14px 20px; }
+.bank-view.active { display:flex; flex-direction:column; }
+.bank-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.bank-hdr h3 { font-size:14px; font-weight:800; color:var(--text); letter-spacing:-.2px; display:flex; align-items:center; gap:5px; }
+.bank-hdr .bank-sub { font-size:11px; color:var(--dim); font-weight:500; }
+.bank-info {
+  background:linear-gradient(160deg, var(--card), var(--card2));
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:14px;
+  font-size:11px; color:var(--dim); line-height:1.5;
+}
+.bank-info b { color:var(--mid); font-weight:700; }
+.bank-filter-bar {
+  display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;
+}
+.bank-filter-btn {
+  padding:5px 12px; border-radius:20px; border:1px solid var(--border);
+  background:var(--card); color:var(--dim); font-size:11px; font-weight:600;
+  cursor:pointer; transition:all .18s;
+}
+.bank-filter-btn.active { background:var(--accent); color:#111; border-color:var(--accent); }
+.bank-card {
+  display:flex; align-items:center; gap:12px;
+  background:linear-gradient(160deg, var(--card), var(--card2));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:13px 15px;
+  margin-bottom:9px;
+  cursor:pointer;
+  box-shadow:var(--inner-glow);
+  transition:all .2s var(--ease);
+}
+.bank-card:active { opacity:.7; transform:scale(.98); }
+.bank-rank { font-size:20px; font-weight:900; color:var(--dim); min-width:32px; text-align:center; letter-spacing:-1px; }
+.bank-card.top-3 .bank-rank { color:var(--hot); }
+.bank-body { flex:1; min-width:0; }
+.bank-name { font-size:14px; font-weight:700; color:var(--text); letter-spacing:-.2px; margin-bottom:2px; }
+.bank-meta { font-size:11px; color:var(--dim); margin-bottom:4px; }
+.bank-tags { display:flex; flex-wrap:wrap; gap:3px; }
+.bank-tag {
+  font-size:9px; font-weight:600; padding:2px 6px; border-radius:4px; letter-spacing:.2px;
+}
+.bank-tag.good { background:rgba(110,128,64,0.14); color:var(--good); }
+.bank-tag.warn { background:rgba(200,184,72,0.12); color:var(--hot); }
+.bank-tag.bad  { background:rgba(180,80,80,0.11); color:var(--bad); }
+.bank-tag.neu  { background:rgba(130,130,130,0.1); color:var(--dim); }
+.bank-score-wrap { display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+.bank-score-num { font-size:22px; font-weight:900; color:var(--accent); letter-spacing:-.5px; line-height:1; }
+.bank-card.top-3 .bank-score-num { color:var(--hot); }
+.bank-score-num small { font-size:10px; font-weight:600; color:var(--dim); }
+.bank-score-bar { width:60px; height:5px; border-radius:3px; background:rgba(110,128,64,0.12); overflow:hidden; }
+.bank-score-fill { height:100%; border-radius:3px; background:linear-gradient(90deg, var(--ok), var(--hot)); transition:width .6s var(--ease); }
+.bank-grade {
+  font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+  padding:2px 6px; border-radius:4px;
+}
+.bank-grade.A { background:rgba(110,128,64,0.15); color:var(--good); }
+.bank-grade.B { background:rgba(200,184,72,0.12); color:var(--hot); }
+.bank-grade.C { background:rgba(130,130,130,0.12); color:var(--dim); }
+.bank-grade.D { background:rgba(180,80,80,0.12); color:var(--bad); }
 /* ═══ Hotspots ═══ */
 .hotspots-view { display:none; flex-direction:column; padding:14px 20px; }
 .hotspots-view.active { display:flex; flex-direction:column; }
@@ -1441,6 +1506,26 @@ a.bait-chip, a.detail-bait-chip {
 </div>
 
 
+<!-- Bank Fishing -->
+<div class="bank-view" id="bankView">
+  <div class="bank-hdr">
+    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px"><path d="M2 20h20M4 20V10l8-7 8 7v10" fill="currentColor" fill-opacity="0.08"/><path d="M9 20v-6h6v6" stroke-opacity="0.8"/><circle cx="12" cy="8" r="1.5" fill="currentColor" stroke="none" opacity="0.5"/></svg> Bank Fishing</h3>
+    <span class="bank-sub" id="bankSub">accessibility ranked</span>
+  </div>
+  <div class="bank-info">
+    <b>How this works:</b> Each water is scored 1–10 on how good it is for <b>bank fishing</b> — no boat needed.
+    Factors: public shore access, parking &amp; facilities, shoreline length, water depth from bank, structure &amp; cover, crowd level, and whether the fishery is wade-friendly.
+    <b>A–B rated</b> = pull up and fish. <b>C</b> = workable with some effort. <b>D</b> = difficult from shore.
+  </div>
+  <div class="bank-filter-bar">
+    <button class="bank-filter-btn active" id="bankAll" onclick="bankFilter('all')">All Waters</button>
+    <button class="bank-filter-btn" id="bankTop" onclick="bankFilter('top')">🏆 Top Rated (7+)</button>
+    <button class="bank-filter-btn" id="bankWade" onclick="bankFilter('wade')">🚶 Wade-Friendly</button>
+    <button class="bank-filter-btn" id="bankFamily" onclick="bankFilter('family')">👨‍👩‍👧 Family-Friendly</button>
+  </div>
+  <div id="bankList"></div>
+</div>
+
 <!-- Hotspots -->
 <div class="hotspots-view" id="hotspotsView">
   <div class="hotspots-hdr">
@@ -1475,6 +1560,9 @@ a.bait-chip, a.detail-bait-chip {
   </button>
   <button class="tab-btn" id="tabHotspots" onclick="switchView('hotspots')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.08"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Hotspots
+  </button>
+  <button class="tab-btn" id="tabBank" onclick="switchView('bank')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;object-fit:contain"><path d="M2 20h20M4 20V10l8-7 8 7v10" fill="currentColor" fill-opacity="0.08"/><path d="M9 20v-5h6v5" stroke-opacity="0.8"/><circle cx="12" cy="8" r="1.5" fill="currentColor" stroke="none" opacity="0.6"/></svg>Bank
   </button>
 
 </nav>
@@ -3049,10 +3137,12 @@ function switchView(v) {
   document.getElementById("tabMap").classList.toggle("active",v==="map");
   document.getElementById("tabNearby").classList.toggle("active",v==="nearby");
   document.getElementById("tabHotspots").classList.toggle("active",v==="hotspots");
+  document.getElementById("tabBank").classList.toggle("active",v==="bank");
   document.getElementById("listView").style.display=v==="list"?"block":"none";
   document.getElementById("mapView").classList.toggle("active",v==="map");
   document.getElementById("nearbyView").classList.toggle("active",v==="nearby");
   document.getElementById("hotspotsView").classList.toggle("active",v==="hotspots");
+  document.getElementById("bankView").classList.toggle("active",v==="bank");
   if(v==="map"){
     if(map)setTimeout(function(){map.invalidateSize();},100);
     loadGridWeather();
@@ -3069,6 +3159,9 @@ function switchView(v) {
       // Grid already loaded, re-render with scores
       renderHotspots();
     }
+  }
+  if(v==="bank"){
+    renderBankFishing();
   }
 }
 
@@ -4859,6 +4952,264 @@ function hotspotTap(name) {
     score: score, bd: bd, wt: wt,
     srH: lake.srH, ssH: lake.ssH,
     dist: null
+  });
+  openDetail(cid);
+}
+
+// ═══════════════════════════════════════════
+// BANK FISHING TAB
+// ═══════════════════════════════════════════
+
+// Bank fishing scores for all 109 TX waters.
+// Scoring factors (static, knowledge-based):
+//   shoreAccess  (1-10): Public shoreline length / park access
+//   parking      (1-10): Ease of parking / facilities
+//   depth        (1-10): Fishable depth reachable from bank (shallower = better)
+//   structure    (1-10): Docks, points, laydowns, submerged structure from shore
+//   crowd        (1-10): 10=remote/uncrowded, 1=urban/crowded (lower is worse)
+//   wade         (bool): Sandy/gravelly bottom safe to wade
+//   family       (bool): Paved parking, restrooms, low hazard, beginner-friendly
+// Final score = weighted average, clamped 1-10
+
+var BANK_DATA = (function() {
+  // Defaults for all lakes; specific overrides below
+  var defaults = { shoreAccess:5, parking:5, depth:5, structure:5, crowd:6, wade:false, family:false };
+
+  var overrides = {
+    // ── Top bank access lakes ──
+    "White Rock Lake":            { shoreAccess:9, parking:9, depth:7, structure:7, crowd:4, wade:true,  family:true  },
+    "Lake Ray Roberts":           { shoreAccess:8, parking:8, depth:6, structure:7, crowd:6, wade:true,  family:true  },
+    "Benbrook Lake":              { shoreAccess:8, parking:8, depth:6, structure:6, crowd:6, wade:false, family:true  },
+    "Lake Grapevine":             { shoreAccess:8, parking:8, depth:6, structure:6, crowd:5, wade:false, family:true  },
+    "Joe Pool Lake":              { shoreAccess:8, parking:8, depth:6, structure:6, crowd:5, wade:false, family:true  },
+    "Lake Lewisville":            { shoreAccess:7, parking:7, depth:6, structure:6, crowd:5, wade:false, family:true  },
+    "Lake Whitney":               { shoreAccess:7, parking:7, depth:6, structure:7, crowd:7, wade:true,  family:true  },
+    "Waco Lake":                  { shoreAccess:7, parking:7, depth:5, structure:6, crowd:6, wade:false, family:true  },
+    "Lake Nasworthy":             { shoreAccess:8, parking:8, depth:8, structure:7, crowd:6, wade:true,  family:true  },
+    "Possum Kingdom Lake":        { shoreAccess:6, parking:6, depth:5, structure:7, crowd:6, wade:true,  family:false },
+    "Lake Texoma":                { shoreAccess:7, parking:7, depth:6, structure:7, crowd:6, wade:true,  family:true  },
+    "Lake Ray Hubbard":           { shoreAccess:6, parking:6, depth:6, structure:5, crowd:5, wade:false, family:false },
+    "Lake Arlington":             { shoreAccess:6, parking:7, depth:6, structure:5, crowd:5, wade:false, family:true  },
+    "Lake Granbury":              { shoreAccess:6, parking:6, depth:5, structure:6, crowd:6, wade:false, family:false },
+    "Eagle Mountain Lake":        { shoreAccess:6, parking:6, depth:5, structure:6, crowd:6, wade:false, family:false },
+    "Lake Worth":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:5, wade:true,  family:true  },
+    "Lake Brownwood":             { shoreAccess:7, parking:7, depth:6, structure:6, crowd:7, wade:true,  family:true  },
+    "Lake Proctor":               { shoreAccess:7, parking:7, depth:7, structure:7, crowd:8, wade:true,  family:true  },
+    "Lake Fork":                  { shoreAccess:4, parking:5, depth:4, structure:8, crowd:7, wade:false, family:false },
+    "Sam Rayburn Reservoir":      { shoreAccess:5, parking:6, depth:5, structure:8, crowd:7, wade:false, family:false },
+    "Toledo Bend Reservoir":      { shoreAccess:5, parking:5, depth:5, structure:8, crowd:8, wade:false, family:false },
+    "Caddo Lake":                 { shoreAccess:6, parking:6, depth:8, structure:9, crowd:8, wade:false, family:false },
+    "Lake Tawakoni":              { shoreAccess:6, parking:6, depth:6, structure:6, crowd:6, wade:false, family:false },
+    "Lake Palestine":             { shoreAccess:6, parking:6, depth:5, structure:6, crowd:7, wade:false, family:false },
+    "Lake Athens":                { shoreAccess:7, parking:7, depth:7, structure:7, crowd:7, wade:true,  family:true  },
+    "Lake Cedar Creek":           { shoreAccess:6, parking:6, depth:5, structure:6, crowd:6, wade:false, family:false },
+    "Lake Livingston":            { shoreAccess:6, parking:6, depth:5, structure:5, crowd:6, wade:false, family:false },
+    "Conroe Lake":                { shoreAccess:5, parking:6, depth:5, structure:5, crowd:5, wade:false, family:false },
+    "Lake Somerville":            { shoreAccess:8, parking:8, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Granger Lake":               { shoreAccess:8, parking:8, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Stillhouse Hollow Lake":     { shoreAccess:7, parking:7, depth:6, structure:6, crowd:7, wade:false, family:true  },
+    "Belton Lake":                { shoreAccess:7, parking:7, depth:6, structure:6, crowd:7, wade:false, family:true  },
+    "Lake Georgetown":            { shoreAccess:7, parking:8, depth:7, structure:6, crowd:7, wade:true,  family:true  },
+    "Lady Bird Lake":             { shoreAccess:9, parking:7, depth:8, structure:6, crowd:3, wade:false, family:true  },
+    "Lake Travis":                { shoreAccess:5, parking:5, depth:3, structure:4, crowd:5, wade:false, family:false },
+    "Lake Austin":                { shoreAccess:5, parking:5, depth:5, structure:5, crowd:5, wade:false, family:false },
+    "Lake Walter E. Long":        { shoreAccess:7, parking:7, depth:7, structure:6, crowd:6, wade:false, family:true  },
+    "Lake Pflugerville":          { shoreAccess:8, parking:8, depth:8, structure:6, crowd:6, wade:true,  family:true  },
+    "Medina Lake":                { shoreAccess:5, parking:5, depth:4, structure:6, crowd:7, wade:false, family:false },
+    "Canyon Lake":                { shoreAccess:6, parking:7, depth:5, structure:5, crowd:6, wade:true,  family:true  },
+    "Choke Canyon Reservoir":     { shoreAccess:7, parking:7, depth:7, structure:7, crowd:8, wade:false, family:true  },
+    "Falcon Reservoir":           { shoreAccess:6, parking:6, depth:7, structure:7, crowd:9, wade:false, family:false },
+    "Amistad Reservoir":          { shoreAccess:5, parking:5, depth:4, structure:6, crowd:8, wade:false, family:false },
+    "Lake O.H. Ivie":             { shoreAccess:6, parking:6, depth:5, structure:6, crowd:9, wade:false, family:false },
+    "O.H. Ivie Reservoir":        { shoreAccess:6, parking:6, depth:5, structure:6, crowd:9, wade:false, family:false },
+    "E.V. Spence Reservoir":      { shoreAccess:6, parking:6, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Lake Meredith":              { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Possum Kingdom Lake":        { shoreAccess:6, parking:6, depth:5, structure:7, crowd:6, wade:true,  family:false },
+    "Lake Alan Henry":            { shoreAccess:6, parking:6, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Twin Buttes Reservoir":      { shoreAccess:6, parking:6, depth:6, structure:5, wade:false, family:false },
+    "Lake Stamford":              { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:true,  family:true  },
+    "Lake Sweetwater":            { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:true,  family:true  },
+    "Lake Colorado City":         { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:false, family:true  },
+    "Lake Fort Phantom Hill":     { shoreAccess:7, parking:7, depth:7, structure:7, crowd:7, wade:true,  family:true  },
+    "Lake Abilene":               { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:true,  family:true  },
+    "Lake Coleman":               { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:true,  family:true  },
+    "Lake Georgetown":            { shoreAccess:8, parking:8, depth:7, structure:6, crowd:7, wade:true,  family:true  },
+    "Lake Arrowhead":             { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:false, family:true  },
+    "Lake Houston":               { shoreAccess:6, parking:7, depth:6, structure:6, crowd:5, wade:false, family:true  },
+    "Lake Conroe":                { shoreAccess:5, parking:6, depth:5, structure:5, crowd:5, wade:false, family:false },
+    "Lavon Lake":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:5, wade:false, family:true  },
+    "Lake Texoma":                { shoreAccess:8, parking:8, depth:7, structure:7, crowd:6, wade:true,  family:true  },
+    "Squaw Creek Reservoir":      { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Lake Granbury":              { shoreAccess:6, parking:6, depth:5, structure:6, crowd:6, wade:false, family:false },
+    "Richland-Chambers Reservoir":{ shoreAccess:5, parking:5, depth:5, structure:6, crowd:7, wade:false, family:false },
+    "Navarro Mills Lake":         { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Aquilla Lake":               { shoreAccess:7, parking:7, depth:8, structure:6, crowd:9, wade:true,  family:true  },
+    "Lake Limestone":             { shoreAccess:6, parking:6, depth:6, structure:6, crowd:7, wade:false, family:false },
+    "Lake Mexia":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Lake Bastrop":               { shoreAccess:8, parking:8, depth:8, structure:7, crowd:7, wade:true,  family:true  },
+    "Lake Fayette":               { shoreAccess:7, parking:7, depth:6, structure:6, crowd:8, wade:false, family:true  },
+    "Calaveras Lake":             { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:false, family:true  },
+    "Braunig Lake":               { shoreAccess:8, parking:8, depth:7, structure:7, crowd:6, wade:false, family:true  },
+    "Lake McQueeny":              { shoreAccess:5, parking:5, depth:6, structure:5, crowd:5, wade:false, family:false },
+    "Lake Corpus Christi":        { shoreAccess:7, parking:7, depth:7, structure:6, crowd:6, wade:false, family:true  },
+    "Lake Ellsworth":             { shoreAccess:6, parking:6, depth:6, structure:5, crowd:9, wade:false, family:false },
+    "Lake Sam Rayburn":           { shoreAccess:5, parking:6, depth:5, structure:8, crowd:7, wade:false, family:false },
+    "Gibbons Creek Reservoir":    { shoreAccess:5, parking:5, depth:5, structure:5, crowd:8, wade:false, family:false },
+    "Lake Bob Sandlin":           { shoreAccess:6, parking:6, depth:6, structure:7, crowd:8, wade:false, family:false },
+    "Lake Monticello":            { shoreAccess:6, parking:6, depth:6, structure:6, crowd:9, wade:false, family:false },
+    "Wright Patman Lake":         { shoreAccess:7, parking:7, depth:7, structure:7, crowd:7, wade:false, family:true  },
+    "Lake O' the Pines":          { shoreAccess:7, parking:7, depth:7, structure:7, crowd:8, wade:false, family:true  },
+    "Lake Murvaul":               { shoreAccess:7, parking:7, depth:8, structure:8, crowd:9, wade:false, family:true  },
+    "Lake Striker":               { shoreAccess:7, parking:7, depth:7, structure:7, crowd:8, wade:false, family:false },
+    "Lake Nacogdoches":           { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:false, family:true  },
+    "Lake Kurth":                 { shoreAccess:7, parking:7, depth:7, structure:7, crowd:9, wade:false, family:false },
+    "Lake Pinkston":              { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:false, family:false },
+    "Lake Kickapoo":              { shoreAccess:6, parking:6, depth:6, structure:5, crowd:8, wade:false, family:false },
+    "Lake Diversion":             { shoreAccess:6, parking:6, depth:7, structure:5, crowd:9, wade:false, family:false },
+    "Lake Mackenzie":             { shoreAccess:7, parking:7, depth:7, structure:5, crowd:9, wade:false, family:false },
+    "White River Lake":           { shoreAccess:7, parking:7, depth:7, structure:5, crowd:9, wade:true,  family:false },
+    "Champion Creek Reservoir":   { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "OC Fisher Lake":             { shoreAccess:7, parking:7, depth:7, structure:5, crowd:8, wade:true,  family:true  },
+    "Lake J.B. Thomas":           { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Bluestem Lake":              { shoreAccess:6, parking:6, depth:7, structure:5, crowd:9, wade:true,  family:false },
+    "Lake Throckmorton":          { shoreAccess:6, parking:6, depth:6, structure:5, crowd:9, wade:false, family:false },
+    "Lake Winters":               { shoreAccess:6, parking:6, depth:6, structure:5, crowd:9, wade:false, family:false },
+    "Lake Amon G. Carter":        { shoreAccess:6, parking:6, depth:6, structure:5, crowd:9, wade:false, family:false },
+    "Nocona Lake":                { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:true,  family:true  },
+    "Lake Palo Pinto":            { shoreAccess:6, parking:6, depth:6, structure:7, crowd:8, wade:false, family:false },
+    "Lake Graham":                { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:false, family:true  },
+    "Lake Eddleman":              { shoreAccess:6, parking:6, depth:7, structure:5, crowd:9, wade:false, family:false },
+    "Hubbard Creek Reservoir":    { shoreAccess:6, parking:6, depth:6, structure:6, crowd:8, wade:false, family:false },
+    "Lake Daniel":                { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Millers Creek Reservoir":    { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Lake Kirby":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:true,  family:true  },
+    "Mountain Creek Lake":        { shoreAccess:6, parking:6, depth:6, structure:5, crowd:6, wade:false, family:false },
+    "Lake Weatherford":           { shoreAccess:7, parking:7, depth:6, structure:6, crowd:7, wade:false, family:true  },
+    "Navarro Mills Lake":         { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+  };
+
+  return function(lake) {
+    var o = overrides[lake.name] || {};
+    var d = defaults;
+    var sa = o.shoreAccess !== undefined ? o.shoreAccess : d.shoreAccess;
+    var pk = o.parking     !== undefined ? o.parking     : d.parking;
+    var dp = o.depth       !== undefined ? o.depth       : d.depth;
+    var st = o.structure   !== undefined ? o.structure   : d.structure;
+    var cr = o.crowd       !== undefined ? o.crowd       : d.crowd;
+    var wade   = o.wade   !== undefined ? o.wade   : d.wade;
+    var family = o.family !== undefined ? o.family : d.family;
+
+    // Weighted score
+    var raw = sa*0.30 + pk*0.15 + dp*0.20 + st*0.20 + cr*0.15;
+    // Bonus
+    if(wade)   raw += 0.3;
+    if(family) raw += 0.3;
+    // Clamp
+    raw = Math.min(10, Math.max(1, raw));
+    var score = Math.round(raw * 10) / 10;
+
+    // Grade
+    var grade = score >= 7.5 ? "A" : score >= 6.0 ? "B" : score >= 4.5 ? "C" : "D";
+
+    // Tags
+    var tags = [];
+    if(sa >= 7)  tags.push({label:"Good Shore Access", cls:"good"});
+    else if(sa <= 4) tags.push({label:"Limited Access", cls:"bad"});
+    if(pk >= 7)  tags.push({label:"Easy Parking", cls:"good"});
+    if(dp >= 7)  tags.push({label:"Fishable Depth", cls:"good"});
+    else if(dp <= 3) tags.push({label:"Deep Near Shore", cls:"bad"});
+    if(st >= 7)  tags.push({label:"Lots of Structure", cls:"good"});
+    if(cr >= 8)  tags.push({label:"Uncrowded", cls:"good"});
+    else if(cr <= 4) tags.push({label:"Crowded", cls:"warn"});
+    if(wade)     tags.push({label:"Wade-Friendly", cls:"good"});
+    if(family)   tags.push({label:"Family-Friendly", cls:"good"});
+
+    return { score:score, grade:grade, tags:tags, wade:wade, family:family };
+  };
+})();
+
+var bankFilterMode = "all";
+
+function bankFilter(mode) {
+  bankFilterMode = mode;
+  ["bankAll","bankTop","bankWade","bankFamily"].forEach(function(id) {
+    document.getElementById(id).classList.remove("active");
+  });
+  document.getElementById(mode === "all" ? "bankAll" : mode === "top" ? "bankTop" : mode === "wade" ? "bankWade" : "bankFamily").classList.add("active");
+  renderBankFishing();
+}
+
+function renderBankFishing() {
+  var list = document.getElementById("bankList");
+  if(!list) return;
+
+  // Score all lakes
+  var scored = ALL_LAKES.map(function(lake) {
+    var bd = BANK_DATA(lake);
+    return { lake:lake, score:bd.score, grade:bd.grade, tags:bd.tags, wade:bd.wade, family:bd.family };
+  });
+
+  // Sort by score desc
+  scored.sort(function(a,b){ return b.score - a.score; });
+
+  // Filter
+  var filtered = scored.filter(function(item) {
+    if(bankFilterMode === "top")    return item.score >= 7;
+    if(bankFilterMode === "wade")   return item.wade;
+    if(bankFilterMode === "family") return item.family;
+    return true;
+  });
+
+  document.getElementById("bankSub").textContent = filtered.length + " waters ranked by bank accessibility";
+
+  if(filtered.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--dim);font-size:13px;">No waters match this filter.</div>';
+    return;
+  }
+
+  var html = "";
+  filtered.forEach(function(item, idx) {
+    var rank = idx + 1;
+    var isTop = rank <= 3;
+    var barPct = Math.round((item.score / 10) * 100);
+    var tagsHtml = item.tags.slice(0,4).map(function(t) {
+      return '<span class="bank-tag '+t.cls+'">'+t.label+'</span>';
+    }).join("");
+
+    html += '<div class="bank-card'+(isTop?" top-3":"")+'" onclick="bankTap('+JSON.stringify(item.lake.name)+')">'
+      + '<div class="bank-rank">'+(isTop?"🏆":"#"+rank)+'</div>'
+      + '<div class="bank-body">'
+        + '<div class="bank-name">'+item.lake.name+'</div>'
+        + '<div class="bank-meta">'+item.lake.type+' · '+item.lake.region+'</div>'
+        + '<div class="bank-tags">'+tagsHtml+'</div>'
+      + '</div>'
+      + '<div class="bank-score-wrap">'
+        + '<div class="bank-score-num">'+item.score.toFixed(1)+'<small>/10</small></div>'
+        + '<div class="bank-score-bar"><div class="bank-score-fill" style="width:'+barPct+'%"></div></div>'
+        + '<span class="bank-grade '+item.grade+'">Grade '+item.grade+'</span>'
+      + '</div>'
+      + '</div>';
+  });
+
+  list.innerHTML = html;
+}
+
+function bankTap(name) {
+  var lake = null;
+  for(var i = 0; i < ALL_LAKES.length; i++) {
+    if(ALL_LAKES[i].name === name) { lake = ALL_LAKES[i]; break; }
+  }
+  if(!lake) return;
+
+  userLat = lake.lat; userLon = lake.lon;
+  userLabel = lake.name + " (" + lake.region + ")";
+  document.getElementById("searchInput").value = userLabel;
+
+  var bd = BANK_DATA(lake);
+  var cid = _storeCard({
+    name: lake.name, type: lake.type, lat: lake.lat, lon: lake.lon,
+    score: bd.score, bd: [], wt: null,
+    srH: lake.srH, ssH: lake.ssH, dist: null
   });
   openDetail(cid);
 }
