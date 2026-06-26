@@ -1195,6 +1195,41 @@ footer { padding:24px 20px 10px; text-align:center; font-size:10px; color:var(--
 
 /* Directions */
 .directions-row { display:flex; gap:11px; margin-bottom:10px; }
+
+/* Bank Access section */
+.bank-access-block {
+  background:linear-gradient(160deg, rgba(30,50,35,0.55), rgba(24,40,28,0.45));
+  border:1px solid rgba(90,160,100,0.2);
+  border-radius:var(--radius); padding:16px; margin-bottom:16px;
+  box-shadow:var(--inner-glow);
+}
+.bank-access-point {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:10px 0; border-bottom:1px solid var(--border);
+}
+.bank-access-point:last-child { border-bottom:none; padding-bottom:0; }
+.bank-access-point:first-child { padding-top:0; }
+.bap-icon { font-size:20px; flex-shrink:0; margin-top:2px; }
+.bap-body { flex:1; min-width:0; }
+.bap-name { font-size:13px; font-weight:800; color:var(--text); margin-bottom:3px; }
+.bap-type { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.8px;
+  padding:2px 7px; border-radius:4px; display:inline-block; margin-bottom:4px; }
+.bap-type.park    { background:rgba(80,160,90,0.15); color:#6db87a; }
+.bap-type.pier    { background:rgba(90,130,200,0.15); color:#7aaae0; }
+.bap-type.ramp    { background:rgba(200,160,60,0.15); color:#d4a93a; }
+.bap-type.wade    { background:rgba(60,180,180,0.15); color:#56c8c8; }
+.bap-type.bank    { background:rgba(160,120,60,0.14); color:#c09a55; }
+.bap-notes { font-size:12px; color:var(--dim); line-height:1.5; }
+.bap-nav-btn {
+  flex-shrink:0; padding:8px 12px; border-radius:10px; border:none;
+  background:rgba(80,160,90,0.15); color:#6db87a;
+  font-size:11px; font-weight:700; cursor:pointer; transition:all .18s;
+}
+.bap-nav-btn:active { opacity:.7; }
+.bank-access-summary {
+  font-size:11px; color:var(--dim); line-height:1.5; margin-bottom:12px;
+}
+.bank-access-summary b { color:var(--mid); }
 .dir-btn {
   flex:1; padding:15px 10px;
   border-radius:var(--radius); border:none; cursor:pointer;
@@ -1598,6 +1633,12 @@ a.bait-chip, a.detail-bait-chip {
 
     <!-- BOTTOM: strategy + baits + directions -->
     <div class="detail-bottom">
+
+      <!-- Bank Access section — shown only when opened from Bank tab -->
+      <div id="detailBankAccess" style="display:none">
+        <div class="detail-section-title">🏦 Bank Access Points</div>
+        <div class="bank-access-block" id="detailBankAccessContent"></div>
+      </div>
 
       <div class="detail-section-title">Fishing Strategy</div>
       <div class="strategy-block" id="detailStrategy"></div>
@@ -3712,13 +3753,41 @@ function openDetail(lake) {
       ' <span class="dbc-buy">Guide →</span></a>';
   }).join("");
 
+  // ── Bank Access section ──
+  var bankAccessEl = document.getElementById("detailBankAccess");
+  var bankAccessContent = document.getElementById("detailBankAccessContent");
+  if(lake.bankAccess && lake.bankAccess.points && lake.bankAccess.points.length > 0) {
+    var ba = lake.bankAccess;
+    var typeIcon = { park:"🌳", pier:"🎣", ramp:"🚗", wade:"🚶", bank:"📍" };
+    var typeLabel = { park:"Park / Shore", pier:"Fishing Pier", ramp:"Boat Ramp Bank", wade:"Wade Area", bank:"Bank Access" };
+    var html = '<div class="bank-access-summary">'+escHtml(ba.summary)+'</div>';
+    ba.points.forEach(function(pt, i) {
+      var icon = typeIcon[pt.type] || "📍";
+      var lbl  = typeLabel[pt.type] || pt.type;
+      var navUrl = "https://maps.google.com/?q="+pt.lat+","+pt.lon;
+      html += '<div class="bank-access-point">'
+        + '<div class="bap-icon">'+icon+'</div>'
+        + '<div class="bap-body">'
+          + '<div class="bap-name">'+(i+1)+'. '+escHtml(pt.name)+'</div>'
+          + '<span class="bap-type '+pt.type+'">'+lbl+'</span>'
+          + '<div class="bap-notes">'+escHtml(pt.notes)+'</div>'
+        + '</div>'
+        + '<button class="bap-nav-btn" onclick="window.open(\''+navUrl+'\',\'_blank\')">Nav →</button>'
+        + '</div>';
+    });
+    bankAccessContent.innerHTML = html;
+    bankAccessEl.style.display = "";
+  } else {
+    bankAccessEl.style.display = "none";
+  }
+
   // ── Open overlay ──
   document.getElementById("detailOverlay").classList.add("open");
   document.getElementById("detailOverlay").scrollTop = 0;
   document.body.style.overflow = "hidden";
 
   // ── Detail map ──
-  setTimeout(function() { initDetailMap(lake.lat, lake.lon, lake.name, hex, lake.score); }, 80);
+  setTimeout(function() { initDetailMap(lake.lat, lake.lon, lake.name, hex, lake.score, lake.bankAccess || null); }, 80);
   loadLakePhoto(lake.name, document.getElementById("detailSceneCard"), lake.score, lake.lat, lake.lon);
 }
 
@@ -3727,7 +3796,7 @@ function closeDetail() {
   document.body.style.overflow = "";
 }
 
-function initDetailMap(lat, lon, name, hex, score) {
+function initDetailMap(lat, lon, name, hex, score, bankAccess) {
   // Zoom levels — wide enough to show the full lake even if the stored
   // coordinate is a dam or town center rather than the exact geographic center.
   var type = (name||"").toLowerCase();
@@ -3786,6 +3855,27 @@ function initDetailMap(lat, lon, name, hex, score) {
 
   detailMarker = L.marker([lat, lon], { icon: pinIcon }).addTo(detailMap);
   detailMarker.bindPopup('<strong>' + name + '</strong>', { closeButton: false }).openPopup();
+
+  // ── Bank access point markers ──
+  if(bankAccess && bankAccess.points) {
+    var apColors = { park:"#6db87a", pier:"#7aaae0", ramp:"#d4a93a", wade:"#56c8c8", bank:"#c09a55" };
+    var apEmoji  = { park:"🌳", pier:"🎣", ramp:"🚗", wade:"🚶", bank:"📍" };
+    bankAccess.points.forEach(function(pt) {
+      var color = apColors[pt.type] || "#c09a55";
+      var emoji = apEmoji[pt.type] || "📍";
+      var apIcon = L.divIcon({
+        className: "",
+        html: '<div style="background:'+color+';width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid rgba(255,255,255,0.6);box-shadow:0 2px 8px rgba(0,0,0,0.5);">'+emoji+'</div>',
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+      var m = L.marker([pt.lat, pt.lon], { icon: apIcon }).addTo(detailMap);
+      m.bindPopup('<strong>'+pt.name+'</strong><br><small style="color:#888">'+pt.notes+'</small>', { maxWidth: 220 });
+    });
+    // Fit map to show all access points
+    var allPts = [[lat, lon]].concat(bankAccess.points.map(function(p){ return [p.lat, p.lon]; }));
+    try { detailMap.fitBounds(allPts, { padding: [30, 30], maxZoom: 14 }); } catch(e) {}
+  }
 
   setTimeout(function() { detailMap.invalidateSize(); }, 100);
 }
@@ -4971,12 +5061,226 @@ function hotspotTap(name) {
 //   family       (bool): Paved parking, restrooms, low hazard, beginner-friendly
 // Final score = weighted average, clamped 1-10
 
+// Access point types: park | pier | ramp | wade | bank
+// Each entry: { name, type, lat, lon, notes }
+
+var BANK_ACCESS_POINTS = {
+  "White Rock Lake": {
+    summary: "Full paved trail circles the entire 9-mile shoreline. Multiple dedicated fishing spots with benches and lighting. No permit needed.",
+    points: [
+      { name:"Winfrey Point", type:"park", lat:32.836, lon:-96.718, notes:"Paved lot, restrooms, multiple casting points along the northwest bank." },
+      { name:"Bath House Cultural Center Pier", type:"pier", lat:32.828, lon:-96.720, notes:"Lighted fishing pier, very beginner-friendly. Best at dawn/dusk." },
+      { name:"White Rock Lake Park South Shore", type:"wade", lat:32.821, lon:-96.714, notes:"Sandy shallows on the south end — wade to reach submerged structure near old road beds." },
+      { name:"Mockingbird Lane Cove", type:"bank", lat:32.840, lon:-96.707, notes:"Narrow inlet channel funnels baitfish — excellent ambush point for largemouth." }
+    ]
+  },
+  "Lady Bird Lake": {
+    summary: "Hike-and-bike trail runs both banks for 10+ miles through downtown Austin. Kayak/canoe access everywhere but much of it is no-wake. No bank fishing permits required.",
+    points: [
+      { name:"Auditorium Shores", type:"park", lat:30.260, lon:-97.762, notes:"Large open grass bank, paved parking. Popular but bass hold near the far bridge pilings." },
+      { name:"Roy G. Guerrero Park", type:"park", lat:30.245, lon:-97.711, notes:"Quieter east end, shaded banks, submerged timber — less pressure than downtown." },
+      { name:"Longhorn Dam Tailrace", type:"bank", lat:30.245, lon:-97.709, notes:"Below the dam — flowing water concentrates fish. Wade carefully on rocky bottom." },
+      { name:"Tom Miller Dam Bank", type:"bank", lat:30.268, lon:-97.773, notes:"West end rocky point. Consistent structure for topwater in early morning." }
+    ]
+  },
+  "Lake Nasworthy": {
+    summary: "City-owned lake in San Angelo with paved fishing piers and a sandy wade-in shoreline. Texas State Park fishing permit required.",
+    points: [
+      { name:"San Angelo State Park South Shore", type:"wade", lat:31.398, lon:-100.518, notes:"Gently sloping sandy bank. Wade out 20-30 ft to reach grass edges at 3-4 ft depth." },
+      { name:"Lake Nasworthy Fishing Pier", type:"pier", lat:31.410, lon:-100.503, notes:"Lighted pier off Loop 306. Good for catfish and bass at night. Restrooms on-site." },
+      { name:"Spring Creek Inlet", type:"bank", lat:31.415, lon:-100.512, notes:"Creek mouth that flushes baitfish into the lake. Work a topwater along the channel edge." }
+    ]
+  },
+  "Lake Ray Roberts": {
+    summary: "State Park surrounds the lake with 30+ miles of accessible shoreline. Multiple fishing piers and wade-friendly coves on the north end.",
+    points: [
+      { name:"Johnson Branch Unit Pier", type:"pier", lat:33.402, lon:-97.004, notes:"Large covered fishing pier with cleaning station. Plenty of parking. Bass hold near pier pilings at dawn." },
+      { name:"Isle du Bois Unit Cove", type:"wade", lat:33.366, lon:-97.034, notes:"Shallow gravel-bottom cove. Wade to flooded brush on the east side at 2-4 ft depth." },
+      { name:"Greenbelt Corridor Flats", type:"bank", lat:33.340, lon:-97.040, notes:"Flat grassy bank with brush piles — fish parallel to shore with a Texas-rigged worm." }
+    ]
+  },
+  "Benbrook Lake": {
+    summary: "US Army Corps of Engineers lake west of Fort Worth with 4 public day-use areas and good bank access. No permit beyond state fishing license.",
+    points: [
+      { name:"Mustang Park Day Use", type:"park", lat:32.631, lon:-97.479, notes:"Paved parking, restrooms, riprap bank good for flipping jigs. Bass stack along the rocks." },
+      { name:"Holiday Park Boat Ramp Bank", type:"ramp", lat:32.647, lon:-97.475, notes:"Gravel bank beside ramp. Shallow flat extends 50 ft — good with a weightless Senko." },
+      { name:"Bear Creek Cove", type:"bank", lat:32.640, lon:-97.490, notes:"Wooded creek arm with laydowns. Access trail off Dutch Branch Rd. Topwater in the morning." }
+    ]
+  },
+  "Lake Grapevine": {
+    summary: "Corps of Engineers lake with Meadowmere Park and Murrell Park providing excellent bank access. Riprap and coves around the marina are productive.",
+    points: [
+      { name:"Meadowmere Park Shore", type:"park", lat:32.965, lon:-97.066, notes:"Concrete fishing platform and mowed bank. Easy parking, restrooms. Work the riprap with crankbaits." },
+      { name:"Murrell Park Cove", type:"wade", lat:32.985, lon:-97.073, notes:"Sandy cove near the north campground. Wade out to brush piles at 4-5 ft." },
+      { name:"Silver Lake Inlet", type:"bank", lat:32.960, lon:-97.055, notes:"Narrow creek channel that drains Silver Lake — concentrates bass near the mouth early morning." }
+    ]
+  },
+  "Joe Pool Lake": {
+    summary: "Loyd Park and Lynn Creek Park are the go-to bank access spots — paved fishing areas and good structure nearby.",
+    points: [
+      { name:"Loyd Park Fishing Area", type:"park", lat:32.647, lon:-97.029, notes:"Dedicated paved fishing area, restrooms, lots of riprap. Night fishing permitted with permit." },
+      { name:"Lynn Creek Park Marina Bank", type:"pier", lat:32.660, lon:-97.010, notes:"Dock area with ledge structure below. Swimbaits work well along the dock face." },
+      { name:"Cedar Hill State Park Shoreline", type:"wade", lat:32.620, lon:-97.010, notes:"Sandy point on the southwest arm. Wade south along the bank to submerged roadbed structure." }
+    ]
+  },
+  "Lake Whitney": {
+    summary: "State park and Corps areas give miles of rocky shoreline access. The dam tailrace is walk-in only but loaded with fish.",
+    points: [
+      { name:"Lake Whitney State Park Bank", type:"park", lat:31.854, lon:-97.369, notes:"Paved lot, pier, and mowed bank inside state park. Swim jigs near cliff walls are productive." },
+      { name:"Whitney Dam Tailrace", type:"wade", lat:31.875, lon:-97.357, notes:"Walk the rocky bank below the dam. Flowing water — good for largemouth and spotted bass. Slippery rocks — use felt soles." },
+      { name:"Lofers Bend West Cove", type:"bank", lat:31.900, lon:-97.380, notes:"Corps campground cove. Gentle gravel slope — good for beginning anglers." }
+    ]
+  },
+  "Lake Proctor": {
+    summary: "Corps of Engineers lake near Comanche — very low pressure and easy walk-in access to shallow coves. Excellent wade fishing.",
+    points: [
+      { name:"Copperas Creek Park Shore", type:"wade", lat:31.985, lon:-98.444, notes:"Flat sandy bank on the upper creek arm. Wade to submerged timber at 2-3 ft depth. Extremely low pressure." },
+      { name:"South Bend Park Fishing Area", type:"park", lat:31.975, lon:-98.432, notes:"Paved lot, covered picnic, and rock jetty. Fish the jetty tip at dusk with a swimbait." },
+      { name:"Day Use Area Bank", type:"bank", lat:31.970, lon:-98.450, notes:"Gravel bank beside the main day use area. Popping frogs work along the lily pads in summer." }
+    ]
+  },
+  "Lake Brownwood": {
+    summary: "State park gives 500+ acres of public access and a lighted pier. Good rocky points perfect for bank fishing.",
+    points: [
+      { name:"Lake Brownwood State Park Pier", type:"pier", lat:31.875, lon:-99.012, notes:"Lighted fishing pier inside state park. Bass cruise the pier at night. Camping adjacent." },
+      { name:"State Park Rocky Point", type:"wade", lat:31.870, lon:-99.020, notes:"Gradual rocky slope on the state park's west side. Crank the point at dawn." },
+      { name:"Big Ridge Park Shore", type:"bank", lat:31.880, lon:-99.000, notes:"County park with open grass bank and shaded trees — family-friendly with picnic tables." }
+    ]
+  },
+  "Lake Somerville": {
+    summary: "State Park covers both sides (Birch Creek and Nails Creek units) with combined miles of fishable shoreline. Shallow, weedy, perfect for bank anglers.",
+    points: [
+      { name:"Birch Creek Unit Pier", type:"pier", lat:30.353, lon:-96.554, notes:"Fishing pier and sandy beach in the state park. Bass cruise the weed edge 30-40 ft out — try a buzzbait at first light." },
+      { name:"Nails Creek Unit Cove", type:"wade", lat:30.362, lon:-96.600, notes:"Shallow clear cove. Wade carefully to avoid spooking fish. Soft plastics on light line excel here." },
+      { name:"Overlook Park Bank", type:"park", lat:30.350, lon:-96.570, notes:"Free Corp of Engineers day-use area. Grassy bank over a gentle slope — excellent for families." }
+    ]
+  },
+  "Granger Lake": {
+    summary: "Small Corps lake in Williamson County with exceptional bank access and almost no boat pressure. Shallow lake — nearly every bank is fishable.",
+    points: [
+      { name:"Wilson H. Fox Park Shore", type:"park", lat:30.685, lon:-97.390, notes:"Paved parking and a grassy bank that extends 400 ft along the lake. Consistent bass bite near the boat dock pilings." },
+      { name:"Taylor Park Wade Area", type:"wade", lat:30.700, lon:-97.375, notes:"Sandy flat on the north shore. Wade the shallows at dawn with a popper — Granger bass hit topwater hard." },
+      { name:"San Gabriel Creek Arm", type:"bank", lat:30.675, lon:-97.410, notes:"Creek inlet. Fish the transition from silty creek bottom to the main lake — largemouth stack here in fall." }
+    ]
+  },
+  "Lake Georgetown": {
+    summary: "Canyon lake setting with rocky points and cedar bluffs. Corps parks give good bank access though steep banks limit wading.",
+    points: [
+      { name:"Cedar Breaks Park Pier", type:"pier", lat:30.692, lon:-97.762, notes:"Covered pier and cleaning station. Deep water close to shore — drop a drop-shot along the bluff." },
+      { name:"Jim Hogg Park Rocky Point", type:"bank", lat:30.705, lon:-97.780, notes:"Rocky peninsula jutting into the main lake. Cast crankbaits along the rock ledges at 6-10 ft depth." },
+      { name:"Tejas Park Cove", type:"wade", lat:30.695, lon:-97.770, notes:"Shallower cove at the park's east end. Gravelly bottom — safe to wade. Finesse plastics on spinning gear." }
+    ]
+  },
+  "Stillhouse Hollow Lake": {
+    summary: "Corps lake near Killeen with large parks and a long dam-face bank. Excellent structure bass fishing from shore.",
+    points: [
+      { name:"Dana Peak Park Shore", type:"park", lat:30.998, lon:-97.557, notes:"Huge park with miles of mowed bank, fishing piers, and riprap along the dam road. Very family-friendly." },
+      { name:"Lampasas River Arm", type:"bank", lat:31.050, lon:-97.600, notes:"Walk-in bank on the upper river arm. Clear water, rocky bottom — sight-fish shallow bass in spring." },
+      { name:"Overlook Riprap", type:"bank", lat:30.990, lon:-97.560, notes:"Rocky riprap on the dam's west face. Carolina-rig a craw along the base — deep fish stack here in summer." }
+    ]
+  },
+  "Lake Bastrop": {
+    summary: "LCRA lake in Bastrop with Lost Pines access. Sandy pine-forest banks, very light pressure, excellent for wading.",
+    points: [
+      { name:"Bastrop State Park Bank", type:"wade", lat:30.116, lon:-97.267, notes:"Sandy bank inside Bastrop State Park. Wade the shallow east end — bass hold in the submerged stumps left by the 2011 fire." },
+      { name:"Lake Bastrop South Shore", type:"park", lat:30.108, lon:-97.270, notes:"LCRA park with paved access and restrooms. Dock pilings hold fish all year." },
+      { name:"North Shore Fishing Access", type:"bank", lat:30.120, lon:-97.261, notes:"Gravel bank on the north side of the lake. Light pressure, good morning bite near the cove entrance." }
+    ]
+  },
+  "Caddo Lake": {
+    summary: "Unique cypress-swamp setting. Wading is not recommended (deep muck, snakes) but the boat ramp banks and state park docks are excellent for casting into the timber.",
+    points: [
+      { name:"Caddo Lake State Park Dock", type:"pier", lat:32.691, lon:-94.183, notes:"Fishing dock inside state park. Cast into flooded cypress knees — guaranteed bass cover. Canoe rentals available." },
+      { name:"Uncertain Landing Bank", type:"bank", lat:32.696, lon:-94.175, notes:"Small gravel bank at the public boat landing. Pitch jigs into the cypress trees on either side." },
+      { name:"Carters Lake Cove", type:"bank", lat:32.680, lon:-94.200, notes:"Quiet backwater cove accessible by a short walk from the main road. Weedless frogs work over the lily pad mats." }
+    ]
+  },
+  "Choke Canyon Reservoir": {
+    summary: "State park with an excellent lighted fishing pier and open shoreline. South Texas largemouth — big fish, low pressure.",
+    points: [
+      { name:"Calliham Unit Fishing Pier", type:"pier", lat:28.474, lon:-98.342, notes:"150-ft lighted pier inside Calliham Unit state park. Night fishing is exceptional. Big bass cruise the pier at dusk." },
+      { name:"South Shore Day Use Bank", type:"park", lat:28.470, lon:-98.350, notes:"Riprap bank at the day use area — stable footing, large rocks. Jig the base of the riprap." },
+      { name:"Tilden Area Cove", type:"wade", lat:28.480, lon:-98.360, notes:"Shallow sandy flat on the north end. Low pressure, excellent wading. Fish Texas-rigged plastics slow in the summer heat." }
+    ]
+  },
+  "Lake Meredith": {
+    summary: "National Recreation Area — all shorelines are free public access. Rocky canyon walls mean most bank fishing is from ledges above the water, but several sandy coves exist.",
+    points: [
+      { name:"Sanford-Yake Ramp Bank", type:"ramp", lat:35.396, lon:-101.639, notes:"Wide gravel bank beside the main ramp. Fish the point just north with a crankbait at the rock ledges." },
+      { name:"Blue Creek Cove", type:"wade", lat:35.420, lon:-101.710, notes:"Sandy-bottom cove accessible from the camping area. Good wade-in access at low water. Bass hold in submerged brush." },
+      { name:"Plum Creek Canyon Bank", type:"bank", lat:35.450, lon:-101.680, notes:"Remote canyon arm. Walk down the trail 0.3 miles to a ledge bank — very little pressure." }
+    ]
+  },
+  "Lake Fort Phantom Hill": {
+    summary: "City of Abilene lake with a paved road around most of it and multiple pull-off bank access spots.",
+    points: [
+      { name:"Fort Phantom Hill Park Pier", type:"pier", lat:32.580, lon:-99.724, notes:"City-run pier with parking and restrooms. Fish the pilings at first light." },
+      { name:"Main Dam Bank", type:"bank", lat:32.567, lon:-99.714, notes:"Riprap along the dam face. Cast parallel to the rocks with a jig — bass hold in the cracks." },
+      { name:"North Cove Wade Area", type:"wade", lat:32.590, lon:-99.730, notes:"Shallow gravel cove on the north end. Good wading depth (2-3 ft). Finesse plastics in clear water." }
+    ]
+  },
+  "Braunig Lake": {
+    summary: "San Antonio city lake with warm water year-round from the power plant. Excellent paved fishing piers and accessible bank — bass fishing 12 months a year.",
+    points: [
+      { name:"Main Fishing Pier #1", type:"pier", lat:29.310, lon:-98.378, notes:"Large paved pier, accessible, wheelchair-friendly. Warm discharge water nearby — bass active all winter." },
+      { name:"North Shore Pier #2", type:"pier", lat:29.318, lon:-98.373, notes:"Second pier on the north bank. Work swimbaits along the warm-water channel edge." },
+      { name:"Creek Inlet Bank", type:"bank", lat:29.315, lon:-98.385, notes:"Creek arm on the west side. Flipping jigs into the feeder channel early morning is very productive." }
+    ]
+  },
+  "Lake Corpus Christi": {
+    summary: "State park with fishing pier and open grassy bank. Good bank access throughout the north end.",
+    points: [
+      { name:"Lake Corpus Christi State Park Pier", type:"pier", lat:27.893, lon:-97.877, notes:"Long fishing pier inside state park. Bass and drum both caught here. Restrooms and camping adjacent." },
+      { name:"Matthews Park Shore", type:"park", lat:27.900, lon:-97.870, notes:"Paved city park with open bank and shade trees. Good for casting Senkos along the bank edge." },
+      { name:"Mesquite Flat Cove", type:"wade", lat:27.885, lon:-97.885, notes:"Shallow cove on the south side. Sandy bottom — good wading at lower water stages." }
+    ]
+  },
+  "Lake Tawakoni": {
+    summary: "State park and county access areas provide good bank spots. Timber-filled coves are the main draw.",
+    points: [
+      { name:"Lake Tawakoni State Park Pier", type:"pier", lat:32.857, lon:-95.950, notes:"Fishing pier and cleaning station inside state park. Launch or fish from bank. Timber nearby." },
+      { name:"Point Aquarius Shore", type:"bank", lat:32.842, lon:-95.950, notes:"Community access point near Point Aquarius subdivision. Fish the submerged timber edge." },
+      { name:"Caddo Creek Arm", type:"wade", lat:32.870, lon:-95.970, notes:"Upper creek arm — shallow enough to wade at normal pool. Isolated timber. Very productive in fall." }
+    ]
+  },
+  "Lake Palestine": {
+    summary: "Several county parks and the state park access give decent shore options. Heavily timbered with good soft-plastic bass fishing.",
+    points: [
+      { name:"Dogwood Park Pier", type:"pier", lat:31.978, lon:-95.570, notes:"Paved pier and restrooms at county park. Fish the drop-off just beyond the pier end." },
+      { name:"Jim Hogg County Park Bank", type:"bank", lat:31.952, lon:-95.590, notes:"Open grassy bank. Brush piles were placed along the shore — ask locals for exact locations." },
+      { name:"Kickapoo Creek Arm", type:"bank", lat:32.000, lon:-95.610, notes:"Upper creek arm with flooded timber. Walk-in access from FM 279. Best early season." }
+    ]
+  },
+  "Wright Patman Lake": {
+    summary: "Corps lake near Texarkana with multiple parks and miles of timbered shoreline accessible on foot.",
+    points: [
+      { name:"Atlanta State Park Shore", type:"park", lat:33.067, lon:-94.200, notes:"State park with fishing pier and 200 ft of open bank. Excellent topwater action near the timbered points." },
+      { name:"Sulphur River Arm", type:"wade", lat:33.080, lon:-94.230, notes:"Shallow upper river arm — wade to the submerged fence rows for big largemouth." },
+      { name:"Jackson Creek Inlet", type:"bank", lat:33.050, lon:-94.185, notes:"Walk-in bank at the creek mouth. Jigs and craws near the channel edge." }
+    ]
+  },
+  "Lake O' the Pines": {
+    summary: "Corps lake in East Texas with exceptional timber structure. Multiple parks give bank access near the flooded forests.",
+    points: [
+      { name:"Buckhorn Creek Park Pier", type:"pier", lat:32.762, lon:-94.600, notes:"Fishing pier with parking and restrooms. Work lures parallel to the flooded timber line visible from the end." },
+      { name:"Johnson Creek Cove", type:"wade", lat:32.780, lon:-94.610, notes:"Shallow sandy cove inside the timber. Wade to cast jigs at the base of cypress and tupelo trees." },
+      { name:"Lone Star Park Bank", type:"bank", lat:32.755, lon:-94.590, notes:"Corps day-use area with open bank. Good for beginners — bass stack near the boat ramp pilings at dawn." }
+    ]
+  },
+  "Lake Murvaul": {
+    summary: "Hidden gem in Panola County — very low pressure, lush aquatic vegetation. Excellent wade fishing. Buy a permit from Panola County.",
+    points: [
+      { name:"Murvaul County Pier", type:"pier", lat:32.056, lon:-94.132, notes:"Small county pier, very basic. Weedless frogs over the lily pads immediately surrounding the pier are deadly." },
+      { name:"East Cove Wade Area", type:"wade", lat:32.060, lon:-94.140, notes:"Sandy-bottomed cove with 2-3 ft depths over grass beds. Best wading in East Texas for trophy largemouth." },
+      { name:"Main Boat Landing Bank", type:"ramp", lat:32.050, lon:-94.130, notes:"Gravel bank beside the county ramp. Flip jigs into the hydrilla edge at dawn." }
+    ]
+  }
+};
+
 var BANK_DATA = (function() {
-  // Defaults for all lakes; specific overrides below
   var defaults = { shoreAccess:5, parking:5, depth:5, structure:5, crowd:6, wade:false, family:false };
 
   var overrides = {
-    // ── Top bank access lakes ──
     "White Rock Lake":            { shoreAccess:9, parking:9, depth:7, structure:7, crowd:4, wade:true,  family:true  },
     "Lake Ray Roberts":           { shoreAccess:8, parking:8, depth:6, structure:7, crowd:6, wade:true,  family:true  },
     "Benbrook Lake":              { shoreAccess:8, parking:8, depth:6, structure:6, crowd:6, wade:false, family:true  },
@@ -4987,7 +5291,7 @@ var BANK_DATA = (function() {
     "Waco Lake":                  { shoreAccess:7, parking:7, depth:5, structure:6, crowd:6, wade:false, family:true  },
     "Lake Nasworthy":             { shoreAccess:8, parking:8, depth:8, structure:7, crowd:6, wade:true,  family:true  },
     "Possum Kingdom Lake":        { shoreAccess:6, parking:6, depth:5, structure:7, crowd:6, wade:true,  family:false },
-    "Lake Texoma":                { shoreAccess:7, parking:7, depth:6, structure:7, crowd:6, wade:true,  family:true  },
+    "Lake Texoma":                { shoreAccess:8, parking:8, depth:7, structure:7, crowd:6, wade:true,  family:true  },
     "Lake Ray Hubbard":           { shoreAccess:6, parking:6, depth:6, structure:5, crowd:5, wade:false, family:false },
     "Lake Arlington":             { shoreAccess:6, parking:7, depth:6, structure:5, crowd:5, wade:false, family:true  },
     "Lake Granbury":              { shoreAccess:6, parking:6, depth:5, structure:6, crowd:6, wade:false, family:false },
@@ -5020,11 +5324,9 @@ var BANK_DATA = (function() {
     "Choke Canyon Reservoir":     { shoreAccess:7, parking:7, depth:7, structure:7, crowd:8, wade:false, family:true  },
     "Falcon Reservoir":           { shoreAccess:6, parking:6, depth:7, structure:7, crowd:9, wade:false, family:false },
     "Amistad Reservoir":          { shoreAccess:5, parking:5, depth:4, structure:6, crowd:8, wade:false, family:false },
-    "Lake O.H. Ivie":             { shoreAccess:6, parking:6, depth:5, structure:6, crowd:9, wade:false, family:false },
     "O.H. Ivie Reservoir":        { shoreAccess:6, parking:6, depth:5, structure:6, crowd:9, wade:false, family:false },
     "E.V. Spence Reservoir":      { shoreAccess:6, parking:6, depth:5, structure:5, crowd:9, wade:false, family:false },
     "Lake Meredith":              { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
-    "Possum Kingdom Lake":        { shoreAccess:6, parking:6, depth:5, structure:7, crowd:6, wade:true,  family:false },
     "Lake Alan Henry":            { shoreAccess:6, parking:6, depth:5, structure:5, crowd:9, wade:false, family:false },
     "Twin Buttes Reservoir":      { shoreAccess:6, parking:6, depth:6, structure:5, wade:false, family:false },
     "Lake Stamford":              { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:true,  family:true  },
@@ -5033,14 +5335,11 @@ var BANK_DATA = (function() {
     "Lake Fort Phantom Hill":     { shoreAccess:7, parking:7, depth:7, structure:7, crowd:7, wade:true,  family:true  },
     "Lake Abilene":               { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:true,  family:true  },
     "Lake Coleman":               { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:true,  family:true  },
-    "Lake Georgetown":            { shoreAccess:8, parking:8, depth:7, structure:6, crowd:7, wade:true,  family:true  },
     "Lake Arrowhead":             { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:false, family:true  },
     "Lake Houston":               { shoreAccess:6, parking:7, depth:6, structure:6, crowd:5, wade:false, family:true  },
     "Lake Conroe":                { shoreAccess:5, parking:6, depth:5, structure:5, crowd:5, wade:false, family:false },
     "Lavon Lake":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:5, wade:false, family:true  },
-    "Lake Texoma":                { shoreAccess:8, parking:8, depth:7, structure:7, crowd:6, wade:true,  family:true  },
     "Squaw Creek Reservoir":      { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
-    "Lake Granbury":              { shoreAccess:6, parking:6, depth:5, structure:6, crowd:6, wade:false, family:false },
     "Richland-Chambers Reservoir":{ shoreAccess:5, parking:5, depth:5, structure:6, crowd:7, wade:false, family:false },
     "Navarro Mills Lake":         { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
     "Aquilla Lake":               { shoreAccess:7, parking:7, depth:8, structure:6, crowd:9, wade:true,  family:true  },
@@ -5053,7 +5352,6 @@ var BANK_DATA = (function() {
     "Lake McQueeny":              { shoreAccess:5, parking:5, depth:6, structure:5, crowd:5, wade:false, family:false },
     "Lake Corpus Christi":        { shoreAccess:7, parking:7, depth:7, structure:6, crowd:6, wade:false, family:true  },
     "Lake Ellsworth":             { shoreAccess:6, parking:6, depth:6, structure:5, crowd:9, wade:false, family:false },
-    "Lake Sam Rayburn":           { shoreAccess:5, parking:6, depth:5, structure:8, crowd:7, wade:false, family:false },
     "Gibbons Creek Reservoir":    { shoreAccess:5, parking:5, depth:5, structure:5, crowd:8, wade:false, family:false },
     "Lake Bob Sandlin":           { shoreAccess:6, parking:6, depth:6, structure:7, crowd:8, wade:false, family:false },
     "Lake Monticello":            { shoreAccess:6, parking:6, depth:6, structure:6, crowd:9, wade:false, family:false },
@@ -5085,7 +5383,6 @@ var BANK_DATA = (function() {
     "Lake Kirby":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:true,  family:true  },
     "Mountain Creek Lake":        { shoreAccess:6, parking:6, depth:6, structure:5, crowd:6, wade:false, family:false },
     "Lake Weatherford":           { shoreAccess:7, parking:7, depth:6, structure:6, crowd:7, wade:false, family:true  },
-    "Navarro Mills Lake":         { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
   };
 
   return function(lake) {
@@ -5099,19 +5396,13 @@ var BANK_DATA = (function() {
     var wade   = o.wade   !== undefined ? o.wade   : d.wade;
     var family = o.family !== undefined ? o.family : d.family;
 
-    // Weighted score
     var raw = sa*0.30 + pk*0.15 + dp*0.20 + st*0.20 + cr*0.15;
-    // Bonus
     if(wade)   raw += 0.3;
     if(family) raw += 0.3;
-    // Clamp
     raw = Math.min(10, Math.max(1, raw));
     var score = Math.round(raw * 10) / 10;
-
-    // Grade
     var grade = score >= 7.5 ? "A" : score >= 6.0 ? "B" : score >= 4.5 ? "C" : "D";
 
-    // Tags
     var tags = [];
     if(sa >= 7)  tags.push({label:"Good Shore Access", cls:"good"});
     else if(sa <= 4) tags.push({label:"Limited Access", cls:"bad"});
@@ -5124,7 +5415,10 @@ var BANK_DATA = (function() {
     if(wade)     tags.push({label:"Wade-Friendly", cls:"good"});
     if(family)   tags.push({label:"Family-Friendly", cls:"good"});
 
-    return { score:score, grade:grade, tags:tags, wade:wade, family:family };
+    // Access points
+    var accessData = BANK_ACCESS_POINTS[lake.name] || null;
+
+    return { score:score, grade:grade, tags:tags, wade:wade, family:family, access:accessData };
   };
 })();
 
@@ -5143,16 +5437,13 @@ function renderBankFishing() {
   var list = document.getElementById("bankList");
   if(!list) return;
 
-  // Score all lakes
   var scored = ALL_LAKES.map(function(lake) {
     var bd = BANK_DATA(lake);
-    return { lake:lake, score:bd.score, grade:bd.grade, tags:bd.tags, wade:bd.wade, family:bd.family };
+    return { lake:lake, score:bd.score, grade:bd.grade, tags:bd.tags, wade:bd.wade, family:bd.family, access:bd.access };
   });
 
-  // Sort by score desc
   scored.sort(function(a,b){ return b.score - a.score; });
 
-  // Filter
   var filtered = scored.filter(function(item) {
     if(bankFilterMode === "top")    return item.score >= 7;
     if(bankFilterMode === "wade")   return item.wade;
@@ -5175,13 +5466,14 @@ function renderBankFishing() {
     var tagsHtml = item.tags.slice(0,4).map(function(t) {
       return '<span class="bank-tag '+t.cls+'">'+t.label+'</span>';
     }).join("");
+    var accessNote = item.access ? '<span class="bank-tag good">📍 '+(item.access.points.length)+' Access Point'+(item.access.points.length>1?'s':'')+'</span>' : '';
 
     html += '<div class="bank-card'+(isTop?" top-3":"")+'" onclick="bankTap('+JSON.stringify(item.lake.name)+')">'
       + '<div class="bank-rank">'+(isTop?"🏆":"#"+rank)+'</div>'
       + '<div class="bank-body">'
         + '<div class="bank-name">'+item.lake.name+'</div>'
         + '<div class="bank-meta">'+item.lake.type+' · '+item.lake.region+'</div>'
-        + '<div class="bank-tags">'+tagsHtml+'</div>'
+        + '<div class="bank-tags">'+tagsHtml+accessNote+'</div>'
       + '</div>'
       + '<div class="bank-score-wrap">'
         + '<div class="bank-score-num">'+item.score.toFixed(1)+'<small>/10</small></div>'
@@ -5209,13 +5501,13 @@ function bankTap(name) {
   var cid = _storeCard({
     name: lake.name, type: lake.type, lat: lake.lat, lon: lake.lon,
     score: bd.score, bd: [], wt: null,
-    srH: lake.srH, ssH: lake.ssH, dist: null
+    srH: lake.srH, ssH: lake.ssH, dist: null,
+    bankAccess: bd.access   // ← pass access points into the detail card
   });
   openDetail(cid);
 }
 
 // Start the swimming fish cycle
 startFishCycle();
-</script>
 </body>
 </html>
