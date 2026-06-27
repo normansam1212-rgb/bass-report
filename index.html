@@ -2743,8 +2743,11 @@ function softScore(x) {
   return Math.max(1, Math.min(10, x));
 }
 
-function scoreLake(lake, weather, trend, sun, moon) {
-  var sc=5, bd=[], now=new Date(), month=now.getMonth()+1, hour=now.getHours();
+function scoreLake(lake, weather, trend, sun, moon, opts) {
+  var now=new Date();
+  var month=(opts&&opts.month)?opts.month:now.getMonth()+1;
+  var hour=(opts&&typeof opts.hour==="number")?opts.hour:now.getHours();
+  var sc=5, bd=[];
 
   var pl=trend.trend||"stable";
   if(pl==="stable"||pl==="slowly falling")  {sc+=2;bd.push({l:"Baro",  d:pl,           m:2});}
@@ -2887,7 +2890,7 @@ function fetchTrend(lat, lon) {
 // ═══════════════════════════════════════════
 function fetchForecast(lat, lon) {
   return fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon
-    +"&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_sum,cloud_cover_mean,pressure_msl_mean"
+    +"&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_direction_10m_dominant,precipitation_sum,cloud_cover_mean,pressure_msl_mean"
     +"&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=7")
     .then(function(r){if(!r.ok)throw new Error("Forecast failed");return r.json();})
     .then(function(d){return d.daily;});
@@ -2896,6 +2899,9 @@ function fetchForecast(lat, lon) {
 function scoreDayForecast(dayWeather, dayIdx, month, lakes) {
   // dayWeather: one day's slice of the daily response
   // Returns best lake + score for that day (plus top-5 ranked list)
+  // Uses the SAME scoreLake() engine as the live Report tab so per-lake
+  // differentiators (windward bank, clarity×light, metro pressure, solunar,
+  // water-type modifiers) actually reorder lakes day-to-day.
   var airAvg = (dayWeather.tmax + dayWeather.tmin) / 2;
   var wind   = dayWeather.wind;
   var clouds = dayWeather.cloud;
@@ -2913,20 +2919,26 @@ function scoreDayForecast(dayWeather, dayIdx, month, lakes) {
     temperature_f: airAvg,
     wind_speed_mph: wind,
     cloud_cover_pct: clouds,
-    pressure_inhg: Math.round(pres / 33.8639 * 100) / 100
+    pressure_inhg: Math.round(pres / 33.8639 * 100) / 100,
+    wind_direction_deg: (typeof dayWeather.windDir === "number") ? dayWeather.windDir : null,
+    humidity_pct: 60
   };
   var t = {trend: trend, delta: pressureDelta};
-  // Use midday sun estimate (hour=12)
+  // Forecast daily data is a daytime aggregate — score at solar noon.
   var sun = {sunrise:"6:30:00 AM", sunset:"8:00:00 PM"};
   var moon = getMoonForDate(dayIdx);
 
   var ranked = [];
   for(var i=0;i<lakes.length;i++){
     var lake=lakes[i];
-    var res = scoreLakeForecast(lake, w, t, 12, month, moon);
+    var res = scoreLake(lake, w, t, sun, moon, {month:month, hour:12});
     ranked.push({lake:lake, score:res.score});
   }
-  ranked.sort(function(a,b){return b.score-a.score;});
+  ranked.sort(function(a,b){
+    if(b.score !== a.score) return b.score - a.score;
+    // Deterministic tiebreak so equal scores don't shuffle arbitrarily
+    return a.lake.name.localeCompare(b.lake.name);
+  });
 
   var bestLake = ranked.length ? ranked[0].lake : null;
   var bestScore = ranked.length ? ranked[0].score : 0;
@@ -2936,58 +2948,6 @@ function scoreDayForecast(dayWeather, dayIdx, month, lakes) {
     w:w, t:t, month:month,
     top: ranked.slice(0,5)
   };
-}
-
-function scoreLakeForecast(lake, w, trend, hour, month, moon) {
-  // Simplified version of scoreLake that accepts explicit hour/month (for forecast days)
-  var sc=5, bd=[];
-  var pl=trend.trend||"stable";
-  if(pl==="stable"||pl==="slowly falling")  sc+=2;
-  else if(pl==="rapidly falling")           sc+=1;
-  else if(pl.indexOf("rising")!==-1)        sc-=3;
-
-  var ws=w.wind_speed_mph;
-  if(ws>=5&&ws<=12)  sc+=2;
-  else if(ws<5)      sc-=1;
-  else if(ws>=15)    sc-=2;
-
-  var air=w.temperature_f, wt;
-  if(month>=3&&month<=5)wt=air-7.5; else if(month>=6&&month<=8)wt=air-10;
-  else if(month>=9&&month<=11)wt=air-5.5; else wt=air+2.5;
-  wt += (31.5 - lake.lat) * 1.1;
-  wt=Math.round(wt);
-  if(wt>=60&&wt<=75)sc+=2;
-  else if(wt>=55&&wt<60)sc+=1;
-  else if(wt>75&&wt<=82)sc+=0.5;
-
-  // Daytime forecast — assume 12pm (midday = -1)
-  sc -= 1;
-
-  var cl=w.cloud_cover_pct;
-  if(cl>=30)sc+=1; else sc-=1;
-
-  if(moon){
-    if(moon.score===3)sc+=2;
-    else if(moon.score===2)sc+=1;
-  }
-
-  var attr = waterAttributes(lake);
-  if(attr.q===2)      sc+=1.5;
-  else if(attr.q===1) sc+=0.8;
-  else if(attr.q===-1)sc-=1;
-
-  var spawn=month>=3&&month<=5, summer=month>=6&&month<=8, winter=month===12||month<=2;
-  if(attr.d==="shallow"){
-    if(spawn)sc+=1; else if(summer)sc-=0.8; else if(winter)sc-=0.8;
-  } else if(attr.d==="deep"){
-    if(summer)sc+=0.8; else if(winter)sc+=0.6; else if(spawn)sc-=0.5;
-  }
-
-  // Soft-knee compress
-  var knee=6, slope=0.42;
-  var finalScore = sc <= knee ? sc : knee + (sc-knee)*slope;
-  finalScore = Math.max(1, Math.min(10, finalScore));
-  return {score: Math.round(finalScore*10)/10};
 }
 
 function getMoonForDate(daysAhead) {
@@ -3025,6 +2985,7 @@ function renderForecast(dailyRaw, nearestLakes) {
       tmax: dailyRaw.temperature_2m_max[i],
       tmin: dailyRaw.temperature_2m_min[i],
       wind: dailyRaw.wind_speed_10m_max[i],
+      windDir: dailyRaw.wind_direction_10m_dominant ? dailyRaw.wind_direction_10m_dominant[i] : null,
       cloud: dailyRaw.cloud_cover_mean ? dailyRaw.cloud_cover_mean[i] : 50,
       pressure: dailyRaw.pressure_msl_mean ? dailyRaw.pressure_msl_mean[i] : 1013,
       prevPressure: i>0 && dailyRaw.pressure_msl_mean ? dailyRaw.pressure_msl_mean[i-1] : (dailyRaw.pressure_msl_mean ? dailyRaw.pressure_msl_mean[0] : 1013),
@@ -3132,15 +3093,13 @@ function forecastDayTap(idx) {
   document.getElementById("fmbDayLabel").textContent = dateLbl;
   document.getElementById("forecastModeBar").classList.add("visible");
 
-  // Build fake weather/trend from that day's forecast data so scoreLake-compatible
+  // Build weather/trend from that day's forecast data (res.w already carries
+  // wind_direction_deg + humidity_pct set in scoreDayForecast).
   var res = r.res;
-  var fakeWeather = res.w;            // {temperature_f, wind_speed_mph, cloud_cover_pct, pressure_inhg}
-  var fakeTrend   = res.t;            // {trend, delta}
-  // scoreLake also needs: humidity_pct, wind_direction_deg — fill neutral values
-  fakeWeather = Object.assign({
-    humidity_pct: 60,
-    wind_direction_deg: 180
-  }, fakeWeather);
+  var fakeWeather = Object.assign({}, res.w);
+  if(typeof fakeWeather.wind_direction_deg !== "number") fakeWeather.wind_direction_deg = 180;
+  if(typeof fakeWeather.humidity_pct !== "number") fakeWeather.humidity_pct = 60;
+  var fakeTrend = res.t;
   // sun: use static midday values (forecast doesn't fetch per-lake sun times)
   var fakeSun = {sunrise:"6:30:00 AM", sunset:"8:00:00 PM"};
   var moon = res.moon || getMoon();
@@ -3155,11 +3114,12 @@ function renderForecastDay(weather, trend, sun, moon, month, dayLabel) {
 
   if(!userLat || !userLon) return;
 
-  // Re-score every lake using the forecast conditions (use scoreLakeForecast-style)
-  // We pass to scoreLake which expects the full weather object
+  // Re-score every lake using the forecast conditions — same scoreLake engine
+  // as the live Report, but with the forecast day's month and a midday hour so
+  // seasonal + windward-bank terms reflect that specific day.
   var scored = ALL_LAKES.map(function(lake){
     var dist = haversine(userLat, userLon, lake.lat, lake.lon);
-    var res = scoreLake(lake, weather, trend, sun, moon);
+    var res = scoreLake(lake, weather, trend, sun, moon, {month:month, hour:12});
     return Object.assign({}, lake, {dist:dist}, res);
   });
   scored.sort(function(a,b){ return a.dist - b.dist; });
