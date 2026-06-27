@@ -5841,428 +5841,716 @@ function hotspotTap(name) {
 // Each entry: { name, type, lat, lon, notes }
 
 var BANK_ACCESS_POINTS = {
-
-  "White Rock Lake": {
-
-    summary: "Full paved trail circles the entire 9-mile shoreline. Multiple dedicated fishing spots with benches and lighting. No permit needed.",
-
-    points: [
-
-      { name:"Winfrey Point", type:"park", lat:32.836, lon:-96.718, notes:"Paved lot, restrooms, multiple casting points along the northwest bank." },
-
-      { name:"Bath House Cultural Center Pier", type:"pier", lat:32.828, lon:-96.720, notes:"Lighted fishing pier, very beginner-friendly. Best at dawn/dusk." },
-
-      { name:"White Rock Lake Park South Shore", type:"wade", lat:32.821, lon:-96.714, notes:"Sandy shallows on the south end — wade to reach submerged structure near old road beds." },
-
-      { name:"Mockingbird Lane Cove", type:"bank", lat:32.840, lon:-96.707, notes:"Narrow inlet channel funnels baitfish — excellent ambush point for largemouth." }
-
-    ]
-
-  },
-
-  "Lady Bird Lake": {
-
-    summary: "Hike-and-bike trail runs both banks for 10+ miles through downtown Austin. Kayak/canoe access everywhere but much of it is no-wake. No bank fishing permits required.",
-
-    points: [
-
-      { name:"Auditorium Shores", type:"park", lat:30.26020, lon:-97.7501, notes:"Large open grass bank, paved parking. Popular but bass hold near the far bridge pilings." },
-
-      { name:"Roy G. Guerrero Park", type:"park", lat:30.245, lon:-97.711, notes:"Quieter east end, shaded banks, submerged timber — less pressure than downtown." },
-
-      { name:"Longhorn Dam Tailrace", type:"bank", lat:30.245, lon:-97.709, notes:"Below the dam — flowing water concentrates fish. Wade carefully on rocky bottom." },
-
-      { name:"Tom Miller Dam Bank", type:"bank", lat:30.2939, lon:-97.7848, notes:"West end rocky point. Consistent structure for topwater in early morning." }
-
-    ]
-
-  },
-
-  "Lake Nasworthy": {
-
-    summary: "City-owned lake in San Angelo with paved fishing piers and a sandy wade-in shoreline. Texas State Park fishing permit required.",
-
-    points: [
-
-      { name:"San Angelo State Park South Shore", type:"wade", lat:31.3746, lon:-100.5154, notes:"Sandy wade-in bank on the main south arm. Wade out 20-30 ft to reach grass edges at 3-4 ft depth." },
-
-      { name:"Lake Nasworthy Fishing Pier", type:"pier", lat:31.3895, lon:-100.4885, notes:"Lighted pier on the northeast arm of the lake. Good for catfish and bass at night. Restrooms on-site." },
-
-      { name:"Spring Creek Inlet", type:"bank", lat:31.3755, lon:-100.5262, notes:"Creek mouth on the northwest arm that flushes baitfish into the lake. Work a topwater along the channel edge." }
-
-    ]
-
-  },
-
-  "Lake Ray Roberts": {
-
-    summary: "State Park surrounds the lake with 30+ miles of accessible shoreline. Multiple fishing piers and wade-friendly coves on the north end.",
-
-    points: [
-
-      { name:"Johnson Branch Unit Pier", type:"pier", lat:33.3340, lon:-97.0280, notes:"Large covered fishing pier with cleaning station. Plenty of parking. Bass hold near pier pilings at dawn." },
-
-      { name:"Isle du Bois Unit Cove", type:"wade", lat:33.3100, lon:-97.0450, notes:"Shallow gravel-bottom cove. Wade to flooded brush on the east side at 2-4 ft depth." },
-
-      { name:"Greenbelt Corridor Flats", type:"bank", lat:33.2900, lon:-97.0430, notes:"Flat grassy bank with brush piles — fish parallel to shore with a Texas-rigged worm." }
-
-    ]
-
-  },
-
-  "Benbrook Lake": {
-
-    summary: "US Army Corps of Engineers lake west of Fort Worth with 4 public day-use areas and good bank access. No permit beyond state fishing license.",
-
-    points: [
-
-      { name:"Mustang Park Day Use", type:"park", lat:32.631, lon:-97.479, notes:"Paved parking, restrooms, riprap bank good for flipping jigs. Bass stack along the rocks." },
-
-      { name:"Holiday Park Boat Ramp Bank", type:"ramp", lat:32.647, lon:-97.475, notes:"Gravel bank beside ramp. Shallow flat extends 50 ft — good with a weightless Senko." },
-
-      { name:"Bear Creek Cove", type:"bank", lat:32.640, lon:-97.490, notes:"Wooded creek arm with laydowns. Access trail off Dutch Branch Rd. Topwater in the morning." }
-
-    ]
-
-  },
-
-  "Lake Grapevine": {
-
-    summary: "Corps of Engineers lake with Meadowmere Park and Murrell Park providing excellent bank access. Riprap and coves around the marina are productive.",
-
-    points: [
-
-      { name:"Meadowmere Park Shore", type:"park", lat:32.965, lon:-97.066, notes:"Concrete fishing platform and mowed bank. Easy parking, restrooms. Work the riprap with crankbaits." },
-
-      { name:"Murrell Park Cove", type:"wade", lat:32.985, lon:-97.073, notes:"Sandy cove near the north campground. Wade out to brush piles at 4-5 ft." },
-
-      { name:"Silver Lake Inlet", type:"bank", lat:32.960, lon:-97.055, notes:"Narrow creek channel that drains Silver Lake — concentrates bass near the mouth early morning." }
-
-    ]
-
-  },
-
-  "Joe Pool Lake": {
-
-    summary: "Loyd Park and Lynn Creek Park are the go-to bank access spots — paved fishing areas and good structure nearby.",
-
-    points: [
-
-      { name:"Loyd Park Fishing Area", type:"park", lat:32.6052, lon:-97.066, notes:"Dedicated paved fishing area, restrooms, lots of riprap. Night fishing permitted with permit." },
-
-      { name:"Lynn Creek Park Marina Bank", type:"pier", lat:32.63420, lon:-97.03860, notes:"Dock area with ledge structure below. Swimbaits work well along the dock face." },
-
-      { name:"Cedar Hill State Park Shoreline", type:"wade", lat:32.60960, lon:-96.99210, notes:"Sandy point on the southwest arm. Wade south along the bank to submerged roadbed structure." }
-
-    ]
-
-  },
-
-  "Lake Whitney": {
-
-    summary: "State park and Corps areas give miles of rocky shoreline access. The dam tailrace is walk-in only but loaded with fish.",
-
-    points: [
-
-      { name:"Lake Whitney State Park Bank", type:"park", lat:31.854, lon:-97.369, notes:"Paved lot, pier, and mowed bank inside state park. Swim jigs near cliff walls are productive." },
-
-      { name:"Whitney Dam Tailrace", type:"wade", lat:31.875, lon:-97.357, notes:"Walk the rocky bank below the dam. Flowing water — good for largemouth and spotted bass. Slippery rocks — use felt soles." },
-
-      { name:"Lofers Bend West Cove", type:"bank", lat:31.900, lon:-97.380, notes:"Corps campground cove. Gentle gravel slope — good for beginning anglers." }
-
-    ]
-
-  },
-
-  "Lake Proctor": {
-
-    summary: "Corps of Engineers lake near Comanche — very low pressure and easy walk-in access to shallow coves. Excellent wade fishing.",
-
-    points: [
-
-      { name:"Copperas Creek Park Shore", type:"wade", lat:31.9672, lon:-98.4980, notes:"Flat sandy bank at Copperas Creek Park. Wade to submerged timber at 2-3 ft depth. Extremely low pressure." },
-
-      { name:"South Bend Park Fishing Area", type:"park", lat:31.9912, lon:-98.4619, notes:"Paved lot, covered picnic, and rock jetty at Sowell Creek Park. Fish the jetty tip at dusk with a swimbait." },
-
-      { name:"Day Use Area Bank", type:"bank", lat:31.9813, lon:-98.4890, notes:"Gravel bank beside the main day use area at Promontory Park. Popping frogs work along the lily pads in summer." }
-
-    ]
-
-  },
-
-  "Lake Brownwood": {
-
-    summary: "State park gives 500+ acres of public access and a lighted pier. Good rocky points perfect for bank fishing.",
-
-    points: [
-
-      { name:"Lake Brownwood State Park Pier", type:"pier", lat:31.856, lon:-99.0298, notes:"Lighted fishing pier inside state park. Bass cruise the pier at night. Camping adjacent." },
-
-      { name:"State Park Rocky Point", type:"wade", lat:31.8510, lon:-99.0350, notes:"Gradual rocky slope on the state park's west side. Crank the point at dawn." },
-
-      { name:"Big Ridge Park Shore", type:"bank", lat:31.8620, lon:-99.0100, notes:"County park with open grass bank and shaded trees — family-friendly with picnic tables." }
-
-    ]
-
-  },
-
-  "Lake Somerville": {
-
-    summary: "State Park covers both sides (Birch Creek and Nails Creek units) with combined miles of fishable shoreline. Shallow, weedy, perfect for bank anglers.",
-
-    points: [
-
-      { name:"Birch Creek Unit Pier", type:"pier", lat:30.353, lon:-96.554, notes:"Fishing pier and sandy beach in the state park. Bass cruise the weed edge 30-40 ft out — try a buzzbait at first light." },
-
-      { name:"Nails Creek Unit Cove", type:"wade", lat:30.362, lon:-96.600, notes:"Shallow clear cove. Wade carefully to avoid spooking fish. Soft plastics on light line excel here." },
-
-      { name:"Overlook Park Bank", type:"park", lat:30.350, lon:-96.570, notes:"Free Corp of Engineers day-use area. Grassy bank over a gentle slope — excellent for families." }
-
-    ]
-
-  },
-
-  "Granger Lake": {
-
-    summary: "Small Corps lake in Williamson County with exceptional bank access and almost no boat pressure. Shallow lake — nearly every bank is fishable.",
-
-    points: [
-
-      { name:"Wilson H. Fox Park Shore", type:"park", lat:30.685, lon:-97.390, notes:"Paved parking and a grassy bank that extends 400 ft along the lake. Consistent bass bite near the boat dock pilings." },
-
-      { name:"Taylor Park Wade Area", type:"wade", lat:30.700, lon:-97.375, notes:"Sandy flat on the north shore. Wade the shallows at dawn with a popper — Granger bass hit topwater hard." },
-
-      { name:"San Gabriel Creek Arm", type:"bank", lat:30.675, lon:-97.410, notes:"Creek inlet. Fish the transition from silty creek bottom to the main lake — largemouth stack here in fall." }
-
-    ]
-
-  },
-
-  "Lake Georgetown": {
-
-    summary: "Canyon lake setting with rocky points and cedar bluffs. Corps parks give good bank access though steep banks limit wading.",
-
-    points: [
-
-      { name:"Cedar Breaks Park Pier", type:"pier", lat:30.6820, lon:-97.7620, notes:"Covered pier and cleaning station. Deep water close to shore — drop a drop-shot along the bluff." },
-
-      { name:"Jim Hogg Park Rocky Point", type:"bank", lat:30.6846, lon:-97.7435, notes:"Rocky peninsula jutting into the main lake. Cast crankbaits along the rock ledges at 6-10 ft depth." },
-
-      { name:"Tejas Park Cove", type:"wade", lat:30.6780, lon:-97.7800, notes:"Shallower cove at the park's west end. Gravelly bottom — safe to wade. Finesse plastics on spinning gear." }
-
-    ]
-
-  },
-
-  "Stillhouse Hollow Lake": {
-
-    summary: "Corps lake near Killeen with large parks and a long dam-face bank. Excellent structure bass fishing from shore.",
-
-    points: [
-
-      { name:"Dana Peak Park Shore", type:"park", lat:30.998, lon:-97.557, notes:"Huge park with miles of mowed bank, fishing piers, and riprap along the dam road. Very family-friendly." },
-
-      { name:"Lampasas River Arm", type:"bank", lat:31.050, lon:-97.600, notes:"Walk-in bank on the upper river arm. Clear water, rocky bottom — sight-fish shallow bass in spring." },
-
-      { name:"Overlook Riprap", type:"bank", lat:30.990, lon:-97.560, notes:"Rocky riprap on the dam's west face. Carolina-rig a craw along the base — deep fish stack here in summer." }
-
-    ]
-
-  },
-
-  "Lake Bastrop": {
-
-    summary: "LCRA lake in Bastrop with Lost Pines access. Sandy pine-forest banks, very light pressure, excellent for wading.",
-
-    points: [
-
-      { name:"Bastrop State Park Bank", type:"wade", lat:30.116, lon:-97.267, notes:"Sandy bank inside Bastrop State Park. Wade the shallow east end — bass hold in the submerged stumps left by the 2011 fire." },
-
-      { name:"Lake Bastrop South Shore", type:"park", lat:30.108, lon:-97.270, notes:"LCRA park with paved access and restrooms. Dock pilings hold fish all year." },
-
-      { name:"North Shore Fishing Access", type:"bank", lat:30.120, lon:-97.261, notes:"Gravel bank on the north side of the lake. Light pressure, good morning bite near the cove entrance." }
-
-    ]
-
-  },
-
-  "Caddo Lake": {
-
-    summary: "Unique cypress-swamp setting. Wading is not recommended (deep muck, snakes) but the boat ramp banks and state park docks are excellent for casting into the timber.",
-
-    points: [
-
-      { name:"Caddo Lake State Park Dock", type:"pier", lat:32.691, lon:-94.183, notes:"Fishing dock inside state park. Cast into flooded cypress knees — guaranteed bass cover. Canoe rentals available." },
-
-      { name:"Uncertain Landing Bank", type:"bank", lat:32.696, lon:-94.175, notes:"Small gravel bank at the public boat landing. Pitch jigs into the cypress trees on either side." },
-
-      { name:"Carters Lake Cove", type:"bank", lat:32.680, lon:-94.200, notes:"Quiet backwater cove accessible by a short walk from the main road. Weedless frogs work over the lily pad mats." }
-
-    ]
-
-  },
-
-  "Choke Canyon Reservoir": {
-
-    summary: "State park with an excellent lighted fishing pier and open shoreline. South Texas largemouth — big fish, low pressure.",
-
-    points: [
-
-      { name:"Calliham Unit Fishing Pier", type:"pier", lat:28.474, lon:-98.342, notes:"150-ft lighted pier inside Calliham Unit state park. Night fishing is exceptional. Big bass cruise the pier at dusk." },
-
-      { name:"South Shore Day Use Bank", type:"park", lat:28.470, lon:-98.350, notes:"Riprap bank at the day use area — stable footing, large rocks. Jig the base of the riprap." },
-
-      { name:"Tilden Area Cove", type:"wade", lat:28.480, lon:-98.360, notes:"Shallow sandy flat on the north end. Low pressure, excellent wading. Fish Texas-rigged plastics slow in the summer heat." }
-
-    ]
-
-  },
-
   "Lake Meredith": {
-
-    summary: "National Recreation Area — all shorelines are free public access. Rocky canyon walls mean most bank fishing is from ledges above the water, but several sandy coves exist.",
-
     points: [
-
-      { name:"Sanford-Yake Ramp Bank", type:"ramp", lat:35.7061, lon:-101.5618, notes:"Wide gravel bank beside the main ramp at Sanford-Yake Campground. Fish the point just north with a crankbait at the rock ledges." },
-
-      { name:"Blue Creek Cove", type:"wade", lat:35.7227, lon:-101.6639, notes:"Sandy-bottom cove at Blue Creek Campground on the northwest arm. Good wade-in access at low water. Bass hold in submerged brush." },
-
-      { name:"Plum Creek Canyon Bank", type:"bank", lat:35.680, lon:-101.620, notes:"Remote canyon arm on the west side. Walk down the trail 0.3 miles to a ledge bank — very little pressure." }
-
+      { name:"Fritch Community Park", type:"park", lat:35.64925, lon:-101.59175, notes:"Public park with shoreline access and parking — good casting room along the bank." }
     ]
-
   },
-
+  "Lake Mackenzie": {
+    points: [
+      { name:"Lake Mackenzie — Main Lake Access", type:"bank", lat:34.54994, lon:-101.44419, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "White River Lake": {
+    points: [
+      { name:"White River Lake — Main Lake Access", type:"bank", lat:33.47151, lon:-101.08611, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Alan Henry": {
+    points: [
+      { name:"Sam Wahl Recreation Area", type:"ramp", lat:33.04804, lon:-101.0815, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." }
+    ]
+  },
+  "Lake Colorado City": {
+    points: [
+      { name:"Lake Colorado City — Main Lake Access", type:"bank", lat:32.35653, lon:-100.9333, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Champion Creek Reservoir": {
+    points: [
+      { name:"Champion Creek Reservoir — Main Lake Access", type:"bank", lat:32.30203, lon:-100.83721, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "E.V. Spence Reservoir": {
+    points: [
+      { name:"Paint Creek Park", type:"park", lat:31.90637, lon:-100.57629, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake View Park", type:"park", lat:31.91727, lon:-100.5267, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "OC Fisher Lake": {
+    points: [
+      { name:"San Angelo State Park", type:"park", lat:31.49871, lon:-100.52294, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"North Concho Open Space", type:"park", lat:31.47158, lon:-100.46261, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Mountainview Park", type:"park", lat:31.45053, lon:-100.48011, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lakeview Park", type:"park", lat:31.48907, lon:-100.44796, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Twin Buttes Reservoir": {
+    points: [
+      { name:"Middle Concho Park", type:"park", lat:31.37979, lon:-100.52032, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Spring Creek Park", type:"park", lat:31.37246, lon:-100.51382, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lincoln Park", type:"park", lat:31.3935, lon:-100.50787, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Red Bluff Circle Park", type:"park", lat:31.382, lon:-100.5037, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Nasworthy": {
+    points: [
+      { name:"Spring Creek Park", type:"park", lat:31.37246, lon:-100.51382, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Middle Concho Park", type:"park", lat:31.37979, lon:-100.52032, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Red Bluff Circle Park", type:"park", lat:31.382, lon:-100.5037, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lincoln Park", type:"park", lat:31.3935, lon:-100.50787, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "O.H. Ivie Reservoir": {
+    points: [
+      { name:"North Concho Open Space", type:"park", lat:31.47158, lon:-100.46261, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Civic League Park", type:"park", lat:31.45911, lon:-100.45091, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Mountainview Park", type:"park", lat:31.45053, lon:-100.48011, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Brown Park", type:"park", lat:31.44752, lon:-100.46551, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake J.B. Thomas": {
+    points: [
+      { name:"Bull Creek Park", type:"park", lat:32.59533, lon:-101.17149, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Sweetwater": {
+    points: [
+      { name:"Lake Sweetwater Municipal Park", type:"park", lat:32.43247, lon:-100.31033, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Stamford": {
+    points: [
+      { name:"Lake Stamford Park", type:"park", lat:33.04375, lon:-99.60873, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
   "Lake Fort Phantom Hill": {
-
-    summary: "City of Abilene lake with a paved road around most of it and multiple pull-off bank access spots.",
-
     points: [
-
-      { name:"Fort Phantom Hill Park Pier", type:"pier", lat:32.57560, lon:-99.6929, notes:"City-run pier with parking and restrooms. Fish the pilings at first light." },
-
-      { name:"Main Dam Bank", type:"bank", lat:32.563, lon:-99.68, notes:"Riprap along the dam face. Cast parallel to the rocks with a jig — bass hold in the cracks." },
-
-      { name:"North Cove Wade Area", type:"wade", lat:32.5860, lon:-99.7050, notes:"Shallow gravel cove on the north end. Good wading depth (2-3 ft). Finesse plastics in clear water." }
-
+      { name:"Johnson Park", type:"park", lat:32.61386, lon:-99.68015, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Sea Bee Park", type:"park", lat:32.53943, lon:-99.71337, notes:"Public park with shoreline access and parking — good casting room along the bank." }
     ]
-
   },
-
-  "Braunig Lake": {
-
-    summary: "San Antonio city lake with warm water year-round from the power plant. Excellent paved fishing piers and accessible bank — bass fishing 12 months a year.",
-
+  "Lake Kirby": {
     points: [
-
-      { name:"Main Fishing Pier #1", type:"pier", lat:29.2570, lon:-98.378, notes:"Large paved pier, accessible, wheelchair-friendly. Warm discharge water nearby — bass active all winter." },
-
-      { name:"North Shore Pier #2", type:"pier", lat:29.262, lon:-98.375, notes:"Second pier on the north bank. Work swimbaits along the warm-water channel edge." },
-
-      { name:"Creek Inlet Bank", type:"bank", lat:29.253, lon:-98.388, notes:"Creek arm on the west side. Flipping jigs into the feeder channel early morning is very productive." }
-
+      { name:"Boat Launch", type:"ramp", lat:32.38005, lon:-99.72959, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Lake Kirby Park", type:"park", lat:32.38014, lon:-99.72715, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Wesley Court Senior Living Park", type:"park", lat:32.36908, lon:-99.75322, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Chimney Rock Neighborhood Park", type:"park", lat:32.3863, lon:-99.7526, notes:"Public park with shoreline access and parking — good casting room along the bank." }
     ]
-
   },
-
-  "Lake Corpus Christi": {
-
-    summary: "State park with fishing pier and open grassy bank. Good bank access throughout the north end.",
-
+  "Lake Abilene": {
     points: [
-
-      { name:"Lake Corpus Christi State Park Pier", type:"pier", lat:28.0621, lon:-97.8776, notes:"Long fishing pier inside state park. Bass and drum both caught here. Restrooms and camping adjacent." },
-
-      { name:"Matthews Park Shore", type:"park", lat:28.06800, lon:-97.870, notes:"Paved city park with open bank and shade trees. Good for casting Senkos along the bank edge." },
-
-      { name:"Mesquite Flat Cove", type:"wade", lat:28.05, lon:-97.89, notes:"Shallow cove on the south side. Sandy bottom — good wading at lower water stages." }
-
+      { name:"Abilene State Park", type:"park", lat:32.2379, lon:-99.89451, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Back Boat Ramp", type:"ramp", lat:32.23349, lon:-99.90297, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Buffalo Wallow", type:"bank", lat:32.23466, lon:-99.88588, notes:"Bank fishing access near the lake." },
+      { name:"Camp Tonkawa", type:"park", lat:32.2436, lon:-99.87404, notes:"Public park with shoreline access and parking — good casting room along the bank." }
     ]
-
   },
-
+  "Lake Brownwood": {
+    points: [
+      { name:"Mullins Heritage Park", type:"park", lat:31.8287, lon:-99.13, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Coleman": {
+    points: [
+      { name:"Lake Coleman — Main Lake Access", type:"bank", lat:32.0272, lon:-99.4795, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Proctor": {
+    points: [
+      { name:"High Point Park", type:"park", lat:31.9963, lon:-98.48077, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Promontory Park", type:"park", lat:31.9813, lon:-98.48896, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Copperas Creek Park", type:"park", lat:31.96721, lon:-98.49801, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Sowell Creek Park", type:"park", lat:31.98173, lon:-98.462, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Possum Kingdom Lake": {
+    points: [
+      { name:"The Dock", type:"pier", lat:32.89081, lon:-98.47009, notes:"Fishing pier/dock — easy access, best at dawn and dusk." },
+      { name:"Possum Kingdom State Park", type:"park", lat:32.86439, lon:-98.5545, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Palo Pinto": {
+    points: [
+      { name:"Lake Palo Pinto — Main Lake Access", type:"bank", lat:32.6425, lon:-98.3006, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Graham": {
+    points: [
+      { name:"Lake Graham — Main Lake Access", type:"bank", lat:33.1631, lon:-98.6339, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Eddleman": {
+    points: [
+      { name:"Lake Eddleman Park", type:"park", lat:33.13855, lon:-98.59768, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Firemens Park", type:"park", lat:33.11199, lon:-98.59787, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Hubbard Creek Reservoir": {
+    points: [
+      { name:"Hubbard Creek Reservoir — Main Lake Access", type:"bank", lat:32.81002, lon:-98.98174, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Daniel": {
+    points: [
+      { name:"Lake Daniel — Main Lake Access", type:"bank", lat:32.6416, lon:-98.862, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Millers Creek Reservoir": {
+    points: [
+      { name:"Millers Creek Reservoir — Main Lake Access", type:"bank", lat:33.39956, lon:-99.39129, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Bluestem Lake": {
+    points: [
+      { name:"Bluestem Lake — Main Lake Access", type:"bank", lat:32.5283, lon:-99.2967, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Throckmorton": {
+    points: [
+      { name:"Lake Throckmorton — Main Lake Access", type:"bank", lat:33.16487, lon:-99.19458, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Winters": {
+    points: [
+      { name:"Lake Winters — Main Lake Access", type:"bank", lat:31.96305, lon:-99.86961, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Texoma": {
+    points: [
+      { name:"Cedar Bayou Marina at Lake Texoma", type:"ramp", lat:33.8429, lon:-96.85187, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Juniper Point West", type:"park", lat:33.86091, lon:-96.83606, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Juniper Point Public Use Area", type:"park", lat:33.85959, lon:-96.81844, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Cedar Mills Marina and Resort", type:"ramp", lat:33.83213, lon:-96.81138, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Shady Park", type:"park", lat:33.85313, lon:-96.80342, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Arrowhead": {
+    points: [
+      { name:"Tonkawa Park", type:"park", lat:33.72345, lon:-98.33006, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Crow Trace Point Park", type:"park", lat:33.75149, lon:-98.3331, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Delaware Trail Park", type:"park", lat:33.75093, lon:-98.32866, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"West Arrowhead Park", type:"park", lat:33.74465, lon:-98.3692, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Nocatee Park", type:"park", lat:33.70094, lon:-98.32866, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Kickapoo": {
+    points: [
+      { name:"Lake Kickapoo — Main Lake Access", type:"bank", lat:33.64147, lon:-98.8342, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Diversion": {
+    points: [
+      { name:"Lake Diversion — Main Lake Access", type:"bank", lat:33.7925, lon:-98.97579, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Amon G. Carter": {
+    points: [
+      { name:"Selma Park", type:"park", lat:33.48495, lon:-97.88546, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Nocona Lake": {
+    points: [
+      { name:"Weldon Robb Park", type:"park", lat:33.86074, lon:-97.66046, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Boone Park", type:"park", lat:33.87914, lon:-97.64591, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Joe Benton Park", type:"park", lat:33.88076, lon:-97.65656, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Ray Roberts": {
+    points: [
+      { name:"Ray Roberts Lake State Park - Elm Fork Unit", type:"park", lat:33.35322, lon:-97.03724, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Ray Roberts Lake State Park - Isle Du Bois Unit", type:"park", lat:33.37545, lon:-97.02043, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Ray Roberts Lake State Park - Greenbelt Corridor", type:"park", lat:33.29167, lon:-97.04328, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Lewisville": {
+    points: [
+      { name:"Willow Grove Park", type:"park", lat:33.12828, lon:-97.01435, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake Dallas City Park", type:"park", lat:33.12369, lon:-97.0284, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Corinth Farms Park", type:"park", lat:33.14682, lon:-97.04026, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Big Sandy Park", type:"park", lat:33.15422, lon:-97.0207, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Fairview Park", type:"park", lat:33.13365, lon:-97.04807, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lavon Lake": {
+    points: [
+      { name:"Twin Groves Park", type:"park", lat:33.16678, lon:-96.44389, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Blue Ridge Park", type:"park", lat:33.17678, lon:-96.42776, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Elm Creek Park", type:"park", lat:33.1316, lon:-96.4321, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Ray Hubbard": {
+    points: [
+      { name:"The Park at Emerald Bay", type:"park", lat:32.94194, lon:-96.47835, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Northshore Park", type:"park", lat:32.93736, lon:-96.47014, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"State Highway 66 Boat Ramp", type:"ramp", lat:32.92937, lon:-96.47295, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Squabble Creek Bike Trails Park", type:"park", lat:32.94979, lon:-96.46901, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Scenic Point Park", type:"park", lat:32.92354, lon:-96.50696, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
   "Lake Tawakoni": {
-
-    summary: "State park and county access areas provide good bank spots. Timber-filled coves are the main draw.",
-
     points: [
-
-      { name:"Lake Tawakoni State Park Pier", type:"pier", lat:32.8468, lon:-95.99880, notes:"Fishing pier and cleaning station inside state park. Launch or fish from bank. Timber nearby." },
-
-      { name:"Point Aquarius Shore", type:"bank", lat:32.842, lon:-95.9820, notes:"Community access point near Point Aquarius subdivision. Fish the submerged timber edge." },
-
-      { name:"Caddo Creek Arm", type:"wade", lat:32.870, lon:-96.010, notes:"Upper creek arm — shallow enough to wade at normal pool. Isolated timber. Very productive in fall." }
-
+      { name:"Wind Point Park", type:"park", lat:32.95544, lon:-95.99598, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"West Tawakoni City Park", type:"park", lat:32.9054, lon:-96.01989, notes:"Public park with shoreline access and parking — good casting room along the bank." }
     ]
-
   },
-
-  "Lake Palestine": {
-
-    summary: "Several county parks and the state park access give decent shore options. Heavily timbered with good soft-plastic bass fishing.",
-
+  "Lake Grapevine": {
     points: [
-
-      { name:"Dogwood Park Pier", type:"pier", lat:32.2010, lon:-95.4617, notes:"Paved pier and restrooms at county park on the east shore. Fish the drop-off just beyond the pier end." },
-
-      { name:"Jim Hogg County Park Bank", type:"bank", lat:32.1709, lon:-95.5022, notes:"Open grassy bank on the west shore. Brush piles were placed along the shore — ask locals for exact locations." },
-
-      { name:"Kickapoo Creek Arm", type:"bank", lat:32.2860, lon:-95.5120, notes:"Upper Kickapoo Creek inlet arm with flooded timber. Walk-in access from FM 279. Best early season." }
-
+      { name:"Meadowmere Park", type:"park", lat:32.98227, lon:-97.11801, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake View Park", type:"park", lat:32.97615, lon:-97.10568, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Bella Lago Park", type:"park", lat:33.01664, lon:-97.11493, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Bob Jones Park", type:"park", lat:32.99274, lon:-97.15063, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Hide-A-Way Park", type:"park", lat:33.01215, lon:-97.09824, notes:"Public park with shoreline access and parking — good casting room along the bank." }
     ]
-
   },
-
-  "Wright Patman Lake": {
-
-    summary: "Corps lake near Texarkana with multiple parks and miles of timbered shoreline accessible on foot.",
-
+  "Eagle Mountain Lake": {
     points: [
-
-      { name:"Atlanta State Park Shore", type:"park", lat:33.2297, lon:-94.244300, notes:"State park with fishing pier and 200 ft of open bank. Excellent topwater action near the timbered points." },
-
-      { name:"Sulphur River Arm", type:"wade", lat:33.2450, lon:-94.260, notes:"Shallow upper river arm — wade to the submerged fence rows for big largemouth." },
-
-      { name:"Jackson Creek Inlet", type:"bank", lat:33.210, lon:-94.22, notes:"Walk-in bank at the creek mouth. Jigs and craws near the channel edge." }
-
+      { name:"Newark Ball Field", type:"park", lat:32.99705, lon:-97.4992, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"South Wise Park", type:"park", lat:33.00265, lon:-97.51309, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lakeview Marina", type:"ramp", lat:32.94829, lon:-97.50807, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Delora Doughty Royal Park", type:"park", lat:33.00236, lon:-97.48536, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"West Bay Marina & RV Park", type:"ramp", lat:32.93374, lon:-97.51448, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." }
     ]
-
   },
-
-  "Lake O' the Pines": {
-
-    summary: "Corps lake in East Texas with exceptional timber structure. Multiple parks give bank access near the flooded forests.",
-
+  "Lake Worth": {
     points: [
-
-      { name:"Buckhorn Creek Park Pier", type:"pier", lat:32.762, lon:-94.600, notes:"Fishing pier with parking and restrooms. Work lures parallel to the flooded timber line visible from the end." },
-
-      { name:"Johnson Creek Cove", type:"wade", lat:32.780, lon:-94.610, notes:"Shallow sandy cove inside the timber. Wade to cast jigs at the base of cypress and tupelo trees." },
-
-      { name:"Lone Star Park Bank", type:"bank", lat:32.755, lon:-94.590, notes:"Corps day-use area with open bank. Good for beginners — bass stack near the boat ramp pilings at dawn." }
-
+      { name:"Marina Park", type:"ramp", lat:32.81437, lon:-97.45134, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Casino Park", type:"park", lat:32.82008, lon:-97.45293, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Vinca Circle Park", type:"park", lat:32.80788, lon:-97.45104, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Love Circle Park", type:"park", lat:32.82453, lon:-97.45146, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Broken Rayl Park", type:"park", lat:32.80696, lon:-97.4461, notes:"Public park with shoreline access and parking — good casting room along the bank." }
     ]
-
   },
-
+  "Benbrook Lake": {
+    points: [
+      { name:"North Holiday Park", type:"park", lat:32.64256, lon:-97.47519, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Mustang Park", type:"park", lat:32.60334, lon:-97.48403, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Benbrook Lake Marina", type:"ramp", lat:32.65651, lon:-97.47584, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Dutch Branch Park", type:"park", lat:32.66208, lon:-97.48091, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Weatherford": {
+    points: [
+      { name:"Gene L Voyles Park", type:"park", lat:32.75977, lon:-97.69764, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Granbury": {
+    points: [
+      { name:"Granbury City Park", type:"park", lat:32.44483, lon:-97.79848, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Reunion Grounds", type:"park", lat:32.44972, lon:-97.77939, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Decker Field", type:"park", lat:32.44484, lon:-97.79366, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "White Rock Lake": {
+    points: [
+      { name:"White Rock Lake Park", type:"park", lat:32.83668, lon:-96.72001, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lakewood Park", type:"park", lat:32.83112, lon:-96.73512, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"SOPAC Trail Corridor", type:"park", lat:32.83737, lon:-96.73644, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake Highlands Park", type:"park", lat:32.84511, lon:-96.70438, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Joe Pool Lake": {
+    points: [
+      { name:"Estes Park", type:"park", lat:32.61279, lon:-97.0313, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Pleasant Valley Park", type:"park", lat:32.56524, lon:-97.02955, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Cedar Hill State Park", type:"park", lat:32.60999, lon:-96.9964, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Ridge View Park", type:"park", lat:32.56603, lon:-97.00273, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Valley Ridge Park", type:"park", lat:32.55853, lon:-97.00698, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Arlington": {
+    points: [
+      { name:"Richard Simpson Park", type:"park", lat:32.7125, lon:-97.20155, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Thora Hart Park", type:"park", lat:32.6906, lon:-97.19154, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Heroes Park", type:"park", lat:32.70994, lon:-97.19104, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"William McDonald Park", type:"park", lat:32.70435, lon:-97.24111, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Mountain Creek Lake": {
+    points: [
+      { name:"Intramural Fields", type:"park", lat:32.71308, lon:-96.94916, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Mountain Creek Lake Park", type:"park", lat:32.71209, lon:-96.97777, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Hendrix Park", type:"park", lat:32.71822, lon:-96.98645, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Bradshaw Park", type:"park", lat:32.69991, lon:-96.98607, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Valley Park", type:"park", lat:32.70306, lon:-96.99755, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Squaw Creek Reservoir": {
+    points: [
+      { name:"Dinosaur Valley State Park", type:"park", lat:32.25422, lon:-97.81244, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Whitney": {
+    points: [
+      { name:"Old Fort Park", type:"park", lat:32.00395, lon:-97.39313, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Cedar Creek Park", type:"park", lat:31.99038, lon:-97.37168, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Juniper Cove Marina", type:"ramp", lat:31.98336, lon:-97.37068, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." }
+    ]
+  },
+  "Aquilla Lake": {
+    points: [
+      { name:"Aquilla Lake — Main Lake Access", type:"bank", lat:31.94027, lon:-97.22473, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Waco Lake": {
+    points: [
+      { name:"Lacy Point Boat Ramp", type:"ramp", lat:31.56156, lon:-97.2454, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Speegleville Park II", type:"park", lat:31.53421, lon:-97.23994, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Koehne Park", type:"park", lat:31.54037, lon:-97.21679, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Woodway Activity Park", type:"park", lat:31.5223, lon:-97.22985, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Mountainview Park", type:"park", lat:31.54109, lon:-97.20734, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Fork": {
+    points: [
+      { name:"West Fork Landing", type:"ramp", lat:32.89397, lon:-95.66363, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Rains County Ramp", type:"ramp", lat:32.90458, lon:-95.65971, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." }
+    ]
+  },
+  "Lake Bob Sandlin": {
+    points: [
+      { name:"Monticello Park", type:"park", lat:33.08651, lon:-95.07383, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Cypress Springs": {
+    points: [
+      { name:"Mary King Park", type:"park", lat:33.05318, lon:-95.17105, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Over Look Park", type:"park", lat:33.06679, lon:-95.16827, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Walleye Park", type:"park", lat:33.0704, lon:-95.15661, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake O the Pines": {
+    points: [
+      { name:"Alley Creek Park", type:"park", lat:32.80097, lon:-94.59743, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Alley Creek Recreation Area", type:"park", lat:32.79958, lon:-94.59215, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Oak Valley Park", type:"park", lat:32.83236, lon:-94.65243, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Pine Hill Park", type:"park", lat:32.80593, lon:-94.65972, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Caddo Lake": {
+    points: [
+      { name:"Caddo Lake Wildlife Management Area", type:"park", lat:32.73625, lon:-94.12574, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Cherokee": {
+    points: [
+      { name:"Lake Cherokee — Main Lake Access", type:"bank", lat:32.3291, lon:-94.70414, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Martin Creek Lake": {
+    points: [
+      { name:"Martin Creek Lake — Main Lake Access", type:"bank", lat:32.23884, lon:-94.57224, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
   "Lake Murvaul": {
-
-    summary: "Hidden gem in Panola County — very low pressure, lush aquatic vegetation. Excellent wade fishing. Buy a permit from Panola County.",
-
     points: [
-
-      { name:"Murvaul County Pier", type:"pier", lat:32.056, lon:-94.44, notes:"Small county pier, very basic. Weedless frogs over the lily pads immediately surrounding the pier are deadly." },
-
-      { name:"East Cove Wade Area", type:"wade", lat:32.0620, lon:-94.4480, notes:"Sandy-bottomed cove with 2-3 ft depths over grass beds. Best wading in East Texas for trophy largemouth." },
-
-      { name:"Main Boat Landing Bank", type:"ramp", lat:32.0490, lon:-94.4350, notes:"Gravel bank beside the county ramp. Flip jigs into the hydrilla edge at dawn." }
-
+      { name:"Rosie Jones Park", type:"park", lat:32.04489, lon:-94.47602, notes:"Public park with shoreline access and parking — good casting room along the bank." }
     ]
-
+  },
+  "Lake Palestine": {
+    points: [
+      { name:"Lake Palestine — Main Lake Access", type:"bank", lat:32.17575, lon:-95.43791, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Tyler East": {
+    points: [
+      { name:"Sandy Beach Park", type:"park", lat:32.22988, lon:-95.16161, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake Tyler Marina Resort", type:"ramp", lat:32.21435, lon:-95.18161, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." }
+    ]
+  },
+  "Lake Tyler West": {
+    points: [
+      { name:"Hill Creek Park", type:"park", lat:32.23127, lon:-95.18217, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Sandy Beach Park", type:"park", lat:32.22988, lon:-95.16161, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake Tyler Marina Resort", type:"ramp", lat:32.21435, lon:-95.18161, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Concesion Park", type:"park", lat:32.21266, lon:-95.18439, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Whitehouse City Park", type:"park", lat:32.22721, lon:-95.22184, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Nacogdoches": {
+    points: [
+      { name:"Lake Nacogdoches East Side Park", type:"park", lat:31.58825, lon:-94.82178, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake Nacogdoches West Park", type:"park", lat:31.59362, lon:-94.83855, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Striker": {
+    points: [
+      { name:"Lake Striker — Main Lake Access", type:"bank", lat:31.96633, lon:-94.98919, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Jacksonville": {
+    points: [
+      { name:"Lake Jacksonville Park", type:"park", lat:31.92177, lon:-95.29038, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Nichols' Green Park", type:"park", lat:31.94278, lon:-95.25048, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Bolton Park", type:"park", lat:31.95921, lon:-95.26747, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Athens": {
+    points: [
+      { name:"Lake Athens Marina", type:"ramp", lat:32.21538, lon:-95.76627, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Henderson County Regional Fair Park", type:"park", lat:32.2327, lon:-95.80191, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Sam Rayburn Reservoir": {
+    points: [
+      { name:"Jackson Hill Park", type:"park", lat:31.26667, lon:-94.32403, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Toledo Bend Reservoir": {
+    points: [
+      { name:"Toledo Bend Reservoir — Main Lake Access", type:"bank", lat:31.35, lon:-93.62, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Limestone": {
+    points: [
+      { name:"Lake Limestone — Main Lake Access", type:"bank", lat:31.40335, lon:-96.35824, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Mexia": {
+    points: [
+      { name:"Booker T Washington Emancipation Proclamation Park", type:"park", lat:31.65711, lon:-96.59693, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Washington Park", type:"park", lat:31.6535, lon:-96.59804, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Confederate Reunion Grounds State Historic Site", type:"park", lat:31.63249, lon:-96.56017, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Richland Chambers Reservoir": {
+    points: [
+      { name:"Richland Chambers Reservoir — Main Lake Access", type:"bank", lat:32.0094, lon:-96.2579, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Bardwell Lake": {
+    points: [
+      { name:"Highview Marina", type:"ramp", lat:32.2639, lon:-96.66115, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"High View Park", type:"park", lat:32.26661, lon:-96.66401, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Love Park", type:"park", lat:32.26994, lon:-96.64484, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Mott Park", type:"park", lat:32.25891, lon:-96.66315, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Little Mustang Creek Park", type:"park", lat:32.30158, lon:-96.66945, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Conroe": {
+    points: [
+      { name:"Bentwater Marina", type:"ramp", lat:30.43152, lon:-95.61518, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." }
+    ]
+  },
+  "Lake Houston": {
+    points: [
+      { name:"Cooper Park", type:"park", lat:30.02634, lon:-95.22266, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Deer Ridge Park", type:"park", lat:30.03365, lon:-95.21908, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"South Woodland Hills Park", type:"park", lat:30.05571, lon:-95.21978, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Bear Branch Pool", type:"park", lat:30.05526, lon:-95.20704, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Livingston": {
+    points: [
+      { name:"Lake Livingston — Main Lake Access", type:"bank", lat:30.8509, lon:-95.2605, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Somerville Lake": {
+    points: [
+      { name:"Big Creek Park", type:"park", lat:30.33111, lon:-96.57658, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake Somerville State Park - Birch Creek Unit", type:"park", lat:30.31015, lon:-96.62855, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Rocky Creek Park", type:"park", lat:30.29648, lon:-96.56886, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Welch Park", type:"park", lat:30.34072, lon:-96.5436, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake Somerville State Park - Nails Creek Unit", type:"park", lat:30.31005, lon:-96.69711, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Bryan": {
+    points: [
+      { name:"Bryan Regional Athletic Complex", type:"park", lat:30.71711, lon:-96.40378, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Gibbons Creek Reservoir": {
+    points: [
+      { name:"Gibbons Creek Reservoir — Main Lake Access", type:"bank", lat:30.63245, lon:-96.06242, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Travis": {
+    points: [
+      { name:"Collier Boat Ramp", type:"ramp", lat:30.4608, lon:-98.02849, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Bar K Park", type:"park", lat:30.46897, lon:-97.99518, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Muleshoe Bend Recreational Area", type:"park", lat:30.48821, lon:-98.0919, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Austin": {
+    points: [
+      { name:"Commons Ford Ranch Metropolitan Park", type:"park", lat:30.33548, lon:-97.89073, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Selma Hughes Park", type:"park", lat:30.33794, lon:-97.90399, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Bella Mar Park", type:"park", lat:30.34464, lon:-97.91123, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Woodlands Park", type:"park", lat:30.35585, lon:-97.86393, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake Hills Community Association Park", type:"park", lat:30.35364, lon:-97.85792, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lady Bird Lake": {
+    points: [
+      { name:"Eilers Neighborhood Park", type:"park", lat:30.2763, lon:-97.77284, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Eilers Park Pier", type:"pier", lat:30.27667, lon:-97.77414, notes:"Fishing pier/dock — easy access, best at dawn and dusk." },
+      { name:"Mary Frances Baylor Clarksville Park", type:"park", lat:30.28178, lon:-97.76432, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Walter E. Long Lake": {
+    points: [
+      { name:"Agave Neighborhood Park", type:"park", lat:30.29169, lon:-97.64802, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Northeast Park", type:"park", lat:30.31465, lon:-97.64695, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Georgetown": {
+    points: [
+      { name:"Jim Hogg Park", type:"park", lat:30.68451, lon:-97.74424, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Boat Ramp", type:"ramp", lat:30.68102, lon:-97.74285, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Vista Oaks Park", type:"park", lat:30.64442, lon:-97.77548, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Tejas Park", type:"park", lat:30.69611, lon:-97.827, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Pflugerville": {
+    points: [
+      { name:"Pier 1", type:"pier", lat:30.44379, lon:-97.56772, notes:"Fishing pier/dock — easy access, best at dawn and dusk." },
+      { name:"Lake Pflugerville Park", type:"park", lat:30.44257, lon:-97.57153, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Villages of Hidden Lake Park", type:"park", lat:30.44942, lon:-97.57088, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Pier 4", type:"pier", lat:30.43763, lon:-97.57165, notes:"Fishing pier/dock — easy access, best at dawn and dusk." },
+      { name:"Pier 2", type:"pier", lat:30.43927, lon:-97.57667, notes:"Fishing pier/dock — easy access, best at dawn and dusk." }
+    ]
+  },
+  "Brushy Creek Lake": {
+    points: [
+      { name:"Avery Ranch Morningside Park", type:"park", lat:30.49849, lon:-97.76494, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Pearson Place Park", type:"park", lat:30.49874, lon:-97.75618, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Brushy Creek Greenbelt", type:"park", lat:30.5134, lon:-97.7524, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Buchanan": {
+    points: [
+      { name:"Burnet County Park", type:"park", lat:30.84629, lon:-98.3842, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Inks Lake": {
+    points: [
+      { name:"Inks Lake State Park", type:"park", lat:30.73762, lon:-98.36928, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Inks Lake State Park Boat Ramp", type:"ramp", lat:30.74304, lon:-98.36745, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Longhorn Cavern State Park", type:"park", lat:30.68631, lon:-98.35986, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake LBJ": {
+    points: [
+      { name:"Granite Shoals Park", type:"park", lat:30.604, lon:-98.4066, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Marble Falls": {
+    points: [
+      { name:"Pecan Valley Park", type:"park", lat:30.55447, lon:-98.29178, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Johnson Park", type:"park", lat:30.5687, lon:-98.28306, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Westside Park", type:"park", lat:30.57313, lon:-98.28766, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lakeside Park", type:"park", lat:30.56726, lon:-98.28041, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Cottonwood Shores Boat Ramp", type:"ramp", lat:30.56371, lon:-98.31893, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." }
+    ]
+  },
+  "Canyon Lake": {
+    points: [
+      { name:"Canyon Lake Marina", type:"ramp", lat:29.89958, lon:-98.23525, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Ramp #7", type:"ramp", lat:29.89537, lon:-98.26787, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Ramp #5", type:"ramp", lat:29.86993, lon:-98.25478, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"North Cranes Mill-Mystic Shores Boat Ramp", type:"ramp", lat:29.91458, lon:-98.29229, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Cranes Mill Marina", type:"ramp", lat:29.88746, lon:-98.29152, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." }
+    ]
+  },
+  "Stillhouse Hollow Lake": {
+    points: [
+      { name:"Riversbend Park", type:"park", lat:31.00505, lon:-97.60762, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Dana Peak Park", type:"park", lat:31.02967, lon:-97.61271, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Dana Peaks Park", type:"park", lat:31.03666, lon:-97.58867, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Cedar Gap Park", type:"park", lat:31.01386, lon:-97.65135, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Belton Lake": {
+    points: [
+      { name:"Rogers Park Boat Ramp", type:"ramp", lat:31.16092, lon:-97.48047, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Rogers Park", type:"park", lat:31.16052, lon:-97.47935, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"McGregor Park", type:"park", lat:31.20716, lon:-97.48085, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Cedar Ridge Park Marina", type:"ramp", lat:31.16735, lon:-97.45634, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." },
+      { name:"Temples Lake Park", type:"park", lat:31.13274, lon:-97.4972, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Medina Lake": {
+    points: [
+      { name:"Bandera County Park", type:"park", lat:29.56518, lon:-98.95586, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Leibold Sports Complex", type:"park", lat:29.63181, lon:-98.9386, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Calaveras Lake": {
+    points: [
+      { name:"Elmendorf City Park", type:"park", lat:29.25833, lon:-98.33804, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Braunig Lake": {
+    points: [
+      { name:"Braunig Park", type:"park", lat:29.25296, lon:-98.39019, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Elmendorf City Park", type:"park", lat:29.25833, lon:-98.33804, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Trueheart Ranch Nature Park", type:"park", lat:29.26853, lon:-98.43041, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Dunlap": {
+    points: [
+      { name:"Pecan Crossing Park", type:"park", lat:29.67825, lon:-98.09749, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Fischer Park", type:"park", lat:29.67755, lon:-98.11026, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Hoffman Park", type:"park", lat:29.68047, lon:-98.11515, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Haymarket Plaza", type:"park", lat:29.69808, lon:-98.11386, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lindheimer Plaza", type:"park", lat:29.69929, lon:-98.11661, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake McQueeney": {
+    points: [
+      { name:"Jackson Park", type:"park", lat:29.57554, lon:-97.98697, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Alumni Park", type:"park", lat:29.57268, lon:-97.98205, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Placid": {
+    points: [
+      { name:"Jackson Park", type:"park", lat:29.57554, lon:-97.98697, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Alumni Park", type:"park", lat:29.57268, lon:-97.98205, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Park West", type:"park", lat:29.57435, lon:-97.97722, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Veteran’s Park", type:"park", lat:29.56661, lon:-97.97348, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Sebastopol House Historic Site", type:"park", lat:29.56999, lon:-97.97273, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Coleto Creek Reservoir": {
+    points: [
+      { name:"Coleto Creek Park", type:"park", lat:28.71958, lon:-97.17507, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Texana": {
+    points: [
+      { name:"Brackenridge Recreation Complex", type:"park", lat:28.96258, lon:-96.54468, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Brackenridge Plantation Recreation Area", type:"park", lat:28.94431, lon:-96.54289, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Choke Canyon Reservoir": {
+    points: [
+      { name:"Choke Canyon State Park - Calliham Unit", type:"park", lat:28.47324, lon:-98.3476, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Lake Corpus Christi": {
+    points: [
+      { name:"Opossum Bend Camping Loop", type:"park", lat:28.06263, lon:-97.87846, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Falcon Reservoir": {
+    points: [
+      { name:"Falcon Reservoir — Main Lake Access", type:"bank", lat:26.7183, lon:-99.236, notes:"Limited mapped public access. Check TPWD for the nearest boat ramp; bank-fish near road crossings and the dam." }
+    ]
+  },
+  "Lake Casa Blanca": {
+    points: [
+      { name:"El Ranchito Group Facility", type:"park", lat:27.54525, lon:-99.44072, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Camp Huisache", type:"park", lat:27.53893, lon:-99.42756, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Lake Casa Blanca International State Park", type:"park", lat:27.53912, lon:-99.44037, notes:"Public park with shoreline access and parking — good casting room along the bank." },
+      { name:"Jovita Idar's El Progreso Park", type:"park", lat:27.55524, lon:-99.47126, notes:"Public park with shoreline access and parking — good casting room along the bank." }
+    ]
+  },
+  "Amistad Reservoir": {
+    points: [
+      { name:"Governors Landing Campground", type:"ramp", lat:29.47963, lon:-101.02762, notes:"Boat ramp/landing — fish the riprap, points, and adjacent banks early and late." }
+    ]
   }
-
-};
+};;
 
 var BANK_DATA = (function() {
   var defaults = { shoreAccess:5, parking:5, depth:5, structure:5, crowd:6, wade:false, family:false };
