@@ -44,7 +44,7 @@ var ALL_LAKES = [
 
   { name:"Twin Buttes Reservoir",   lat:31.296011,  lon:-100.496193, type:"Reservoir", region:"San Angelo"    },
 
-  { name:"Lake Nasworthy",          lat:31.37777,  lon:-100.504023, type:"Reservoir", region:"San Angelo"    },
+  { name:"Lake Nasworthy",          lat:31.3746,  lon:-100.5154, type:"Reservoir", region:"San Angelo"    },
 
   { name:"O.H. Ivie Reservoir",     lat:31.4689,  lon:-100.4689, type:"Reservoir", region:"Ballinger"     },
 
@@ -7046,11 +7046,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"San Angelo State Park South Shore", type:"wade", lat:31.362, lon:-100.516, notes:"Gently sloping sandy bank on the south shore. Wade out 20-30 ft to reach grass edges at 3-4 ft depth." },
+      { name:"San Angelo State Park South Shore", type:"wade", lat:31.3746, lon:-100.5154, notes:"Sandy wade-in bank on the main south arm. Wade out 20-30 ft to reach grass edges at 3-4 ft depth." },
 
-      { name:"Lake Nasworthy Fishing Pier", type:"pier", lat:31.3772, lon:-100.4905, notes:"Lighted pier on the east side of the lake. Good for catfish and bass at night. Restrooms on-site." },
+      { name:"Lake Nasworthy Fishing Pier", type:"pier", lat:31.3895, lon:-100.4885, notes:"Lighted pier on the northeast arm of the lake. Good for catfish and bass at night. Restrooms on-site." },
 
-      { name:"Spring Creek Inlet", type:"bank", lat:31.374, lon:-100.521, notes:"Creek mouth on the northwest arm that flushes baitfish into the lake. Work a topwater along the channel edge." }
+      { name:"Spring Creek Inlet", type:"bank", lat:31.3755, lon:-100.5262, notes:"Creek mouth on the northwest arm that flushes baitfish into the lake. Work a topwater along the channel edge." }
 
     ]
 
