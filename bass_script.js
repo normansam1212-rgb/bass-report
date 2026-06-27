@@ -26,239 +26,239 @@ var ALL_LAKES = [
 
   // PANHANDLE / WEST TEXAS
 
-  { name:"Lake Meredith",           lat:35.43,  lon:-101.72, type:"Reservoir", region:"Amarillo"      },
+  { name:"Lake Meredith",           lat:35.684,  lon:-101.6068, type:"Reservoir", region:"Amarillo"      },
 
-  { name:"Lake Mackenzie",          lat:34.18,  lon:-101.06, type:"Reservoir", region:"Silverton"     },
+  { name:"Lake Mackenzie",          lat:34.547,  lon:-101.4511, type:"Reservoir", region:"Silverton"     },
 
-  { name:"White River Lake",        lat:33.36,  lon:-100.94, type:"Reservoir", region:"Crosbyton"     },
+  { name:"White River Lake",        lat:33.471506,  lon:-101.086108, type:"Reservoir", region:"Crosbyton"     },
 
-  { name:"Lake Alan Henry",         lat:33.02,  lon:-101.02, type:"Reservoir", region:"Lubbock"       },
+  { name:"Lake Alan Henry",         lat:33.036365,  lon:-101.105812, type:"Reservoir", region:"Lubbock"       },
 
-  { name:"Lake Colorado City",      lat:32.32,  lon:-100.93, type:"Reservoir", region:"Colorado City" },
+  { name:"Lake Colorado City",      lat:32.351364,  lon:-100.935321, type:"Reservoir", region:"Colorado City" },
 
   { name:"Champion Creek Reservoir",lat:32.16,  lon:-100.74, type:"Reservoir", region:"Colorado City" },
 
-  { name:"E.V. Spence Reservoir",   lat:31.58,  lon:-100.76, type:"Reservoir", region:"Robert Lee"    },
+  { name:"E.V. Spence Reservoir",   lat:31.925131,  lon:-100.562171, type:"Reservoir", region:"Robert Lee"    },
 
-  { name:"OC Fisher Lake",          lat:31.44,  lon:-100.53, type:"Reservoir", region:"San Angelo"    },
+  { name:"OC Fisher Lake",          lat:31.486869,  lon:-100.498019, type:"Reservoir", region:"San Angelo"    },
 
-  { name:"Twin Buttes Reservoir",   lat:31.39,  lon:-100.57, type:"Reservoir", region:"San Angelo"    },
+  { name:"Twin Buttes Reservoir",   lat:31.296011,  lon:-100.496193, type:"Reservoir", region:"San Angelo"    },
 
-  { name:"Lake Nasworthy",          lat:31.41,  lon:-100.50, type:"Reservoir", region:"San Angelo"    },
+  { name:"Lake Nasworthy",          lat:31.37777,  lon:-100.504023, type:"Reservoir", region:"San Angelo"    },
 
-  { name:"O.H. Ivie Reservoir",     lat:31.47,  lon:-100.22, type:"Reservoir", region:"Ballinger"     },
+  { name:"O.H. Ivie Reservoir",     lat:31.4689,  lon:-100.4689, type:"Reservoir", region:"Ballinger"     },
 
-  { name:"Lake J.B. Thomas",        lat:32.35,  lon:-100.95, type:"Reservoir", region:"Snyder"        },
+  { name:"Lake J.B. Thomas",        lat:32.598719,  lon:-101.212962, type:"Reservoir", region:"Snyder"        },
 
-  { name:"Lake Sweetwater",         lat:32.45,  lon:-100.45, type:"Reservoir", region:"Sweetwater"    },
+  { name:"Lake Sweetwater",         lat:32.422217,  lon:-100.309401, type:"Reservoir", region:"Sweetwater"    },
 
   // NORTH CENTRAL / ABILENE
 
-  { name:"Lake Stamford",           lat:33.00,  lon:-99.47,  type:"Reservoir", region:"Haskell"       },
+  { name:"Lake Stamford",           lat:33.053132,  lon:-99.610694,  type:"Reservoir", region:"Haskell"       },
 
-  { name:"Lake Fort Phantom Hill",  lat:32.57,  lon:-99.72,  type:"Reservoir", region:"Abilene"       },
+  { name:"Lake Fort Phantom Hill",  lat:32.5755,  lon:-99.6868,  type:"Reservoir", region:"Abilene"       },
 
-  { name:"Lake Kirby",              lat:32.34,  lon:-99.83,  type:"Reservoir", region:"Abilene"       },
+  { name:"Lake Kirby",              lat:32.3712,  lon:-99.7325,  type:"Reservoir", region:"Abilene"       },
 
-  { name:"Lake Abilene",            lat:32.40,  lon:-99.65,  type:"Reservoir", region:"Abilene"       },
+  { name:"Lake Abilene",            lat:32.238246,  lon:-99.899007,  type:"Reservoir", region:"Abilene"       },
 
-  { name:"Lake Brownwood",          lat:31.87,  lon:-99.01,  type:"Reservoir", region:"Brownwood"     },
+  { name:"Lake Brownwood",          lat:31.877676,  lon:-99.062398,  type:"Reservoir", region:"Brownwood"     },
 
-  { name:"Lake Coleman",            lat:31.84,  lon:-99.40,  type:"Reservoir", region:"Coleman"       },
+  { name:"Lake Coleman",            lat:31.8221,  lon:-99.4441,  type:"Reservoir", region:"Coleman"       },
 
-  { name:"Lake Proctor",            lat:31.97,  lon:-98.44,  type:"Reservoir", region:"Comanche"      },
+  { name:"Lake Proctor",            lat:32.0052,  lon:-98.498,  type:"Reservoir", region:"Comanche"      },
 
-  { name:"Possum Kingdom Lake",     lat:32.87,  lon:-98.52,  type:"Reservoir", region:"Mineral Wells" },
+  { name:"Possum Kingdom Lake",     lat:32.912062,  lon:-98.505152,  type:"Reservoir", region:"Mineral Wells" },
 
-  { name:"Lake Palo Pinto",         lat:32.73,  lon:-98.32,  type:"Reservoir", region:"Palo Pinto"    },
+  { name:"Lake Palo Pinto",         lat:32.6425,  lon:-98.3006,  type:"Reservoir", region:"Palo Pinto"    },
 
-  { name:"Lake Graham",             lat:33.10,  lon:-98.70,  type:"Reservoir", region:"Graham"        },
+  { name:"Lake Graham",             lat:33.1631,  lon:-98.6339,  type:"Reservoir", region:"Graham"        },
 
-  { name:"Lake Eddleman",           lat:33.10,  lon:-98.68,  type:"Reservoir", region:"Graham"        },
+  { name:"Lake Eddleman",           lat:33.149057,  lon:-98.598515,  type:"Reservoir", region:"Graham"        },
 
-  { name:"Hubbard Creek Reservoir", lat:32.70,  lon:-98.99,  type:"Reservoir", region:"Breckenridge"  },
+  { name:"Hubbard Creek Reservoir", lat:32.780213,  lon:-99.02121,  type:"Reservoir", region:"Breckenridge"  },
 
-  { name:"Lake Daniel",             lat:32.95,  lon:-99.31,  type:"Reservoir", region:"Breckenridge"  },
+  { name:"Lake Daniel",             lat:32.6416,  lon:-98.862,  type:"Reservoir", region:"Breckenridge"  },
 
-  { name:"Millers Creek Reservoir", lat:33.10,  lon:-99.21,  type:"Reservoir", region:"Munday"        },
+  { name:"Millers Creek Reservoir", lat:33.399556,  lon:-99.391292,  type:"Reservoir", region:"Munday"        },
 
-  { name:"Bluestem Lake",           lat:32.52,  lon:-99.35,  type:"Reservoir", region:"Albany"        },
+  { name:"Bluestem Lake",           lat:32.5283,  lon:-99.2967,  type:"Reservoir", region:"Albany"        },
 
-  { name:"Lake Throckmorton",       lat:33.18,  lon:-99.18,  type:"Reservoir", region:"Throckmorton"  },
+  { name:"Lake Throckmorton",       lat:33.164869,  lon:-99.194581,  type:"Reservoir", region:"Throckmorton"  },
 
-  { name:"Lake Winters",            lat:31.96,  lon:-99.96,  type:"Reservoir", region:"Winters"       },
+  { name:"Lake Winters",            lat:31.963053,  lon:-99.86961,  type:"Reservoir", region:"Winters"       },
 
   // NORTH TEXAS / DFW / WICHITA FALLS
 
-  { name:"Lake Texoma",             lat:33.80,  lon:-96.60,  type:"Reservoir", region:"Sherman"       },
+  { name:"Lake Texoma",             lat:33.938098,  lon:-96.791367,  type:"Reservoir", region:"Sherman"       },
 
-  { name:"Lake Arrowhead",          lat:33.74,  lon:-98.62,  type:"Reservoir", region:"Wichita Falls" },
+  { name:"Lake Arrowhead",          lat:33.7489,  lon:-98.5089,  type:"Reservoir", region:"Wichita Falls" },
 
-  { name:"Lake Kickapoo",           lat:33.83,  lon:-98.74,  type:"Reservoir", region:"Wichita Falls" },
+  { name:"Lake Kickapoo",           lat:33.641471,  lon:-98.834201,  type:"Reservoir", region:"Wichita Falls" },
 
-  { name:"Lake Diversion",          lat:34.00,  lon:-98.56,  type:"Reservoir", region:"Wichita Falls" },
+  { name:"Lake Diversion",          lat:33.792505,  lon:-98.975785,  type:"Reservoir", region:"Wichita Falls" },
 
-  { name:"Lake Amon G. Carter",     lat:33.52,  lon:-97.58,  type:"Reservoir", region:"Bowie"         },
+  { name:"Lake Amon G. Carter",     lat:33.472311,  lon:-97.888252,  type:"Reservoir", region:"Bowie"         },
 
-  { name:"Nocona Lake",             lat:33.80,  lon:-97.68,  type:"Reservoir", region:"Nocona"        },
+  { name:"Nocona Lake",             lat:33.8579,  lon:-97.6552,  type:"Reservoir", region:"Nocona"        },
 
-  { name:"Lake Ray Roberts",        lat:33.37,  lon:-97.05,  type:"Reservoir", region:"Denton"        },
+  { name:"Lake Ray Roberts",        lat:33.3348,  lon:-97.0285,  type:"Reservoir", region:"Denton"        },
 
-  { name:"Lake Lewisville",         lat:33.04,  lon:-96.87,  type:"Reservoir", region:"Dallas"        },
+  { name:"Lake Lewisville",         lat:33.134,  lon:-97.0225,  type:"Reservoir", region:"Dallas"        },
 
-  { name:"Lavon Lake",              lat:33.02,  lon:-96.42,  type:"Reservoir", region:"Dallas"        },
+  { name:"Lavon Lake",              lat:33.113253,  lon:-96.480307,  type:"Reservoir", region:"Dallas"        },
 
-  { name:"Lake Ray Hubbard",        lat:32.84,  lon:-96.54,  type:"Reservoir", region:"Dallas"        },
+  { name:"Lake Ray Hubbard",        lat:32.903058,  lon:-96.532076,  type:"Reservoir", region:"Dallas"        },
 
-  { name:"Lake Tawakoni",           lat:32.85,  lon:-95.95,  type:"Reservoir", region:"Greenville"    },
+  { name:"Lake Tawakoni",           lat:32.903104,  lon:-96.009968,  type:"Reservoir", region:"Greenville"    },
 
-  { name:"Lake Grapevine",          lat:32.97,  lon:-97.07,  type:"Reservoir", region:"Dallas"        },
+  { name:"Lake Grapevine",          lat:32.9944,  lon:-97.1211,  type:"Reservoir", region:"Dallas"        },
 
-  { name:"Eagle Mountain Lake",     lat:32.92,  lon:-97.46,  type:"Reservoir", region:"Fort Worth"    },
+  { name:"Eagle Mountain Lake",     lat:32.94406,  lon:-97.484392,  type:"Reservoir", region:"Fort Worth"    },
 
-  { name:"Lake Worth",              lat:32.83,  lon:-97.44,  type:"Reservoir", region:"Fort Worth"    },
+  { name:"Lake Worth",              lat:32.814693,  lon:-97.453827,  type:"Reservoir", region:"Fort Worth"    },
 
-  { name:"Benbrook Lake",           lat:32.64,  lon:-97.47,  type:"Reservoir", region:"Fort Worth"    },
+  { name:"Benbrook Lake",           lat:32.625439,  lon:-97.465102,  type:"Reservoir", region:"Fort Worth"    },
 
-  { name:"Lake Weatherford",        lat:32.72,  lon:-97.76,  type:"Reservoir", region:"Weatherford"   },
+  { name:"Lake Weatherford",        lat:32.786961,  lon:-97.68822,  type:"Reservoir", region:"Weatherford"   },
 
-  { name:"Lake Granbury",           lat:32.41,  lon:-97.77,  type:"Reservoir", region:"Granbury"      },
+  { name:"Lake Granbury",           lat:32.455894,  lon:-97.759948,  type:"Reservoir", region:"Granbury"      },
 
-  { name:"White Rock Lake",         lat:32.83,  lon:-96.71,  type:"Reservoir", region:"Dallas"        },
+  { name:"White Rock Lake",         lat:32.834983,  lon:-96.721875,  type:"Reservoir", region:"Dallas"        },
 
-  { name:"Joe Pool Lake",           lat:32.66,  lon:-97.02,  type:"Reservoir", region:"Dallas"        },
+  { name:"Joe Pool Lake",           lat:32.59038,  lon:-97.021852,  type:"Reservoir", region:"Dallas"        },
 
-  { name:"Lake Arlington",          lat:32.69,  lon:-97.23,  type:"Reservoir", region:"Arlington"     },
+  { name:"Lake Arlington",          lat:32.698208,  lon:-97.212824,  type:"Reservoir", region:"Arlington"     },
 
-  { name:"Mountain Creek Lake",     lat:32.74,  lon:-96.95,  type:"Reservoir", region:"Dallas"        },
+  { name:"Mountain Creek Lake",     lat:32.715815,  lon:-96.960329,  type:"Reservoir", region:"Dallas"        },
 
-  { name:"Squaw Creek Reservoir",   lat:32.47,  lon:-97.87,  type:"Reservoir", region:"Glen Rose"     },
+  { name:"Squaw Creek Reservoir",   lat:32.2937,  lon:-97.7898,  type:"Reservoir", region:"Glen Rose"     },
 
-  { name:"Lake Whitney",            lat:31.86,  lon:-97.36,  type:"Reservoir", region:"Whitney"       },
+  { name:"Lake Whitney",            lat:31.979873,  lon:-97.421046,  type:"Reservoir", region:"Whitney"       },
 
-  { name:"Aquilla Lake",            lat:31.90,  lon:-97.20,  type:"Reservoir", region:"Aquilla"       },
+  { name:"Aquilla Lake",            lat:31.928939,  lon:-97.199107,  type:"Reservoir", region:"Aquilla"       },
 
-  { name:"Waco Lake",               lat:31.61,  lon:-97.26,  type:"Reservoir", region:"Waco"          },
+  { name:"Waco Lake",               lat:31.5526,  lon:-97.2443,  type:"Reservoir", region:"Waco"          },
 
   // EAST TEXAS
 
-  { name:"Lake Fork",               lat:32.89,  lon:-95.57,  type:"Reservoir", region:"Quitman"       },
+  { name:"Lake Fork",               lat:32.886004,  lon:-95.614822,  type:"Reservoir", region:"Quitman"       },
 
-  { name:"Lake Bob Sandlin",        lat:33.07,  lon:-95.12,  type:"Reservoir", region:"Mt Pleasant"   },
+  { name:"Lake Bob Sandlin",        lat:33.054806,  lon:-95.079124,  type:"Reservoir", region:"Mt Pleasant"   },
 
-  { name:"Lake Cypress Springs",    lat:33.01,  lon:-95.30,  type:"Reservoir", region:"Mt Vernon"     },
+  { name:"Lake Cypress Springs",    lat:33.061218,  lon:-95.198515,  type:"Reservoir", region:"Mt Vernon"     },
 
-  { name:"Lake O the Pines",        lat:32.74,  lon:-94.62,  type:"Reservoir", region:"Jefferson"     },
+  { name:"Lake O the Pines",        lat:32.820786,  lon:-94.611125,  type:"Reservoir", region:"Jefferson"     },
 
-  { name:"Caddo Lake",              lat:32.69,  lon:-94.18,  type:"Lake",      region:"Marshall"      },
+  { name:"Caddo Lake",              lat:32.6932,  lon:-94.1792,  type:"Lake",      region:"Marshall"      },
 
-  { name:"Lake Cherokee",           lat:32.45,  lon:-94.72,  type:"Reservoir", region:"Longview"      },
+  { name:"Lake Cherokee",           lat:32.329099,  lon:-94.704141,  type:"Reservoir", region:"Longview"      },
 
-  { name:"Martin Creek Lake",       lat:32.26,  lon:-94.57,  type:"Reservoir", region:"Longview"      },
+  { name:"Martin Creek Lake",       lat:32.23884,  lon:-94.572241,  type:"Reservoir", region:"Longview"      },
 
-  { name:"Lake Murvaul",            lat:31.91,  lon:-94.20,  type:"Reservoir", region:"Carthage"      },
+  { name:"Lake Murvaul",            lat:32.036417,  lon:-94.463653,  type:"Reservoir", region:"Carthage"      },
 
-  { name:"Lake Palestine",          lat:31.93,  lon:-95.62,  type:"Reservoir", region:"Tyler"         },
+  { name:"Lake Palestine",          lat:32.175752,  lon:-95.43791,  type:"Reservoir", region:"Tyler"         },
 
-  { name:"Lake Tyler East",         lat:32.27,  lon:-95.35,  type:"Reservoir", region:"Tyler"         },
+  { name:"Lake Tyler East",         lat:32.244738,  lon:-95.183628,  type:"Reservoir", region:"Tyler"         },
 
-  { name:"Lake Tyler West",         lat:32.30,  lon:-95.37,  type:"Reservoir", region:"Tyler"         },
+  { name:"Lake Tyler West",         lat:32.245,  lon:-95.195,  type:"Reservoir", region:"Tyler"         },
 
-  { name:"Lake Nacogdoches",        lat:31.57,  lon:-94.63,  type:"Reservoir", region:"Nacogdoches"   },
+  { name:"Lake Nacogdoches",        lat:31.62112,  lon:-94.815285,  type:"Reservoir", region:"Nacogdoches"   },
 
-  { name:"Lake Striker",            lat:31.88,  lon:-95.13,  type:"Reservoir", region:"Rusk"          },
+  { name:"Lake Striker",            lat:31.966332,  lon:-94.989193,  type:"Reservoir", region:"Rusk"          },
 
-  { name:"Lake Jacksonville",       lat:31.95,  lon:-95.25,  type:"Reservoir", region:"Jacksonville"  },
+  { name:"Lake Jacksonville",       lat:31.922489,  lon:-95.293792,  type:"Reservoir", region:"Jacksonville"  },
 
-  { name:"Lake Athens",             lat:32.18,  lon:-95.78,  type:"Reservoir", region:"Athens"        },
+  { name:"Lake Athens",             lat:32.215286,  lon:-95.752341,  type:"Reservoir", region:"Athens"        },
 
-  { name:"Sam Rayburn Reservoir",   lat:31.07,  lon:-94.11,  type:"Reservoir", region:"Jasper"        },
+  { name:"Sam Rayburn Reservoir",   lat:31.248253,  lon:-94.272372,  type:"Reservoir", region:"Jasper"        },
 
-  { name:"Toledo Bend Reservoir",   lat:31.18,  lon:-93.57,  type:"Reservoir", region:"Jasper"        },
+  { name:"Toledo Bend Reservoir",   lat:31.1785,  lon:-93.5514,  type:"Reservoir", region:"Jasper"        },
 
-  { name:"Lake Limestone",          lat:31.40,  lon:-96.35,  type:"Reservoir", region:"Groesbeck"     },
+  { name:"Lake Limestone",          lat:31.403347,  lon:-96.358243,  type:"Reservoir", region:"Groesbeck"     },
 
-  { name:"Lake Mexia",              lat:31.64,  lon:-96.56,  type:"Reservoir", region:"Mexia"         },
+  { name:"Lake Mexia",              lat:31.656241,  lon:-96.600794,  type:"Reservoir", region:"Mexia"         },
 
   { name:"Richland Chambers Reservoir",lat:31.86,lon:-96.11, type:"Reservoir", region:"Corsicana"     },
 
-  { name:"Bardwell Lake",           lat:32.28,  lon:-96.64,  type:"Reservoir", region:"Ennis"         },
+  { name:"Bardwell Lake",           lat:32.28867,  lon:-96.677821,  type:"Reservoir", region:"Ennis"         },
 
   // HOUSTON METRO
 
-  { name:"Lake Conroe",             lat:30.33,  lon:-95.42,  type:"Reservoir", region:"Houston"       },
+  { name:"Lake Conroe",             lat:30.462544,  lon:-95.613129,  type:"Reservoir", region:"Houston"       },
 
-  { name:"Lake Houston",            lat:29.91,  lon:-95.17,  type:"Reservoir", region:"Houston"       },
+  { name:"Lake Houston",            lat:30.000104,  lon:-95.17697,  type:"Reservoir", region:"Houston"       },
 
-  { name:"Lake Livingston",         lat:30.62,  lon:-94.94,  type:"Reservoir", region:"Huntsville"    },
+  { name:"Lake Livingston",         lat:30.81414,  lon:-95.229854,  type:"Reservoir", region:"Huntsville"    },
 
-  { name:"Somerville Lake",         lat:30.35,  lon:-96.50,  type:"Reservoir", region:"Bryan"         },
+  { name:"Somerville Lake",         lat:30.318095,  lon:-96.598315,  type:"Reservoir", region:"Bryan"         },
 
-  { name:"Lake Bryan",              lat:30.72,  lon:-96.40,  type:"Reservoir", region:"Bryan"         },
+  { name:"Lake Bryan",              lat:30.712427,  lon:-96.466238,  type:"Reservoir", region:"Bryan"         },
 
-  { name:"Gibbons Creek Reservoir", lat:30.55,  lon:-96.13,  type:"Reservoir", region:"Navasota"      },
+  { name:"Gibbons Creek Reservoir", lat:30.632449,  lon:-96.06242,  type:"Reservoir", region:"Navasota"      },
 
   // CENTRAL TEXAS / AUSTIN / HILL COUNTRY
 
-  { name:"Lake Travis",             lat:30.38,  lon:-98.00,  type:"Reservoir", region:"Austin"        },
+  { name:"Lake Travis",             lat:30.464591,  lon:-98.064577,  type:"Reservoir", region:"Austin"        },
 
-  { name:"Lake Austin",             lat:30.26,  lon:-97.83,  type:"Reservoir", region:"Austin"        },
+  { name:"Lake Austin",             lat:30.343489,  lon:-97.852903,  type:"Reservoir", region:"Austin"        },
 
-  { name:"Lady Bird Lake",          lat:30.25,  lon:-97.81,  type:"Reservoir", region:"Austin"        },
+  { name:"Lady Bird Lake",          lat:30.268782,  lon:-97.750866,  type:"Reservoir", region:"Austin"        },
 
-  { name:"Walter E. Long Lake",     lat:30.35,  lon:-97.63,  type:"Reservoir", region:"Austin"        },
+  { name:"Walter E. Long Lake",     lat:30.301154,  lon:-97.603268,  type:"Reservoir", region:"Austin"        },
 
-  { name:"Lake Georgetown",         lat:30.67,  lon:-97.77,  type:"Reservoir", region:"Georgetown"    },
+  { name:"Lake Georgetown",         lat:30.67682,  lon:-97.759682,  type:"Reservoir", region:"Georgetown"    },
 
-  { name:"Lake Pflugerville",       lat:30.48,  lon:-97.60,  type:"Reservoir", region:"Pflugerville"  },
+  { name:"Lake Pflugerville",       lat:30.442028,  lon:-97.572422,  type:"Reservoir", region:"Pflugerville"  },
 
-  { name:"Brushy Creek Lake",       lat:30.53,  lon:-97.72,  type:"Reservoir", region:"Cedar Park"    },
+  { name:"Brushy Creek Lake",       lat:30.506088,  lon:-97.774204,  type:"Reservoir", region:"Cedar Park"    },
 
-  { name:"Lake Buchanan",           lat:30.85,  lon:-98.43,  type:"Reservoir", region:"Llano"         },
+  { name:"Lake Buchanan",           lat:30.845901,  lon:-98.407578,  type:"Reservoir", region:"Llano"         },
 
-  { name:"Inks Lake",               lat:30.74,  lon:-98.37,  type:"Reservoir", region:"Burnet"        },
+  { name:"Inks Lake",               lat:30.743593,  lon:-98.388281,  type:"Reservoir", region:"Burnet"        },
 
-  { name:"Lake LBJ",                lat:30.62,  lon:-98.37,  type:"Reservoir", region:"Kingsland"     },
+  { name:"Lake LBJ",                lat:30.6377,  lon:-98.391,  type:"Reservoir", region:"Kingsland"     },
 
-  { name:"Lake Marble Falls",       lat:30.58,  lon:-98.28,  type:"Reservoir", region:"Marble Falls"  },
+  { name:"Lake Marble Falls",       lat:30.559598,  lon:-98.297008,  type:"Reservoir", region:"Marble Falls"  },
 
-  { name:"Canyon Lake",             lat:29.88,  lon:-98.20,  type:"Reservoir", region:"New Braunfels" },
+  { name:"Canyon Lake",             lat:29.8727,  lon:-98.2925,  type:"Reservoir", region:"New Braunfels" },
 
-  { name:"Stillhouse Hollow Lake",  lat:30.98,  lon:-97.52,  type:"Reservoir", region:"Belton"        },
+  { name:"Stillhouse Hollow Lake",  lat:31.01463,  lon:-97.602342,  type:"Reservoir", region:"Belton"        },
 
-  { name:"Belton Lake",             lat:31.12,  lon:-97.52,  type:"Reservoir", region:"Belton"        },
+  { name:"Belton Lake",             lat:31.186786,  lon:-97.515107,  type:"Reservoir", region:"Belton"        },
 
   // SAN ANTONIO AREA
 
-  { name:"Medina Lake",             lat:29.55,  lon:-98.93,  type:"Reservoir", region:"San Antonio"   },
+  { name:"Medina Lake",             lat:29.590515,  lon:-98.950533,  type:"Reservoir", region:"San Antonio"   },
 
-  { name:"Calaveras Lake",          lat:29.33,  lon:-98.26,  type:"Reservoir", region:"San Antonio"   },
+  { name:"Calaveras Lake",          lat:29.307553,  lon:-98.319114,  type:"Reservoir", region:"San Antonio"   },
 
-  { name:"Braunig Lake",            lat:29.27,  lon:-98.30,  type:"Reservoir", region:"San Antonio"   },
+  { name:"Braunig Lake",            lat:29.255084,  lon:-98.376991,  type:"Reservoir", region:"San Antonio"   },
 
-  { name:"Lake Dunlap",             lat:29.68,  lon:-98.12,  type:"Reservoir", region:"New Braunfels" },
+  { name:"Lake Dunlap",             lat:29.675852,  lon:-98.085103,  type:"Reservoir", region:"New Braunfels" },
 
-  { name:"Lake McQueeney",          lat:29.60,  lon:-98.04,  type:"Reservoir", region:"Seguin"        },
+  { name:"Lake McQueeney",          lat:29.601549,  lon:-98.03894,  type:"Reservoir", region:"Seguin"        },
 
-  { name:"Lake Placid",             lat:29.58,  lon:-98.01,  type:"Reservoir", region:"Seguin"        },
+  { name:"Lake Placid",             lat:29.5598,  lon:-98.0101,  type:"Reservoir", region:"Seguin"        },
 
   // SOUTH / COASTAL TEXAS
 
-  { name:"Coleto Creek Reservoir",  lat:28.73,  lon:-97.17,  type:"Reservoir", region:"Victoria"      },
+  { name:"Coleto Creek Reservoir",  lat:28.759164,  lon:-97.201725,  type:"Reservoir", region:"Victoria"      },
 
-  { name:"Lake Texana",             lat:29.00,  lon:-96.75,  type:"Reservoir", region:"Edna"          },
+  { name:"Lake Texana",             lat:28.96979,  lon:-96.520805,  type:"Reservoir", region:"Edna"          },
 
-  { name:"Choke Canyon Reservoir",  lat:28.47,  lon:-98.25,  type:"Reservoir", region:"Three Rivers"  },
+  { name:"Choke Canyon Reservoir",  lat:28.498129,  lon:-98.358125,  type:"Reservoir", region:"Three Rivers"  },
 
-  { name:"Lake Corpus Christi",     lat:27.89,  lon:-97.87,  type:"Reservoir", region:"Corpus Christi"},
+  { name:"Lake Corpus Christi",     lat:28.154682,  lon:-97.927672,  type:"Reservoir", region:"Corpus Christi"},
 
   // SOUTH TEXAS / RIO GRANDE
 
-  { name:"Falcon Reservoir",        lat:26.57,  lon:-99.15,  type:"Reservoir", region:"Laredo"        },
+  { name:"Falcon Reservoir",        lat:26.7183,  lon:-99.236,  type:"Reservoir", region:"Laredo"        },
 
-  { name:"Lake Casa Blanca",        lat:27.57,  lon:-99.42,  type:"Reservoir", region:"Laredo"        },
+  { name:"Lake Casa Blanca",        lat:27.551073,  lon:-99.431827,  type:"Reservoir", region:"Laredo"        },
 
-  { name:"Amistad Reservoir",       lat:29.45,  lon:-101.07, type:"Reservoir", region:"Del Rio"       },
+  { name:"Amistad Reservoir",       lat:29.477393,  lon:-101.035842, type:"Reservoir", region:"Del Rio"       },
 
 ];
 
@@ -2800,33 +2800,28 @@ function initMap() {
 
 
 function _makePinIcon(score, hex) {
-  // SVG teardrop pin — wide base narrows to a point at bottom
-  // Sizes: hot=36, ok=30, cold=24px tall (visual hierarchy)
-  var s = score >= 7 ? 36 : score >= 5 ? 30 : 24;
-  var w = Math.round(s * 0.72);
+  // Clean circle badge — iconAnchor at exact center [half, half]
+  // so Leaflet places the center of the badge precisely on the lat/lon.
+  // Sizes: hot=34, ok=28, cold=22px diameter (visual hierarchy)
+  var s = score >= 7 ? 34 : score >= 5 ? 28 : 22;
+  var half = s / 2;
   var cls = score >= 7 ? "msp-hot" : score >= 5 ? "msp-ok" : "msp-cold";
-  var fs = score >= 7 ? Math.round(s * 0.36) : Math.round(s * 0.34);
-  // Teardrop: circle top, point at bottom
-  var cx = w / 2, cy = w / 2, r = w / 2 - 1;
-  var px = w / 2, py = s - 1;
-  var tl_x = cx - r * 0.55, tl_y = cy + r * 0.45;
-  var tr_x = cx + r * 0.55, tr_y = cy + r * 0.45;
-  var svg =
-    '<svg class="map-score-pin ' + cls + '" xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + s + '" viewBox="0 0 ' + w + ' ' + s + '">' +
-    '<path class="msp-path" d="M' + cx + ',' + (cy - r) +
-      ' A' + r + ',' + r + ' 0 1,1 ' + tl_x.toFixed(1) + ',' + tl_y.toFixed(1) +
-      ' L' + px + ',' + py +
-      ' L' + tr_x.toFixed(1) + ',' + tr_y.toFixed(1) +
-      ' A' + r + ',' + r + ' 0 0,1 ' + cx + ',' + (cy - r) + ' Z"/>' +
-    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.55).toFixed(1) + '" class="msp-inner"/>' +
-    '<text x="' + cx + '" y="' + (cy + fs * 0.38).toFixed(1) + '" text-anchor="middle" dominant-baseline="middle" class="msp-text" font-size="' + fs + '" font-weight="900">' + score + '</text>' +
-    '</svg>';
+  var fs = score >= 7 ? Math.round(s * 0.42) : Math.round(s * 0.40);
+  var html =
+    '<div class="msp-badge ' + cls + '" style="' +
+      'width:' + s + 'px;height:' + s + 'px;' +
+      'border-radius:50%;' +
+      'display:flex;align-items:center;justify-content:center;' +
+      'font-size:' + fs + 'px;font-weight:900;' +
+      'border:2px solid rgba(255,255,255,0.85);' +
+      'box-shadow:0 1px 4px rgba(0,0,0,0.6);' +
+    '">' + score + '</div>';
   return L.divIcon({
     className: "",
-    html: svg,
-    iconSize: [w, s],
-    iconAnchor: [Math.round(w / 2), s],  // point of teardrop at anchor
-    popupAnchor: [0, -s]
+    html: html,
+    iconSize: [s, s],
+    iconAnchor: [half, half],          // center of circle == lat/lon point
+    popupAnchor: [0, -half - 4]        // popup sits just above the badge
   });
 }
 
