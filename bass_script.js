@@ -2712,21 +2712,46 @@ function initMap() {
 
   map=L.map("map",{center:[31.5,-97.5],zoom:6,zoomControl:false,attributionControl:false});
 
-  // Esri World Imagery (satellite) — water bodies clearly visible
-
-  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
-
-    maxZoom:19, attribution:"Esri"
-
+  // CartoDB Dark Matter — matches app theme perfectly; gold pins pop against it
+  var darkLayer=L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
+    subdomains:"abcd", maxZoom:19
   }).addTo(map);
 
-  // Reference labels overlay — roads, places, boundaries on top of satellite
+  // Esri satellite layers — loaded on demand via toggle
+  var satLayer=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
+    maxZoom:19
+  });
+  var satLabels=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{
+    maxZoom:19, opacity:0.78
+  });
 
-  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{
+  var isSat=false;
 
-    maxZoom:19, opacity:0.7
-
-  }).addTo(map);
+  // Satellite toggle control
+  var SatCtrl=L.Control.extend({options:{position:"topleft"},onAdd:function(){
+    var btn=L.DomUtil.create("button","map-sat-toggle");
+    btn.innerHTML="🛰 Satellite";
+    L.DomEvent.disableClickPropagation(btn);
+    L.DomEvent.on(btn,"click",function(){
+      isSat=!isSat;
+      if(isSat){
+        map.removeLayer(darkLayer);
+        satLayer.addTo(map); satLayer.bringToBack();
+        satLabels.addTo(map);
+        btn.innerHTML="🗺 Dark Map";
+        btn.classList.add("sat-on");
+      } else {
+        map.removeLayer(satLayer); map.removeLayer(satLabels);
+        darkLayer.addTo(map); darkLayer.bringToBack();
+        btn.innerHTML="🛰 Satellite";
+        btn.classList.remove("sat-on");
+      }
+      // Keep scored pins on top
+      mapMarkers.forEach(function(m){ if(m.bringToFront) m.bringToFront(); });
+    });
+    return btn;
+  }});
+  map.addControl(new SatCtrl());
 
   L.control.zoom({position:"bottomleft"}).addTo(map);
 
@@ -2736,13 +2761,13 @@ function initMap() {
 
     d.innerHTML='<h4>Score</h4>'+
 
-      '<div class="leg-item"><div class="leg-dot" style="background:#E8DDD0"></div>Hot (7-10)</div>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#d4c440;box-shadow:0 0 8px rgba(212,196,64,0.6)"></div>Hot (7-10)</div>'+
 
-      '<div class="leg-item"><div class="leg-dot" style="background:#9E8B7A"></div>OK (5-6)</div>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#8a9a60"></div>OK (5-6)</div>'+
 
-      '<div class="leg-item"><div class="leg-dot" style="background:#7a5050"></div>Cold (1-4)</div>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#c0a070;opacity:.7"></div>Cold (1-4)</div>'+
 
-      '<div class="leg-item" style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><div class="leg-dot" style="background:#3a9ed8;box-shadow:0 0 6px #3a9ed8"></div>OSM Water Body</div>';
+      '<div class="leg-item" style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><div class="leg-dot" style="background:#3a9ed8;box-shadow:0 0 6px #3a9ed8"></div>OSM Water</div>';
 
     return d;
 
@@ -2774,6 +2799,37 @@ function initMap() {
 
 
 
+function _makePinIcon(score, hex) {
+  // SVG teardrop pin — wide base narrows to a point at bottom
+  // Sizes: hot=36, ok=30, cold=24px tall (visual hierarchy)
+  var s = score >= 7 ? 36 : score >= 5 ? 30 : 24;
+  var w = Math.round(s * 0.72);
+  var cls = score >= 7 ? "msp-hot" : score >= 5 ? "msp-ok" : "msp-cold";
+  var fs = score >= 7 ? Math.round(s * 0.36) : Math.round(s * 0.34);
+  // Teardrop: circle top, point at bottom
+  var cx = w / 2, cy = w / 2, r = w / 2 - 1;
+  var px = w / 2, py = s - 1;
+  var tl_x = cx - r * 0.55, tl_y = cy + r * 0.45;
+  var tr_x = cx + r * 0.55, tr_y = cy + r * 0.45;
+  var svg =
+    '<svg class="map-score-pin ' + cls + '" xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + s + '" viewBox="0 0 ' + w + ' ' + s + '">' +
+    '<path class="msp-path" d="M' + cx + ',' + (cy - r) +
+      ' A' + r + ',' + r + ' 0 1,1 ' + tl_x.toFixed(1) + ',' + tl_y.toFixed(1) +
+      ' L' + px + ',' + py +
+      ' L' + tr_x.toFixed(1) + ',' + tr_y.toFixed(1) +
+      ' A' + r + ',' + r + ' 0 0,1 ' + cx + ',' + (cy - r) + ' Z"/>' +
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.55).toFixed(1) + '" class="msp-inner"/>' +
+    '<text x="' + cx + '" y="' + (cy + fs * 0.38).toFixed(1) + '" text-anchor="middle" dominant-baseline="middle" class="msp-text" font-size="' + fs + '" font-weight="900">' + score + '</text>' +
+    '</svg>';
+  return L.divIcon({
+    className: "",
+    html: svg,
+    iconSize: [w, s],
+    iconAnchor: [Math.round(w / 2), s],  // point of teardrop at anchor
+    popupAnchor: [0, -s]
+  });
+}
+
 function renderMapMarkers() {
 
   initMap();
@@ -2782,9 +2838,10 @@ function renderMapMarkers() {
 
   var moon=getMoon();
 
-  ALL_LAKES.forEach(function(lake){
+  // Sort so hot lakes render last → paint on top
+  var scoredLakes = [];
 
-    // Find nearest grid point for weather
+  ALL_LAKES.forEach(function(lake){
 
     var g=nearestGrid(lake.lat,lake.lon);
 
@@ -2794,17 +2851,21 @@ function renderMapMarkers() {
 
     var res=scoreLake(lake,gw.weather,gw.trend,gw.sun,moon);
 
+    scoredLakes.push({ lake:lake, res:res });
+
+  });
+
+  scoredLakes.sort(function(a,b){ return a.res.score - b.res.score; });
+
+  scoredLakes.forEach(function(item){
+
+    var lake=item.lake, res=item.res;
+
     var hex=scoreHex(res.score);
 
-    var r=7+res.score*1.1;
+    var icon=_makePinIcon(res.score, hex);
 
-    var circle=L.circleMarker([lake.lat,lake.lon],{
-
-      radius:r,fillColor:hex,color:"#1e3a54",weight:2,opacity:1,fillOpacity:res.score>=7?0.9:0.65
-
-    }).addTo(map);
-
-    circle.bindTooltip(res.score.toString(),{permanent:true,direction:"center",className:"marker-label",offset:[0,0]});
+    var marker=L.marker([lake.lat,lake.lon],{icon:icon}).addTo(map);
 
     var dist=userLat?haversine(userLat,userLon,lake.lat,lake.lon):null;
 
@@ -2818,13 +2879,17 @@ function renderMapMarkers() {
 
     }).join("");
 
-    circle.bindPopup(
+    var fillW = Math.round(res.score / 10 * 100);
+
+    marker.bindPopup(
 
       '<div class="popup-name">'+lake.name+'</div>'+
 
-      '<div class="popup-score" style="background:'+hex+'22;color:'+hex+'">⭐ '+res.score+'/10</div>'+
+      '<div class="popup-score-bar"><div class="popup-score-fill" style="width:'+fillW+'%;background:'+hex+'"></div></div>'+
 
-      '<div class="popup-meta">'+lake.type+' · '+lake.region+' · '+distStr+' from you</div>'+
+      '<div class="popup-score" style="background:'+hex+'22;color:'+hex+';margin-top:0">'+res.score+'/10</div>'+
+
+      '<div class="popup-meta">'+lake.type+' · '+lake.region+' · '+distStr+'</div>'+
 
       '<div class="popup-tags">'+ph+'</div>',
 
@@ -2832,7 +2897,7 @@ function renderMapMarkers() {
 
     );
 
-    mapMarkers.push(circle);
+    mapMarkers.push(marker);
 
   });
 
@@ -3026,17 +3091,17 @@ function renderOverpassWaterBodies(elements) {
 
     var dot = L.circleMarker([lat, lon], {
 
-      radius: 4,
+      radius: 3,
 
-      fillColor: "#3a9ed8",
+      fillColor: "#4ab0e4",
 
-      color: "#1a6da8",
+      color: "#4ab0e4",
 
-      weight: 1.5,
+      weight: 1,
 
-      opacity: 0.9,
+      opacity: 0.45,
 
-      fillOpacity: 0.8
+      fillOpacity: 0.15
 
     }).addTo(map);
 
