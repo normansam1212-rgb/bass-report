@@ -4472,7 +4472,16 @@ function openDetail(lake) {
       ba.points.forEach(function(pt, i) {
         var icon = typeIcon[pt.type] || "📍";
         var lbl  = typeLabel[pt.type] || pt.type;
-        var navUrl = "https://maps.google.com/?q="+pt.lat+","+pt.lon;
+        // Real named places (parks/ramps/piers) → navigate to the address by name so
+        // Google Maps routes to the actual entrance/parking lot, not a pin in the water.
+        // Generic "Main Lake Access" fallback pins have no real address → use coordinates.
+        var navUrl;
+        if (/Main Lake Access/i.test(pt.name)) {
+          navUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(pt.lat + "," + pt.lon);
+        } else {
+          var q = pt.name + (lake.region ? ", " + lake.region : "") + ", TX";
+          navUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+        }
         html += '<div class="bank-access-point">'
           + '<div class="bap-icon">'+icon+'</div>'
           + '<div class="bap-body">'
