@@ -7028,13 +7028,13 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Auditorium Shores", type:"park", lat:30.260, lon:-97.762, notes:"Large open grass bank, paved parking. Popular but bass hold near the far bridge pilings." },
+      { name:"Auditorium Shores", type:"park", lat:30.26020, lon:-97.7501, notes:"Large open grass bank, paved parking. Popular but bass hold near the far bridge pilings." },
 
       { name:"Roy G. Guerrero Park", type:"park", lat:30.245, lon:-97.711, notes:"Quieter east end, shaded banks, submerged timber — less pressure than downtown." },
 
       { name:"Longhorn Dam Tailrace", type:"bank", lat:30.245, lon:-97.709, notes:"Below the dam — flowing water concentrates fish. Wade carefully on rocky bottom." },
 
-      { name:"Tom Miller Dam Bank", type:"bank", lat:30.268, lon:-97.773, notes:"West end rocky point. Consistent structure for topwater in early morning." }
+      { name:"Tom Miller Dam Bank", type:"bank", lat:30.2939, lon:-97.7848, notes:"West end rocky point. Consistent structure for topwater in early morning." }
 
     ]
 
@@ -7110,11 +7110,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Loyd Park Fishing Area", type:"park", lat:32.647, lon:-97.029, notes:"Dedicated paved fishing area, restrooms, lots of riprap. Night fishing permitted with permit." },
+      { name:"Loyd Park Fishing Area", type:"park", lat:32.6052, lon:-97.066, notes:"Dedicated paved fishing area, restrooms, lots of riprap. Night fishing permitted with permit." },
 
-      { name:"Lynn Creek Park Marina Bank", type:"pier", lat:32.660, lon:-97.010, notes:"Dock area with ledge structure below. Swimbaits work well along the dock face." },
+      { name:"Lynn Creek Park Marina Bank", type:"pier", lat:32.63420, lon:-97.03860, notes:"Dock area with ledge structure below. Swimbaits work well along the dock face." },
 
-      { name:"Cedar Hill State Park Shoreline", type:"wade", lat:32.620, lon:-97.010, notes:"Sandy point on the southwest arm. Wade south along the bank to submerged roadbed structure." }
+      { name:"Cedar Hill State Park Shoreline", type:"wade", lat:32.60960, lon:-96.99210, notes:"Sandy point on the southwest arm. Wade south along the bank to submerged roadbed structure." }
 
     ]
 
@@ -7158,11 +7158,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Lake Brownwood State Park Pier", type:"pier", lat:31.875, lon:-99.012, notes:"Lighted fishing pier inside state park. Bass cruise the pier at night. Camping adjacent." },
+      { name:"Lake Brownwood State Park Pier", type:"pier", lat:31.856, lon:-99.0298, notes:"Lighted fishing pier inside state park. Bass cruise the pier at night. Camping adjacent." },
 
-      { name:"State Park Rocky Point", type:"wade", lat:31.870, lon:-99.020, notes:"Gradual rocky slope on the state park's west side. Crank the point at dawn." },
+      { name:"State Park Rocky Point", type:"wade", lat:31.8510, lon:-99.0350, notes:"Gradual rocky slope on the state park's west side. Crank the point at dawn." },
 
-      { name:"Big Ridge Park Shore", type:"bank", lat:31.880, lon:-99.000, notes:"County park with open grass bank and shaded trees — family-friendly with picnic tables." }
+      { name:"Big Ridge Park Shore", type:"bank", lat:31.8620, lon:-99.0100, notes:"County park with open grass bank and shaded trees — family-friendly with picnic tables." }
 
     ]
 
@@ -7208,9 +7208,9 @@ var BANK_ACCESS_POINTS = {
 
       { name:"Cedar Breaks Park Pier", type:"pier", lat:30.692, lon:-97.762, notes:"Covered pier and cleaning station. Deep water close to shore — drop a drop-shot along the bluff." },
 
-      { name:"Jim Hogg Park Rocky Point", type:"bank", lat:30.705, lon:-97.780, notes:"Rocky peninsula jutting into the main lake. Cast crankbaits along the rock ledges at 6-10 ft depth." },
+      { name:"Jim Hogg Park Rocky Point", type:"bank", lat:30.6846, lon:-97.74350, notes:"Rocky peninsula jutting into the main lake. Cast crankbaits along the rock ledges at 6-10 ft depth." },
 
-      { name:"Tejas Park Cove", type:"wade", lat:30.695, lon:-97.770, notes:"Shallower cove at the park's east end. Gravelly bottom — safe to wade. Finesse plastics on spinning gear." }
+      { name:"Tejas Park Cove", type:"wade", lat:30.6961, lon:-97.8270, notes:"Shallower cove at the park's east end. Gravelly bottom — safe to wade. Finesse plastics on spinning gear." }
 
     ]
 
@@ -7302,11 +7302,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Fort Phantom Hill Park Pier", type:"pier", lat:32.580, lon:-99.724, notes:"City-run pier with parking and restrooms. Fish the pilings at first light." },
+      { name:"Fort Phantom Hill Park Pier", type:"pier", lat:32.57560, lon:-99.6929, notes:"City-run pier with parking and restrooms. Fish the pilings at first light." },
 
-      { name:"Main Dam Bank", type:"bank", lat:32.567, lon:-99.714, notes:"Riprap along the dam face. Cast parallel to the rocks with a jig — bass hold in the cracks." },
+      { name:"Main Dam Bank", type:"bank", lat:32.563, lon:-99.68, notes:"Riprap along the dam face. Cast parallel to the rocks with a jig — bass hold in the cracks." },
 
-      { name:"North Cove Wade Area", type:"wade", lat:32.590, lon:-99.730, notes:"Shallow gravel cove on the north end. Good wading depth (2-3 ft). Finesse plastics in clear water." }
+      { name:"North Cove Wade Area", type:"wade", lat:32.5860, lon:-99.7050, notes:"Shallow gravel cove on the north end. Good wading depth (2-3 ft). Finesse plastics in clear water." }
 
     ]
 
@@ -7318,11 +7318,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Main Fishing Pier #1", type:"pier", lat:29.310, lon:-98.378, notes:"Large paved pier, accessible, wheelchair-friendly. Warm discharge water nearby — bass active all winter." },
+      { name:"Main Fishing Pier #1", type:"pier", lat:29.2570, lon:-98.378, notes:"Large paved pier, accessible, wheelchair-friendly. Warm discharge water nearby — bass active all winter." },
 
-      { name:"North Shore Pier #2", type:"pier", lat:29.318, lon:-98.373, notes:"Second pier on the north bank. Work swimbaits along the warm-water channel edge." },
+      { name:"North Shore Pier #2", type:"pier", lat:29.262, lon:-98.375, notes:"Second pier on the north bank. Work swimbaits along the warm-water channel edge." },
 
-      { name:"Creek Inlet Bank", type:"bank", lat:29.315, lon:-98.385, notes:"Creek arm on the west side. Flipping jigs into the feeder channel early morning is very productive." }
+      { name:"Creek Inlet Bank", type:"bank", lat:29.253, lon:-98.388, notes:"Creek arm on the west side. Flipping jigs into the feeder channel early morning is very productive." }
 
     ]
 
@@ -7334,11 +7334,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Lake Corpus Christi State Park Pier", type:"pier", lat:27.893, lon:-97.877, notes:"Long fishing pier inside state park. Bass and drum both caught here. Restrooms and camping adjacent." },
+      { name:"Lake Corpus Christi State Park Pier", type:"pier", lat:28.0621, lon:-97.8776, notes:"Long fishing pier inside state park. Bass and drum both caught here. Restrooms and camping adjacent." },
 
-      { name:"Matthews Park Shore", type:"park", lat:27.900, lon:-97.870, notes:"Paved city park with open bank and shade trees. Good for casting Senkos along the bank edge." },
+      { name:"Matthews Park Shore", type:"park", lat:28.06800, lon:-97.870, notes:"Paved city park with open bank and shade trees. Good for casting Senkos along the bank edge." },
 
-      { name:"Mesquite Flat Cove", type:"wade", lat:27.885, lon:-97.885, notes:"Shallow cove on the south side. Sandy bottom — good wading at lower water stages." }
+      { name:"Mesquite Flat Cove", type:"wade", lat:28.05, lon:-97.89, notes:"Shallow cove on the south side. Sandy bottom — good wading at lower water stages." }
 
     ]
 
@@ -7350,11 +7350,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Lake Tawakoni State Park Pier", type:"pier", lat:32.857, lon:-95.950, notes:"Fishing pier and cleaning station inside state park. Launch or fish from bank. Timber nearby." },
+      { name:"Lake Tawakoni State Park Pier", type:"pier", lat:32.8468, lon:-95.99880, notes:"Fishing pier and cleaning station inside state park. Launch or fish from bank. Timber nearby." },
 
-      { name:"Point Aquarius Shore", type:"bank", lat:32.842, lon:-95.950, notes:"Community access point near Point Aquarius subdivision. Fish the submerged timber edge." },
+      { name:"Point Aquarius Shore", type:"bank", lat:32.842, lon:-95.9820, notes:"Community access point near Point Aquarius subdivision. Fish the submerged timber edge." },
 
-      { name:"Caddo Creek Arm", type:"wade", lat:32.870, lon:-95.970, notes:"Upper creek arm — shallow enough to wade at normal pool. Isolated timber. Very productive in fall." }
+      { name:"Caddo Creek Arm", type:"wade", lat:32.870, lon:-96.010, notes:"Upper creek arm — shallow enough to wade at normal pool. Isolated timber. Very productive in fall." }
 
     ]
 
@@ -7382,11 +7382,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Atlanta State Park Shore", type:"park", lat:33.067, lon:-94.200, notes:"State park with fishing pier and 200 ft of open bank. Excellent topwater action near the timbered points." },
+      { name:"Atlanta State Park Shore", type:"park", lat:33.2297, lon:-94.244300, notes:"State park with fishing pier and 200 ft of open bank. Excellent topwater action near the timbered points." },
 
-      { name:"Sulphur River Arm", type:"wade", lat:33.080, lon:-94.230, notes:"Shallow upper river arm — wade to the submerged fence rows for big largemouth." },
+      { name:"Sulphur River Arm", type:"wade", lat:33.2450, lon:-94.260, notes:"Shallow upper river arm — wade to the submerged fence rows for big largemouth." },
 
-      { name:"Jackson Creek Inlet", type:"bank", lat:33.050, lon:-94.185, notes:"Walk-in bank at the creek mouth. Jigs and craws near the channel edge." }
+      { name:"Jackson Creek Inlet", type:"bank", lat:33.210, lon:-94.22, notes:"Walk-in bank at the creek mouth. Jigs and craws near the channel edge." }
 
     ]
 
@@ -7414,11 +7414,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Murvaul County Pier", type:"pier", lat:32.056, lon:-94.132, notes:"Small county pier, very basic. Weedless frogs over the lily pads immediately surrounding the pier are deadly." },
+      { name:"Murvaul County Pier", type:"pier", lat:32.056, lon:-94.44, notes:"Small county pier, very basic. Weedless frogs over the lily pads immediately surrounding the pier are deadly." },
 
-      { name:"East Cove Wade Area", type:"wade", lat:32.060, lon:-94.140, notes:"Sandy-bottomed cove with 2-3 ft depths over grass beds. Best wading in East Texas for trophy largemouth." },
+      { name:"East Cove Wade Area", type:"wade", lat:32.0620, lon:-94.4480, notes:"Sandy-bottomed cove with 2-3 ft depths over grass beds. Best wading in East Texas for trophy largemouth." },
 
-      { name:"Main Boat Landing Bank", type:"ramp", lat:32.050, lon:-94.130, notes:"Gravel bank beside the county ramp. Flip jigs into the hydrilla edge at dawn." }
+      { name:"Main Boat Landing Bank", type:"ramp", lat:32.0490, lon:-94.4350, notes:"Gravel bank beside the county ramp. Flip jigs into the hydrilla edge at dawn." }
 
     ]
 
