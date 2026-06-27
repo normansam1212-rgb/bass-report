@@ -680,17 +680,20 @@ svg[style*="width"] { width:auto; height:auto; }
 }
 .leaflet-control-zoom a:hover { background:rgba(40,44,30,.95)!important; }
 
-/* ── Map score pin markers (SVG teardrop) ── */
-.map-score-pin { cursor:pointer; display:inline-block; }
-.msp-hot  { filter:drop-shadow(0 0 7px rgba(212,196,64,0.60)) drop-shadow(0 4px 10px rgba(0,0,0,0.80)); }
-.msp-ok   { filter:drop-shadow(0 0 4px rgba(138,154,96,0.35)) drop-shadow(0 3px 8px rgba(0,0,0,0.75)); }
-.msp-cold { filter:drop-shadow(0 2px 6px rgba(0,0,0,0.70)); opacity:0.68; }
-.msp-path { stroke:rgba(255,255,255,0.22); stroke-width:1.4; }
-.msp-hot  .msp-path { fill:#d4c440; }
-.msp-ok   .msp-path { fill:#8a9a60; }
-.msp-cold .msp-path { fill:#c0a070; }
-.msp-inner { fill:rgba(0,0,0,0.18); }
-.msp-text  { fill:rgba(8,8,6,0.90); font-family:-apple-system,'SF Pro Display',sans-serif; }
+/* ── Map score badge markers (centered circle) ── */
+.msp-badge {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900;
+  font-family: -apple-system,'SF Pro Display','Helvetica Neue',sans-serif;
+  color: rgba(0,0,0,0.88);
+  border: 2px solid rgba(255,255,255,0.30);
+  cursor: pointer;
+  line-height: 1;
+}
+.msp-hot  { box-shadow: 0 0 0 3px rgba(212,196,64,0.28), 0 0 16px rgba(212,196,64,0.55), 0 3px 10px rgba(0,0,0,0.80); }
+.msp-ok   { box-shadow: 0 0 0 2px rgba(138,154,96,0.22), 0 0 8px  rgba(138,154,96,0.38), 0 2px 8px  rgba(0,0,0,0.70); }
+.msp-cold { box-shadow: 0 2px 6px rgba(0,0,0,0.65); opacity: 0.68; }
 
 /* ── Map satellite toggle ── */
 .map-sat-toggle {
@@ -3568,25 +3571,14 @@ function initMap() {
 }
 
 function _makePinIcon(score) {
-  var s = score >= 7 ? 36 : score >= 5 ? 30 : 24;
-  var w = Math.round(s * 0.72);
+  // Sizes: hot=34px, ok=28px, cold=22px — anchored at CENTER so pin sits exactly on coords
+  var sz = score >= 7 ? 34 : score >= 5 ? 28 : 22;
+  var fs = score >= 7 ? 13 : score >= 5 ? 11 : 9;
+  var bg = score >= 7 ? "#d4c440" : score >= 5 ? "#8a9a60" : "#c0a070";
   var cls = score >= 7 ? "msp-hot" : score >= 5 ? "msp-ok" : "msp-cold";
-  var fs = score >= 7 ? Math.round(s * 0.36) : Math.round(s * 0.34);
-  var cx = w / 2, cy = w / 2, r = w / 2 - 1;
-  var py = s - 1;
-  var tl_x = cx - r * 0.55, tl_y = cy + r * 0.45;
-  var tr_x = cx + r * 0.55, tr_y = cy + r * 0.45;
-  var svg =
-    '<svg class="map-score-pin ' + cls + '" xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + s + '" viewBox="0 0 ' + w + ' ' + s + '">' +
-    '<path class="msp-path" d="M' + cx + ',' + (cy - r) +
-      ' A' + r + ',' + r + ' 0 1,1 ' + tl_x.toFixed(1) + ',' + tl_y.toFixed(1) +
-      ' L' + (w/2) + ',' + py +
-      ' L' + tr_x.toFixed(1) + ',' + tr_y.toFixed(1) +
-      ' A' + r + ',' + r + ' 0 0,1 ' + cx + ',' + (cy - r) + ' Z"/>' +
-    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.52).toFixed(1) + '" class="msp-inner"/>' +
-    '<text x="' + cx + '" y="' + (cy + fs * 0.36).toFixed(1) + '" text-anchor="middle" dominant-baseline="middle" class="msp-text" font-size="' + fs + '" font-weight="900">' + score + '</text>' +
-    '</svg>';
-  return L.divIcon({ className:"", html:svg, iconSize:[w,s], iconAnchor:[Math.round(w/2),s], popupAnchor:[0,-s] });
+  var half = sz / 2;
+  var html = '<div class="msp-badge ' + cls + '" style="width:' + sz + 'px;height:' + sz + 'px;background:' + bg + ';font-size:' + fs + 'px;">' + score + '</div>';
+  return L.divIcon({ className:"", html:html, iconSize:[sz,sz], iconAnchor:[half,half], popupAnchor:[0,-half-4] });
 }
 
 function renderMapMarkers() {
