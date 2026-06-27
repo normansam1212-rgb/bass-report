@@ -1,0 +1,3876 @@
+
+// Global HTML escaper
+var escHtml = function(s) {
+  if (s == null) return '';
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+};
+
+// ═══════════════════════════════════════════
+// TEXAS BASS WATERS — statewide database
+// ═══════════════════════════════════════════
+var ALL_LAKES = [
+  // PANHANDLE / WEST TEXAS
+  { name:"Lake Meredith",           lat:35.43,  lon:-101.72, type:"Reservoir", region:"Amarillo"      },
+  { name:"Lake Mackenzie",          lat:34.18,  lon:-101.06, type:"Reservoir", region:"Silverton"     },
+  { name:"White River Lake",        lat:33.36,  lon:-100.94, type:"Reservoir", region:"Crosbyton"     },
+  { name:"Lake Alan Henry",         lat:33.02,  lon:-101.02, type:"Reservoir", region:"Lubbock"       },
+  { name:"Lake Colorado City",      lat:32.32,  lon:-100.93, type:"Reservoir", region:"Colorado City" },
+  { name:"Champion Creek Reservoir",lat:32.16,  lon:-100.74, type:"Reservoir", region:"Colorado City" },
+  { name:"E.V. Spence Reservoir",   lat:31.58,  lon:-100.76, type:"Reservoir", region:"Robert Lee"    },
+  { name:"OC Fisher Lake",          lat:31.44,  lon:-100.53, type:"Reservoir", region:"San Angelo"    },
+  { name:"Twin Buttes Reservoir",   lat:31.39,  lon:-100.57, type:"Reservoir", region:"San Angelo"    },
+  { name:"Lake Nasworthy",          lat:31.41,  lon:-100.50, type:"Reservoir", region:"San Angelo"    },
+  { name:"O.H. Ivie Reservoir",     lat:31.47,  lon:-100.22, type:"Reservoir", region:"Ballinger"     },
+  { name:"Lake J.B. Thomas",        lat:32.35,  lon:-100.95, type:"Reservoir", region:"Snyder"        },
+  { name:"Lake Sweetwater",         lat:32.45,  lon:-100.45, type:"Reservoir", region:"Sweetwater"    },
+  // NORTH CENTRAL / ABILENE
+  { name:"Lake Stamford",           lat:33.00,  lon:-99.47,  type:"Reservoir", region:"Haskell"       },
+  { name:"Lake Fort Phantom Hill",  lat:32.57,  lon:-99.72,  type:"Reservoir", region:"Abilene"       },
+  { name:"Lake Kirby",              lat:32.34,  lon:-99.83,  type:"Reservoir", region:"Abilene"       },
+  { name:"Lake Abilene",            lat:32.40,  lon:-99.65,  type:"Reservoir", region:"Abilene"       },
+  { name:"Lake Brownwood",          lat:31.87,  lon:-99.01,  type:"Reservoir", region:"Brownwood"     },
+  { name:"Lake Coleman",            lat:31.84,  lon:-99.40,  type:"Reservoir", region:"Coleman"       },
+  { name:"Lake Proctor",            lat:31.97,  lon:-98.44,  type:"Reservoir", region:"Comanche"      },
+  { name:"Possum Kingdom Lake",     lat:32.87,  lon:-98.52,  type:"Reservoir", region:"Mineral Wells" },
+  { name:"Lake Palo Pinto",         lat:32.73,  lon:-98.32,  type:"Reservoir", region:"Palo Pinto"    },
+  { name:"Lake Graham",             lat:33.10,  lon:-98.70,  type:"Reservoir", region:"Graham"        },
+  { name:"Lake Eddleman",           lat:33.10,  lon:-98.68,  type:"Reservoir", region:"Graham"        },
+  { name:"Hubbard Creek Reservoir", lat:32.70,  lon:-98.99,  type:"Reservoir", region:"Breckenridge"  },
+  { name:"Lake Daniel",             lat:32.95,  lon:-99.31,  type:"Reservoir", region:"Breckenridge"  },
+  { name:"Millers Creek Reservoir", lat:33.10,  lon:-99.21,  type:"Reservoir", region:"Munday"        },
+  { name:"Bluestem Lake",           lat:32.52,  lon:-99.35,  type:"Reservoir", region:"Albany"        },
+  { name:"Lake Throckmorton",       lat:33.18,  lon:-99.18,  type:"Reservoir", region:"Throckmorton"  },
+  { name:"Lake Winters",            lat:31.96,  lon:-99.96,  type:"Reservoir", region:"Winters"       },
+  // NORTH TEXAS / DFW / WICHITA FALLS
+  { name:"Lake Texoma",             lat:33.80,  lon:-96.60,  type:"Reservoir", region:"Sherman"       },
+  { name:"Lake Arrowhead",          lat:33.74,  lon:-98.62,  type:"Reservoir", region:"Wichita Falls" },
+  { name:"Lake Kickapoo",           lat:33.83,  lon:-98.74,  type:"Reservoir", region:"Wichita Falls" },
+  { name:"Lake Diversion",          lat:34.00,  lon:-98.56,  type:"Reservoir", region:"Wichita Falls" },
+  { name:"Lake Amon G. Carter",     lat:33.52,  lon:-97.58,  type:"Reservoir", region:"Bowie"         },
+  { name:"Nocona Lake",             lat:33.80,  lon:-97.68,  type:"Reservoir", region:"Nocona"        },
+  { name:"Lake Ray Roberts",        lat:33.37,  lon:-97.05,  type:"Reservoir", region:"Denton"        },
+  { name:"Lake Lewisville",         lat:33.04,  lon:-96.87,  type:"Reservoir", region:"Dallas"        },
+  { name:"Lavon Lake",              lat:33.02,  lon:-96.42,  type:"Reservoir", region:"Dallas"        },
+  { name:"Lake Ray Hubbard",        lat:32.84,  lon:-96.54,  type:"Reservoir", region:"Dallas"        },
+  { name:"Lake Tawakoni",           lat:32.85,  lon:-95.95,  type:"Reservoir", region:"Greenville"    },
+  { name:"Lake Grapevine",          lat:32.97,  lon:-97.07,  type:"Reservoir", region:"Dallas"        },
+  { name:"Eagle Mountain Lake",     lat:32.92,  lon:-97.46,  type:"Reservoir", region:"Fort Worth"    },
+  { name:"Lake Worth",              lat:32.83,  lon:-97.44,  type:"Reservoir", region:"Fort Worth"    },
+  { name:"Benbrook Lake",           lat:32.64,  lon:-97.47,  type:"Reservoir", region:"Fort Worth"    },
+  { name:"Lake Weatherford",        lat:32.72,  lon:-97.76,  type:"Reservoir", region:"Weatherford"   },
+  { name:"Lake Granbury",           lat:32.41,  lon:-97.77,  type:"Reservoir", region:"Granbury"      },
+  { name:"White Rock Lake",         lat:32.83,  lon:-96.71,  type:"Reservoir", region:"Dallas"        },
+  { name:"Joe Pool Lake",           lat:32.66,  lon:-97.02,  type:"Reservoir", region:"Dallas"        },
+  { name:"Lake Arlington",          lat:32.69,  lon:-97.23,  type:"Reservoir", region:"Arlington"     },
+  { name:"Mountain Creek Lake",     lat:32.74,  lon:-96.95,  type:"Reservoir", region:"Dallas"        },
+  { name:"Squaw Creek Reservoir",   lat:32.47,  lon:-97.87,  type:"Reservoir", region:"Glen Rose"     },
+  { name:"Lake Whitney",            lat:31.86,  lon:-97.36,  type:"Reservoir", region:"Whitney"       },
+  { name:"Aquilla Lake",            lat:31.90,  lon:-97.20,  type:"Reservoir", region:"Aquilla"       },
+  { name:"Waco Lake",               lat:31.61,  lon:-97.26,  type:"Reservoir", region:"Waco"          },
+  // EAST TEXAS
+  { name:"Lake Fork",               lat:32.89,  lon:-95.57,  type:"Reservoir", region:"Quitman"       },
+  { name:"Lake Bob Sandlin",        lat:33.07,  lon:-95.12,  type:"Reservoir", region:"Mt Pleasant"   },
+  { name:"Lake Cypress Springs",    lat:33.01,  lon:-95.30,  type:"Reservoir", region:"Mt Vernon"     },
+  { name:"Lake O the Pines",        lat:32.74,  lon:-94.62,  type:"Reservoir", region:"Jefferson"     },
+  { name:"Caddo Lake",              lat:32.69,  lon:-94.18,  type:"Lake",      region:"Marshall"      },
+  { name:"Lake Cherokee",           lat:32.45,  lon:-94.72,  type:"Reservoir", region:"Longview"      },
+  { name:"Martin Creek Lake",       lat:32.26,  lon:-94.57,  type:"Reservoir", region:"Longview"      },
+  { name:"Lake Murvaul",            lat:31.91,  lon:-94.20,  type:"Reservoir", region:"Carthage"      },
+  { name:"Lake Palestine",          lat:31.93,  lon:-95.62,  type:"Reservoir", region:"Tyler"         },
+  { name:"Lake Tyler East",         lat:32.27,  lon:-95.35,  type:"Reservoir", region:"Tyler"         },
+  { name:"Lake Tyler West",         lat:32.30,  lon:-95.37,  type:"Reservoir", region:"Tyler"         },
+  { name:"Lake Nacogdoches",        lat:31.57,  lon:-94.63,  type:"Reservoir", region:"Nacogdoches"   },
+  { name:"Lake Striker",            lat:31.88,  lon:-95.13,  type:"Reservoir", region:"Rusk"          },
+  { name:"Lake Jacksonville",       lat:31.95,  lon:-95.25,  type:"Reservoir", region:"Jacksonville"  },
+  { name:"Lake Athens",             lat:32.18,  lon:-95.78,  type:"Reservoir", region:"Athens"        },
+  { name:"Sam Rayburn Reservoir",   lat:31.07,  lon:-94.11,  type:"Reservoir", region:"Jasper"        },
+  { name:"Toledo Bend Reservoir",   lat:31.18,  lon:-93.57,  type:"Reservoir", region:"Jasper"        },
+  { name:"Lake Limestone",          lat:31.40,  lon:-96.35,  type:"Reservoir", region:"Groesbeck"     },
+  { name:"Lake Mexia",              lat:31.64,  lon:-96.56,  type:"Reservoir", region:"Mexia"         },
+  { name:"Richland Chambers Reservoir",lat:31.86,lon:-96.11, type:"Reservoir", region:"Corsicana"     },
+  { name:"Bardwell Lake",           lat:32.28,  lon:-96.64,  type:"Reservoir", region:"Ennis"         },
+  // HOUSTON METRO
+  { name:"Lake Conroe",             lat:30.33,  lon:-95.42,  type:"Reservoir", region:"Houston"       },
+  { name:"Lake Houston",            lat:29.91,  lon:-95.17,  type:"Reservoir", region:"Houston"       },
+  { name:"Lake Livingston",         lat:30.62,  lon:-94.94,  type:"Reservoir", region:"Huntsville"    },
+  { name:"Somerville Lake",         lat:30.35,  lon:-96.50,  type:"Reservoir", region:"Bryan"         },
+  { name:"Lake Bryan",              lat:30.72,  lon:-96.40,  type:"Reservoir", region:"Bryan"         },
+  { name:"Gibbons Creek Reservoir", lat:30.55,  lon:-96.13,  type:"Reservoir", region:"Navasota"      },
+  // CENTRAL TEXAS / AUSTIN / HILL COUNTRY
+  { name:"Lake Travis",             lat:30.38,  lon:-98.00,  type:"Reservoir", region:"Austin"        },
+  { name:"Lake Austin",             lat:30.26,  lon:-97.83,  type:"Reservoir", region:"Austin"        },
+  { name:"Lady Bird Lake",          lat:30.25,  lon:-97.81,  type:"Reservoir", region:"Austin"        },
+  { name:"Walter E. Long Lake",     lat:30.35,  lon:-97.63,  type:"Reservoir", region:"Austin"        },
+  { name:"Lake Georgetown",         lat:30.67,  lon:-97.77,  type:"Reservoir", region:"Georgetown"    },
+  { name:"Lake Pflugerville",       lat:30.48,  lon:-97.60,  type:"Reservoir", region:"Pflugerville"  },
+  { name:"Brushy Creek Lake",       lat:30.53,  lon:-97.72,  type:"Reservoir", region:"Cedar Park"    },
+  { name:"Lake Buchanan",           lat:30.85,  lon:-98.43,  type:"Reservoir", region:"Llano"         },
+  { name:"Inks Lake",               lat:30.74,  lon:-98.37,  type:"Reservoir", region:"Burnet"        },
+  { name:"Lake LBJ",                lat:30.62,  lon:-98.37,  type:"Reservoir", region:"Kingsland"     },
+  { name:"Lake Marble Falls",       lat:30.58,  lon:-98.28,  type:"Reservoir", region:"Marble Falls"  },
+  { name:"Canyon Lake",             lat:29.88,  lon:-98.20,  type:"Reservoir", region:"New Braunfels" },
+  { name:"Stillhouse Hollow Lake",  lat:30.98,  lon:-97.52,  type:"Reservoir", region:"Belton"        },
+  { name:"Belton Lake",             lat:31.12,  lon:-97.52,  type:"Reservoir", region:"Belton"        },
+  // SAN ANTONIO AREA
+  { name:"Medina Lake",             lat:29.55,  lon:-98.93,  type:"Reservoir", region:"San Antonio"   },
+  { name:"Calaveras Lake",          lat:29.33,  lon:-98.26,  type:"Reservoir", region:"San Antonio"   },
+  { name:"Braunig Lake",            lat:29.27,  lon:-98.30,  type:"Reservoir", region:"San Antonio"   },
+  { name:"Lake Dunlap",             lat:29.68,  lon:-98.12,  type:"Reservoir", region:"New Braunfels" },
+  { name:"Lake McQueeney",          lat:29.60,  lon:-98.04,  type:"Reservoir", region:"Seguin"        },
+  { name:"Lake Placid",             lat:29.58,  lon:-98.01,  type:"Reservoir", region:"Seguin"        },
+  // SOUTH / COASTAL TEXAS
+  { name:"Coleto Creek Reservoir",  lat:28.73,  lon:-97.17,  type:"Reservoir", region:"Victoria"      },
+  { name:"Lake Texana",             lat:29.00,  lon:-96.75,  type:"Reservoir", region:"Edna"          },
+  { name:"Choke Canyon Reservoir",  lat:28.47,  lon:-98.25,  type:"Reservoir", region:"Three Rivers"  },
+  { name:"Lake Corpus Christi",     lat:27.89,  lon:-97.87,  type:"Reservoir", region:"Corpus Christi"},
+  // SOUTH TEXAS / RIO GRANDE
+  { name:"Falcon Reservoir",        lat:26.57,  lon:-99.15,  type:"Reservoir", region:"Laredo"        },
+  { name:"Lake Casa Blanca",        lat:27.57,  lon:-99.42,  type:"Reservoir", region:"Laredo"        },
+  { name:"Amistad Reservoir",       lat:29.45,  lon:-101.07, type:"Reservoir", region:"Del Rio"       },
+];
+
+// Weather grid — 10 points spread across Texas for map scoring
+var GRID = [
+  { key:"amarillo",   lat:35.22, lon:-101.83 },
+  { key:"lubbock",    lat:33.57, lon:-101.85 },
+  { key:"abilene",    lat:32.45, lon:-99.73  },
+  { key:"dallas",     lat:32.78, lon:-96.80  },
+  { key:"tyler",      lat:32.35, lon:-95.30  },
+  { key:"waco",       lat:31.55, lon:-97.15  },
+  { key:"austin",     lat:30.27, lon:-97.74  },
+  { key:"sanantonio", lat:29.42, lon:-98.49  },
+  { key:"houston",    lat:29.76, lon:-95.37  },
+  { key:"laredo",     lat:27.50, lon:-99.50  },
+];
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+var userLat = null, userLon = null;
+var userLabel = null;
+var weatherData = null, pressureTrend = null, sunData = null;
+var gridWeather = {};
+var currentView = "list";
+var map = null, mapMarkers = [];
+var overpassMarkers = [];     // OSM water body markers (unscored, blue dots)
+var overpassLoaded = {};      // track which viewport areas we've already fetched
+var searchTimer = null;
+var MAX_SHOWN = 15;
+
+// ═══════════════════════════════════════════
+// SEARCH — Nominatim (OpenStreetMap)
+// ═══════════════════════════════════════════
+function onSearchInput(val) {
+  var clear = document.getElementById("searchClear");
+  clear.classList.toggle("visible", val.length > 0);
+  clearTimeout(searchTimer);
+  if (val.length < 2) { closeDropdown(); return; }
+  searchTimer = setTimeout(function(){ doSearch(val); }, 400);
+}
+
+function doSearch(q) {
+  var dd = document.getElementById("searchDropdown");
+  dd.innerHTML = '<div class="search-loading"><svg viewBox="0 0 24 24" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><circle cx="10.5" cy="10.5" r="7" fill="currentColor" fill-opacity="0.08"/><path d="M10.5 7.5a3 3 0 0 1 3 3" stroke-opacity="0.4"/><path d="M15.5 15.5L21 21" stroke-width="2.5"/></svg> Searching…</div>';
+  dd.classList.add("open");
+
+  var url = "https://nominatim.openstreetmap.org/search?q="
+    + encodeURIComponent(q + " Texas")
+    + "&format=json&limit=6&countrycodes=us&addressdetails=1";
+
+  fetch(url, { headers: { "Accept-Language":"en", "User-Agent":"BassReportPWA/1.0" }})
+    .then(function(r){ return r.json(); })
+    .then(function(results) {
+      if (!results.length) {
+        dd.innerHTML = '<div class="search-none">No results — try a different location</div>';
+        return;
+      }
+      dd.innerHTML = "";
+      results.forEach(function(r) {
+        var name  = r.name || r.display_name.split(",")[0];
+        var sub   = r.display_name.split(",").slice(1, 3).join(",").trim();
+        var lat   = parseFloat(r.lat);
+        var lon   = parseFloat(r.lon);
+        var div   = document.createElement("div");
+        div.className = "search-result";
+        div.innerHTML = '<div class="sr-name">' + name + '</div><div class="sr-sub">' + sub + '</div>';
+        div.addEventListener("mousedown", function(e){ e.preventDefault(); });
+        div.addEventListener("click", function() { selectLocation(lat, lon, name); });
+        dd.appendChild(div);
+      });
+    })
+    .catch(function(){ dd.innerHTML = '<div class="search-none">Search failed — check connection</div>'; });
+}
+
+function onSearchBlur() {
+  setTimeout(closeDropdown, 200);
+}
+
+function closeDropdown() {
+  document.getElementById("searchDropdown").classList.remove("open");
+}
+
+function clearSearch() {
+  document.getElementById("searchInput").value = "";
+  document.getElementById("searchClear").classList.remove("visible");
+  closeDropdown();
+}
+
+function selectLocation(lat, lon, name) {
+  userLat = lat; userLon = lon; userLabel = name;
+  document.getElementById("searchInput").value = name;
+  document.getElementById("searchClear").classList.add("visible");
+  closeDropdown();
+  // Save for next visit
+  try { localStorage.setItem("bass-loc", JSON.stringify({lat:lat,lon:lon,label:name})); } catch(e){}
+  loadReport();
+}
+
+// ═══════════════════════════════════════════
+// GPS
+// ═══════════════════════════════════════════
+function useMyLocation() {
+  if (!navigator.geolocation) { showError("Geolocation not supported."); return; }
+  showLoading();
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+      userLabel = "My Location";
+      document.getElementById("searchInput").value = "My Location";
+      document.getElementById("searchClear").classList.add("visible");
+      try { localStorage.setItem("bass-loc", JSON.stringify({lat:userLat,lon:userLon,label:userLabel})); } catch(e){}
+      loadReport();
+    },
+    function(){ showError("Location access denied. Search for a city above."); },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+}
+
+// ═══════════════════════════════════════════
+// HAVERSINE
+// ═══════════════════════════════════════════
+function haversine(lat1, lon1, lat2, lon2) {
+  var R = 3959;
+  var dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+  var a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// Find nearest grid point
+function nearestGrid(lat, lon) {
+  var best = GRID[0], bestD = Infinity;
+  GRID.forEach(function(g){ var d=haversine(lat,lon,g.lat,g.lon); if(d<bestD){bestD=d;best=g;} });
+  return best;
+}
+
+// ═══════════════════════════════════════════
+// MOON
+// ═══════════════════════════════════════════
+function getMoon() {
+  var now = new Date(), y=now.getFullYear(), m=now.getMonth()+1, d=now.getDate();
+  if(m<3){y--;m+=12;}
+  var A=Math.floor(y/100), B=2-A+Math.floor(A/4);
+  var JD=Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5;
+  var age=(JD-2451549.5)%29.53058867; if(age<0)age+=29.53058867;
+  var ph=age/29.53058867;
+  if(ph<0.03||ph>0.97) return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity="0.08"/></svg>',name:"New Moon",     score:3,age:Math.round(age)};
+  if(ph<0.22)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor" fill-opacity="0.15"/></svg>',name:"Waxing Crescent",score:1,age:Math.round(age)};
+  if(ph<0.28)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M12 3a9 9 0 0 0 0 18" fill="currentColor" fill-opacity="0.12"/><path d="M12 3a9 9 0 0 1 0 18"/></svg>',name:"First Quarter",  score:2,age:Math.round(age)};
+  if(ph<0.47)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M21 12a9 9 0 0 1-18 0 9 9 0 0 1 18 0" fill="currentColor" fill-opacity="0.12"/><path d="M12 3a9 9 0 0 0 0 18"/></svg>',name:"Waxing Gibbous", score:2,age:Math.round(age)};
+  if(ph<0.53)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity="0.08"/></svg>',name:"Full Moon",      score:3,age:Math.round(age)};
+  if(ph<0.72)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M3 12a9 9 0 0 1 18 0 9 9 0 0 1-18 0" fill="currentColor" fill-opacity="0.12"/><path d="M12 3a9 9 0 0 0 0 18"/></svg>',name:"Waning Gibbous", score:2,age:Math.round(age)};
+  if(ph<0.78)          return {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M12 3a9 9 0 0 1 0 18" fill="currentColor" fill-opacity="0.12"/><path d="M12 3a9 9 0 0 0 0 18"/></svg>',name:"Last Quarter",   score:2,age:Math.round(age)};
+  return                      {icon:'<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M3 12.79A9 9 0 1 0 12.79 21 7 7 0 0 1 3 12.79z" fill="currentColor" fill-opacity="0.15"/></svg>',name:"Waning Crescent",score:1,age:Math.round(age)};
+}
+
+// ═══════════════════════════════════════════
+// BAITS
+// ═══════════════════════════════════════════
+// Water-aware priority engine: clarity + depth set the base lure profile so
+// different waters get different recommendations; conditions then tune the list.
+function getBaits(weather, trend, waterTemp, moon, hour, srH, ssH, clarity, depth) {
+  var wind=weather.wind_speed_mph||0, clouds=weather.cloud_cover_pct||0;
+  var isNight=hour<srH||hour>ssH;
+  var isDawn=hour>=srH-1&&hour<=srH+1;
+  var isDusk=hour>=ssH-1&&hour<=ssH+1;
+  var lowLight=isNight||isDawn||isDusk;
+  var tr=trend.trend||"stable";
+  clarity=clarity||"stained";
+  depth=depth||"mod";
+
+  var pool={}; // name -> {name,why,pri}
+  function add(name,why,pri){
+    if(!pool[name]||pri>pool[name].pri) pool[name]={name:name,why:why,pri:pri};
+  }
+
+  // ── Water-profile base priorities (the foundation — varies lake-to-lake) ──
+    if(clarity==="clear" && depth==="deep"){
+      add("Drop Shot","clear deep finesse",19);
+      add("Jerkbait","suspending clear",17);
+      add("Football Jig","deep structure",17);
+      add("Ned Rig","clear finesse",16);
+      add("Swimbait (slow)","deep suspended",15);
+      add("Carolina Rig","deep dragging",14);
+    } else if(clarity==="clear" && depth==="shallow"){
+      add("Wacky Senko","clear shallow finesse",19);
+      add("Weightless Fluke","clear shallow",17);
+      add("Ned Rig","clear finesse",16);
+      add("Tube","clear finesse",15);
+      add("Neko Rig","clear bottom",14);
+    } else if(clarity==="muddy" && depth==="shallow"){
+      add("Jig (slow)","dark bulky",19);
+      add("Buzzbait","dark thump",17);
+      add("Creature Bait","bulk dark profile",17);
+      add("Lipless Crank","loud rattle",16);
+      add("Spinnerbait","big thump",15);
+      add("Frog","over muddy mats",14);
+    } else if(clarity==="muddy"){
+      add("Spinnerbait","vibration",18);
+      add("Chatterbait","vibration",17);
+      add("Jig (slow)","dark bulky",16);
+      add("Lipless Crank","loud rattle",15);
+      add("Creature Bait","bulk profile",14);
+    } else if(depth==="deep"){
+      add("Football Jig","deep structure",18);
+      add("Crankbait","deep diving",17);
+      add("Carolina Rig","deep dragging",16);
+      add("Drop Shot","deep finesse",15);
+      add("Jig (slow)","deep bottom",14);
+    } else if(depth==="shallow"){
+      add("Spinnerbait","shallow search",18);
+      add("Chatterbait","shallow search",17);
+      add("Crankbait","shallow wood",16);
+      add("Texas Rig","shallow cover",15);
+      add("Swim Jig","shallow vegetation",14);
+    } else {
+      // stained / mod (default Texas profile)
+      add("Spinnerbait","stained search",17);
+      add("Chatterbait","stained search",16);
+      add("Crankbait","stained cover",15);
+      add("Texas Rig","universal",14);
+      add("Shaky Head","finesse",13);
+      add("Wacky Senko","finesse",12);
+    }
+
+    // ── Condition modifiers (tune the top 1-2 slots per right-now weather) ──
+    if(lowLight){
+      add("Topwater Popper","low light surface",16);
+      add("Buzzbait","surface aggression",15);
+    }
+    if(clouds>=50 && wind>=5){
+      add("Spinnerbait","cloud+chop",16);
+      add("Chatterbait","stained chop",15);
+    }
+    if(clouds<30 && wind<5){
+      add("Ned Rig","clear/calm",15);
+      add("Drop Shot","pressured fish",14);
+    }
+    if(tr.indexOf("falling")!==-1){
+      add("Crankbait","falling baro",16);
+      add("Jerkbait","pre-front active",15);
+    }
+    if(tr.indexOf("rising")!==-1){
+      add("Shaky Head","post-front",15);
+      add("Swimbait (slow)","suspended fish",14);
+    }
+    if(waterTemp>=65 && waterTemp<=80){
+      add("Frog","warm shallow",15);
+      add("Lipless Crank","active summer",14);
+      add("Swim Jig","warm vegetation",13);
+    }
+    if(waterTemp<60){
+      add("Jig (slow)","cold bottom",16);
+      add("Jigging Spoon","deep cold fish",15);
+      add("Blade Bait","cold vertical",14);
+    }
+    if(moon.score===3) add("Big Swimbait","peak lunar",16);
+
+  // Safety net
+  if(Object.keys(pool).length<3){
+    add("Texas Rig","universal",5);
+    add("Wacky Senko","finesse",4);
+    add("Ned Rig","versatile",3);
+  }
+
+  // Rank by priority, keep top 5
+  var baits=Object.keys(pool).map(function(k){return pool[k];})
+    .sort(function(a,b){return b.pri-a.pri;}).slice(0,5);
+
+  // Enrich each bait with best color + buy link
+  baits.forEach(function(b){
+    b.color = bestColor(b.name, weather, waterTemp, hour, srH, ssH);
+    b.shop = BAIT_SHOP[b.name] || { brand:"", query:b.name+" bass lure" };
+    b.url = "https://www.amazon.com/s?k=" + encodeURIComponent(b.shop.query + " " + b.color);
+  });
+  return baits;
+}
+
+// ═══════════════════════════════════════════
+// BAIT SHOP — real products + color engine
+// ═══════════════════════════════════════════
+var BAIT_SHOP = {
+  "Topwater Popper":  { brand:"Rapala Skitter Pop",      query:"rapala skitter pop topwater popper bass lure" },
+  "Buzzbait":         { brand:"Strike King Buzz King",   query:"strike king buzz king buzzbait bass" },
+  "Spinnerbait":      { brand:"Strike King Premier",     query:"strike king premier plus spinnerbait bass" },
+  "Chatterbait":      { brand:"Z-Man ChatterBait",       query:"z-man chatterbait bladed jig bass" },
+  "Ned Rig":          { brand:"Z-Man Finesse TRD",       query:"z-man finesse trd ned rig kit bass" },
+  "Drop Shot":        { brand:"Roboworm",                query:"roboworm drop shot worm bass" },
+  "Crankbait":        { brand:"Strike King KVD",         query:"strike king kvd square bill crankbait bass" },
+  "Jerkbait":         { brand:"Rapala X-Rap",            query:"rapala x-rap jerkbait bass" },
+  "Shaky Head":       { brand:"Strike King",             query:"strike king shaky head worm bass" },
+  "Swimbait (slow)":  { brand:"Keitech Fat Swing Impact",query:"keitech fat swing impact swimbait bass" },
+  "Frog":             { brand:"Spro Bronzeye",           query:"spro bronzeye popping frog bass" },
+  "Lipless Crank":    { brand:"Strike King Red Eye Shad",query:"strike king red eye shad lipless crankbait bass" },
+  "Jig (slow)":       { brand:"Strike King Structure Jig",query:"strike king structure jig bass" },
+  "Jigging Spoon":    { brand:"Cotton Cordell",          query:"cotton cordell jigging spoon bass" },
+  "Big Swimbait":     { brand:"Keitech",                 query:"keitech swimbait 6 inch bass" },
+  "Texas Rig":        { brand:"Zoom Ol Monster",         query:"zoom ol monster worm texas rig bass" },
+  "Wacky Senko":      { brand:"Gary Yamamoto Senko",     query:"gary yamamoto senko 5 inch wacky rig" },
+  // ── Added for water-to-water variety ──
+  "Football Jig":     { brand:"Strike King Tour Grade",  query:"strike king tour grade football head jig bass" },
+  "Carolina Rig":     { brand:"Strike King",             query:"strike king carolina rig kit bass" },
+  "Swim Jig":         { brand:"Booyah Boo Jig",          query:"booyah boo jig swim jig bass" },
+  "Blade Bait":       { brand:"SteelShad",               query:"steelshad blade bait vibrating bass" },
+  "Creature Bait":    { brand:"Strike King Rodent",      query:"strike king rodent creature bait bass" },
+  "Weightless Fluke": { brand:"Zoom Super Fluke",        query:"zoom super fluke weightless bass" },
+  "Tube":             { brand:"Strike King Coffee Tube", query:"strike king coffee tube bass" },
+  "Neko Rig":         { brand:"Z-Man Finesse Worm",      query:"z-man finesse worm neko rig bass" }
+};
+
+function bestColor(baitName, weather, waterTemp, hour, srH, ssH) {
+  var wind = weather.wind_speed_mph || 0;
+  var clouds = weather.cloud_cover_pct || 0;
+  var isNight = hour < srH || hour > ssH;
+  var isDawn = hour >= srH-1 && hour <= srH+1;
+  var isDusk = hour >= ssH-1 && hour <= ssH+1;
+  var lowLight = isNight || isDawn || isDusk;
+
+  // ── Bait-specific color logic ──
+  if (baitName === "Frog") {
+    if (isNight) return "Black";
+    return "White/Chartreuse";
+  }
+  if (baitName === "Buzzbait" || baitName === "Spinnerbait" || baitName === "Chatterbait") {
+    if (lowLight) return "Black/Blue";
+    if (clouds >= 50) return "Chartreuse/White";
+    return "White/Chartreuse";
+  }
+  if (baitName === "Crankbait" || baitName === "Lipless Crank") {
+    if (wind >= 10) return "Craw Red";
+    if (waterTemp < 58) return "Silver/Blue";
+    if (clouds >= 50) return "Fire Tiger";
+    return "Shad Silver";
+  }
+  if (baitName === "Jerkbait") {
+    if (waterTemp < 55) return "Ghost Minnow";
+    if (lowLight) return "Black/Gold";
+    return "Glass Minnow";
+  }
+  if (baitName === "Topwater Popper") {
+    if (isNight) return "Black";
+    if (isDawn || isDusk) return "Bone/Silver";
+    return "Chartreuse/Black";
+  }
+  if (baitName === "Jig (slow)") {
+    if (waterTemp < 55) return "Brown/Purple";
+    if (lowLight) return "Black/Blue";
+    return "Green Pumpkin/Brown";
+  }
+  if (baitName === "Jigging Spoon") {
+    if (lowLight) return "Chrome/Blue";
+    return "Chrome/Gold";
+  }
+  if (baitName === "Swimbait (slow)" || baitName === "Big Swimbait") {
+    if (lowLight) return "Black/Blue";
+    if (clouds >= 50) return "Chartreuse Shad";
+    return "Preston Shad";
+  }
+  if (baitName === "Football Jig") {
+    if (waterTemp < 55) return "Brown/Purple";
+    if (lowLight) return "Black/Blue";
+    return "Green Pumpkin/Brown";
+  }
+  if (baitName === "Blade Bait") {
+    if (lowLight) return "Chrome/Blue";
+    return "Chrome/Gold";
+  }
+  if (baitName === "Swim Jig") {
+    if (lowLight) return "Black/Blue";
+    if (clouds >= 50) return "Chartreuse/White";
+    return "Green Pumpkin/White";
+  }
+  if (baitName === "Weightless Fluke") {
+    if (isNight) return "Black";
+    if (lowLight) return "Bone";
+    if (clouds >= 50) return "Smoke";
+    if (waterTemp < 58) return "Watermelon/Red";
+    return "Pearl";
+  }
+  // ── Soft plastics (Ned, Drop Shot, Texas, Senko, Shaky) ──
+  if (isNight) return "Black/Blue";
+  if (wind >= 12) return "Black/Blue";   // stirred-up water
+  if (clouds >= 60) return "Junebug";
+  if (waterTemp >= 70 && clouds < 30) return "Green Pumpkin";
+  if (waterTemp < 58) return "Watermelon/Red";
+  return "Green Pumpkin";
+}
+
+function buyBait(name, color, ev) {
+  if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+  var info = BAIT_SHOP[name] || { query: name + " bass lure" };
+  var q = info.query + " " + (color || "");
+  window.open("https://www.amazon.com/s?k=" + encodeURIComponent(q), "_blank");
+  return false;
+}
+function escapeQuote(s) { return String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'"); }
+
+// ═══════════════════════════════════════════════════════════════
+// LURE TUTORIAL — opens when a bait chip is tapped
+// ═══════════════════════════════════════════════════════════════
+var LURE_GUIDE = {
+  "Topwater Popper": {
+    category:"Topwater", difficulty:"Beginner",
+    rigging:"Tie direct to 30 lb braid or 12-17 lb mono. The concave cup faces forward. No weight — let the bait sit where it lands.",
+    retrieve:"Pop-pause. Twitch the rod tip down so the cup 'bloops', then pause 1-3 seconds. Repeat. Vary the cadence until the fish tell you what they want — usually longer pauses than you think.",
+    depth:"Surface",
+    target:"Active bass in low light over flats, points, and around shallow cover. Deadly at dawn, dusk, and overcast mornings.",
+    tip:"Stripes often come on the pause, not the pop. After a miss, let it sit dead for 5+ seconds before re-popping."
+  },
+  "Buzzbait": {
+    category:"Topwater", difficulty:"Beginner",
+    rigging:"Tie direct to 17-20 lb mono or 40-50 lb braid. The blade must spin freely — test it beside the boat before casting.",
+    retrieve:"Burn it steadily just under the surface so the blade churns a wake. Keep rod tip high to hold it up. Slow down slightly near cover.",
+    depth:"Surface",
+    target:"Aggressive bass in low light over flats, weed edges, and along banks. A true search bait that calls fish up.",
+    tip:"If you get swirls but no hookups, add a trailing stinger hook or slow the retrieve so bass can track it better."
+  },
+  "Spinnerbait": {
+    category:"Moving bait", difficulty:"Beginner",
+    rigging:"Tie direct to 15-20 lb fluorocarbon or 40 lb braid. Use a Colorado/Indiana blade combo in stained water, willow blades in clear.",
+    retrieve:"Steady retrieve just above the cover. Slow-roll it along the bottom in cold water, burn it in warm. Deflect off wood and rock — strikes come on the bounce.",
+    depth:"Mid — adjustable (bottom to just-under-surface)",
+    target:"Bass around wood, grass edges, and banks in stained/choppy water. A go-to in wind and cloud.",
+    tip:"Pause briefly after the bait bumps cover — that hesitation triggers followers into striking."
+  },
+  "Chatterbait": {
+    category:"Moving bait", difficulty:"Beginner",
+    rigging:"Tie direct to 15-20 lb fluorocarbon. The blade must vibrate — you'll feel it in the rod immediately on a good retrieve.",
+    retrieve:"Steady retrieve so the blade chatters. Slow roll near bottom, or burn just under the surface. Add small hops over grass.",
+    depth:"Mid — bottom to sub-surface",
+    target:"Bass in stained water, grass flats, and around wood. Excels when a spinnerbait gets refused.",
+    tip:"If grass fouls the blade, rip it free hard — the sudden vibration often triggers a strike."
+  },
+  "Crankbait": {
+    category:"Moving bait", difficulty:"Intermediate",
+    rigging:"Tie direct to 10-12 lb fluorocarbon (sinks/dives deeper). Use a squarebill for shallow wood, a deeper diver for ledges.",
+    retrieve:"Crank down to the target depth, then grind it into cover — wood, rock, bottom. The deflection is what triggers the bite. Pause for a beat after contact.",
+    depth:"Shallow (squarebill) to deep (diving lip)",
+    target:"Bass on wood, rock, and drop-offs. Best in stained water and during falling barometric pressure.",
+    tip:"If fish are short-striking, switch to a pause-and-go retrieve or downsize to a smaller profile."
+  },
+  "Jerkbait": {
+    category:"Moving bait", difficulty:"Intermediate",
+    rigging:"Tie direct to 10-14 lb fluorocarbon (helps suspending models sink). Slack-line technique — you'll work it with slack.",
+    retrieve:"Snap the rod tip down to dart the bait sideways, then feed slack and pause. Cadence varies: 2-3 twitches, pause 2-10 sec. Longer pauses in cold water.",
+    depth:"Suspending mid-depth (4-8 ft)",
+    target:"Suspended and clear-water bass, especially in cold water (40-60°F). A cold-front staple.",
+    tip:"In cold water, pause far longer than feels right — 8-15 second hangs get the biggest bites."
+  },
+  "Lipless Crank": {
+    category:"Moving bait", difficulty:"Beginner",
+    rigging:"Tie direct to 12-15 lb fluorocarbon. The bait sinks — count it down to the depth you want before retrieving.",
+    retrieve:"Burn it, yo-yo it (lift-drop), or slow-roll it. Let it tick the grass and rip it free when it fouls — that's when strikes happen.",
+    depth:"Variable — count it down to any depth",
+    target:"Active bass over flats and grass in warm water (65-80°F). A great spring and search bait.",
+    tip:"Yo-yo (lift and kill) over grass — bass slam it on the fall far more than on the retrieve."
+  },
+  "Frog": {
+    category:"Topwater", difficulty:"Intermediate",
+    rigging:"Tie direct to 50-65 lb braid. Use a popping frog in open water, a hollow-body over thick mats. Pinch the weedless hooks shut for cleaner hooksets.",
+    retrieve:"Walk it in open pockets with small wrist twitches. Over mats, drag-and-pause across holes. Deadstick in open holes for several seconds.",
+    depth:"Surface — over vegetation and mats",
+    target:"Bass buried in grass, lily pads, and matted vegetation in warm water. A summer grass staple.",
+    tip:"On the strike, wait a full second until you feel the fish before setting the hook — early hooksets lose frogs."
+  },
+  "Ned Rig": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"1/16-1/10 oz mushroom jig head with a 2.75 inch buoyant plastic (Z-Man TRD). Light line, 6-8 lb fluorocarbon.",
+    retrieve:"Drag it slowly on the bottom with long pauses. Small hops. The bait stands up on the bottom — let it sit, then inch it forward.",
+    depth:"Bottom",
+    target:"Pressured, neutral, and clear-water bass. A bite-generator when nothing else works.",
+    tip:"When you think you're going too slow, slow down more. Most bites come on the dead pause."
+  },
+  "Drop Shot": {
+    category:"Finesse", difficulty:"Intermediate",
+    rigging:"Weight on the bottom, hook tied 8-24 inches above it on a Palomar. Small finesse worm, 8-10 lb fluorocarbon. Tag end points down to the weight.",
+    retrieve:"Hold it still and shake the rod tip lightly. Barely move it — the bait dances above the bottom. Drag slowly to new spots and re-shake.",
+    depth:"Bottom — bait suspends above the weight",
+    target:"Deep, suspended, pressured, and clear-water bass. A cold-water and post-frontal staple.",
+    tip:"Don't reel to move the bait — shake in place. If you feel no bites, you're moving it too much."
+  },
+  "Shaky Head": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"1/16-3/16 ball jig head with a 6-7 inch finesse worm, 8-10 lb fluorocarbon. The worm stands up off the bottom.",
+    retrieve:"Drag and shake on the bottom. Move it a few inches, then shake in place. Long pauses between moves.",
+    depth:"Bottom",
+    target:"Post-frontal and pressured bass on points, rock, and brush. A reliable neutral-bait option.",
+    tip:"Bites often feel like mushy weight, not a tick — set the hook on anything that feels 'wrong'."
+  },
+  "Swimbait (slow)": {
+    category:"Moving bait", difficulty:"Intermediate",
+    rigging:"Weighted swimbait hook or jig head matched to the bait size, 12-15 lb fluorocarbon. Paddle-tail soft plastic.",
+    retrieve:"Slow, steady retrieve just above the bottom or grass. The tail thumps — you'll feel it. Slow-roll in cold water.",
+    depth:"Mid — adjust with head weight",
+    target:"Suspended and deep bass, post-frontal fish, and suspended bait schools. A slow-day confidence bait.",
+    tip:"Match the retrieve to the baitfish — if shad are lazy, swim it painfully slow."
+  },
+  "Big Swimbait": {
+    category:"Moving bait", difficulty:"Advanced",
+    rigging:"Heavy swimbait rig (1-2 oz head) on 20+ lb fluorocarbon or braid. 6-8 inch paddle-tail. Use stout gear.",
+    retrieve:"Slow, steady retrieve near the bottom or through suspended fish. Long casts, low patience, big-fish commitment.",
+    depth:"Mid to deep",
+    target:"Trophy-class bass during peak feeding windows (moon peaks, active bites). Low numbers, high quality.",
+    tip:"Commit to it — big swimbaits mean few bites but big fish. Don't switch off after 20 minutes."
+  },
+  "Jig (slow)": {
+    category:"Bottom", difficulty:"Intermediate",
+    rigging:"Flipping/structure jig with a chunk or craw trailer, 15-20 lb fluorocarbon. Match jig weight to depth and cover.",
+    retrieve:"Pitch or cast to cover, let it fall on a semi-slack line, then hop and drag it along the bottom. Slow, deliberate. Many bites come on the fall.",
+    depth:"Bottom — flipping/pitching cover",
+    target:"Bass in wood, brush, docks, and cold deep water. A big-fish cold-water and cover bait.",
+    tip:"Watch the line on the fall — if it ticks or moves sideways, reel down and set the hook."
+  },
+  "Jigging Spoon": {
+    category:"Vertical", difficulty:"Intermediate",
+    rigging:"Tie direct to 12-17 lb fluorocarbon with a loop knot for action. Heavy spoon (1/2-1 oz) to reach deep fish.",
+    retrieve:"Vertical jigging over marked fish. Lift the rod 1-2 feet and let it flutter down on a semi-slack line. Most strikes come on the fall.",
+    depth:"Deep — bottom oriented",
+    target:"Schooling and suspended bass in deep cold water (under 60°F). Find bait and fish on electronics first.",
+    tip:"Don't rip it too hard — a controlled lift-and-fall gets more bites than violent snaps."
+  },
+  "Blade Bait": {
+    category:"Vertical", difficulty:"Intermediate",
+    rigging:"Tie direct to 10-14 lb fluorocarbon with a loop knot. The bait vibrates intensely on the lift.",
+    retrieve:"Vertical lift-and-drop over deep fish. Short hops, then let it fall on slack. Also cast and slow-roll along the bottom.",
+    depth:"Deep — bottom oriented",
+    target:"Cold, deep, and schooling bass (under 55°F). A winter and cold-front weapon.",
+    tip:"Vary the lift height — short 6-inch hops often out-fish big rips in cold water."
+  },
+  "Texas Rig": {
+    category:"Bottom", difficulty:"Beginner",
+    rigging:"Bullet weight above a 3/0-4/0 offset hook, peg the weight in heavy cover. 10-20 lb fluorocarbon depending on cover.",
+    retrieve:"Cast to cover, let it sink, then drag and hop along the bottom. Slow and deliberate. Feel for the bite.",
+    depth:"Bottom — through cover",
+    target:"Bass in wood, grass, brush, and docks. The most versatile cover bait in bass fishing.",
+    tip:"If you feel a tick or the line goes heavy, reel down until you feel the fish, then set the hook hard."
+  },
+  "Wacky Senko": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"Hook a 5 inch stick worm dead-center through the middle with a 1/0 octopus hook. Weightless, 8 lb fluorocarbon.",
+    retrieve:"Let it sink on a semi-slack line — do nothing. The shimmy on the fall IS the action. Twitch and let it sink again.",
+    depth:"Sinking — mid to bottom",
+    target:"Neutral, pressured, and clear-water bass. A bite machine when fish are finicky.",
+    tip:"Resist the urge to work it — let it sink. Bites come on the fall, so watch your line."
+  },
+  "Football Jig": {
+    category:"Bottom", difficulty:"Intermediate",
+    rigging:"Football-head jig with a craw trailer, 12-17 lb fluorocarbon. The head shape lets it rock along hard bottom without rolling.",
+    retrieve:"Long casts, slow drag along the bottom. The head clatters over rock and clay. Pause on transitions and drop-offs.",
+    depth:"Deep bottom — ledges and points",
+    target:"Deep structure bass on rock and hard-bottom ledges. A deep-water big-fish bait.",
+    tip:"Let the head do the work — drag, don't hop. Strikes often come when it stalls on a rock."
+  },
+  "Carolina Rig": {
+    category:"Bottom", difficulty:"Intermediate",
+    rigging:"Heavy sinker (1/2-1 oz) above a swivel, then 2-4 ft leader to a 2/0-3/0 offset hook with a soft plastic. 14-17 lb fluorocarbon.",
+    retrieve:"Cast long, drag the weight along the bottom, and let the bait float and drag behind. Pause frequently — the bait suspends above the weight.",
+    depth:"Deep bottom — dragging structure",
+    target:"Deep bass on flats, points, and offshore humps. Covers water and finds scattered fish.",
+    tip:"The leader length matters — longer in clear water, shorter when fish are pinned to the bottom."
+  },
+  "Swim Jig": {
+    category:"Moving bait", difficulty:"Intermediate",
+    rigging:"Swim jig (3/8-1/2 oz) with a swimbait or grub trailer, 15-20 lb fluorocarbon. Skirt pulsates on the retrieve.",
+    retrieve:"Steady retrieve just under the surface or along grass edges. Slow roll in cold, burn in warm. Comes through grass cleanly.",
+    depth:"Shallow to mid",
+    target:"Bass in and around grass and vegetation. A cleaner-running alternative to a spinnerbait in salad.",
+    tip:"Add a swimbait trailer for action, or a chunk for bulk — match the forage you're seeing."
+  },
+  "Creature Bait": {
+    category:"Bottom", difficulty:"Beginner",
+    rigging:"Texas-rigged (bullet weight + 3/0-4/0 offset hook) or on a jig head. 15-20 lb fluorocarbon. Bulkier profile than a worm.",
+    retrieve:"Pitch to cover, let it fall, then drag and hop along the bottom. The flappers kick on the hop. Slow in cold, quicker in warm.",
+    depth:"Bottom — through heavy cover",
+    target:"Bass in heavy cover, stained/muddy water, and cold fronts. Bulk displaces water and calls fish in low visibility.",
+    tip:"In muddy water, use the biggest, darkest profile you have — bulk and silhouette matter more than color."
+  },
+  "Weightless Fluke": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"4/0-5/0 offset hook, no weight, 12-15 lb fluorocarbon. The bait glides and darts on the twitch.",
+    retrieve:"Twitch-twitch-pause. The fluke darts sideways on the twitch and sinks on the pause. Vary cadence — erratic is better than steady.",
+    depth:"Shallow — sub-surface to mid",
+    target:"Clear-water and pressured shallow bass, and bass chasing baitfish. A great skipping bait under docks.",
+    tip:"Skip it under overhanging cover — the weightless entry gets it places weighted baits can't reach."
+  },
+  "Tube": {
+    category:"Finesse", difficulty:"Beginner",
+    rigging:"Tube on a 1/8-1/4 oz tube jig head or Texas-rigged in cover, 8-12 lb fluorocarbon. Hollow body glides on the fall.",
+    retrieve:"Hop and drag on the bottom, or swim it with small twitches. The tentacles flutter on the fall — that's when bites come.",
+    depth:"Bottom — adjustable",
+    target:"Clear-water bass, smallmouth, and finicky fish. A great crawfish-imitator on rock bottoms.",
+    tip:"Dead-stick it on rock — let it sit and flutter. Smallmouth especially can't resist a falling tube."
+  },
+  "Neko Rig": {
+    category:"Finesse", difficulty:"Intermediate",
+    rigging:"Stick worm (5-6 inch) with a nail weight in the head and a 1/0-2/0 hook through the body, 8-10 lb fluorocarbon. Bait stands vertical and quivers.",
+    retrieve:"Drag and shake on the bottom. The weighted head hops while the tail dances above. Long pauses between shakes.",
+    depth:"Bottom — bait stands up",
+    target:"Pressured and clear-water bass, especially on hard bottoms. A step up from a shaky head when fish are wary.",
+    tip:"Lighter nail weights let the bait stand taller — match the weight to how the fish want it presented."
+  }
+};
+
+function lureRow(ic, label, text){
+  return '<div class="lure-row"><div class="lure-row-h">'+ic+' '+label+'</div>'+
+         '<div class="lure-row-t">'+escHtml(text)+'</div></div>';
+}
+
+function openLureGuide(name, color, why, ev){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  var g = LURE_GUIDE[name] || {
+    category:"Lure", difficulty:"—",
+    rigging:"Rig per the manufacturer's spec for the conditions you're fishing.",
+    retrieve:"Vary retrieve speed and pause length until strikes come — let the fish tell you.",
+    depth:"Varies with rigging and weight",
+    target:"Bass holding near cover, structure, or feeding transitions.",
+    tip:"Start slow, then experiment. Most bites come on a change — a pause, a speed-up, or a deflection."
+  };
+  document.getElementById("lureName").textContent = name;
+  document.getElementById("lureBadge").innerHTML = IC.hook + ' ' + g.category + ' · ' + g.difficulty;
+  var cr = '<span class="lure-color-chip">'+IC.drop+' Best color now: '+(color||'—')+'</span>' +
+           (why ? '<span class="lure-why">'+IC.bolt+' '+escHtml(why)+'</span>' : '');
+  document.getElementById("lureColorRow").innerHTML = cr;
+  document.getElementById("lureBody").innerHTML =
+    lureRow(IC.hook,'How to rig it', g.rigging) +
+    lureRow(IC.bolt,'How to work it', g.retrieve) +
+    lureRow(IC.water,'Running depth', g.depth) +
+    lureRow(IC.target,'When & where', g.target) +
+    lureRow(IC.trophy,'Pro tip', g.tip);
+  var info = BAIT_SHOP[name] || { query: name + " bass lure" };
+  var q = info.query + " " + (color || "");
+  document.getElementById("lureShopBtn").onclick = function(){
+    window.open("https://www.amazon.com/s?k=" + encodeURIComponent(q), "_blank");
+  };
+  var ov = document.getElementById("lureOverlay");
+  ov.classList.add("open");
+  ov.scrollTop = 0;
+  document.body.style.overflow = "hidden";
+  return false;
+}
+
+function closeLureGuide(){
+  document.getElementById("lureOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// ═══════════════════════════════════════════
+// SCORE HISTORY
+// ═══════════════════════════════════════════
+var HKEY = "bass-score-history-v2";
+function saveHistory(scores) {
+  try {
+    var h=JSON.parse(localStorage.getItem(HKEY)||"{}");
+    var now=Date.now();
+    scores.forEach(function(s){
+      if(!h[s.name])h[s.name]=[];
+      h[s.name].push({t:now,s:s.score});
+      if(h[s.name].length>12)h[s.name]=h[s.name].slice(-12);
+    });
+    localStorage.setItem(HKEY,JSON.stringify(h));
+  } catch(e){}
+}
+function getTrend(name) {
+  try {
+    var h=JSON.parse(localStorage.getItem(HKEY)||"{}");
+    var arr=h[name]; if(!arr||arr.length<2)return null;
+    var r=arr.slice(-3), d=r[r.length-1].s-r[0].s;
+    if(d>=2)  return{arrow:"↑↑",color:"var(--good)"};
+    if(d===1) return{arrow:"↑", color:"var(--good)"};
+    if(d===0) return{arrow:"→", color:"var(--dim)"};
+    if(d===-1)return{arrow:"↓", color:"var(--ok)"};
+    return          {arrow:"↓↓",color:"var(--bad)"};
+  } catch(e){return null;}
+}
+
+// ═══════════════════════════════════════════
+// SUNRISE PARSER  ("6:18:15 AM" → 6)
+// ═══════════════════════════════════════════
+function parseSunTime(str) {
+  if(!str)return null;
+  if(str.indexOf("T")!==-1)return parseInt(str.substring(11,13));
+  var p=str.split(":"), h=parseInt(p[0]), ap=str.slice(-2).toUpperCase();
+  if(ap==="PM"&&h!==12)h+=12;
+  if(ap==="AM"&&h===12)h=0;
+  return isNaN(h)?null:h;
+}
+
+// ═══════════════════════════════════════════
+// SCORING ENGINE
+// ═══════════════════════════════════════════
+function scoreColor(s){ return s>=7?"var(--good)":s>=5?"var(--ok)":"var(--bad)"; }
+function scoreHex(s)  { return s>=7?"#d4c440":s>=5?"#8a9a60":"#c0a070"; }
+
+// Water-type × conditions interaction.
+// The same weather affects different waters differently — this is what
+// differentiates two waters in the same town pulling identical weather.
+function waterModifier(lake, weather, trend) {
+  var type = (lake.type||"").toLowerCase();
+  var ws   = weather.wind_speed_mph;
+  var pl   = trend.trend || "stable";
+  var mods = [];
+
+  var isPond  = type.indexOf("pond")>=0;
+  var isRiver = type.indexOf("river")>=0 || type.indexOf("creek")>=0 ||
+                type.indexOf("stream")>=0 || type.indexOf("bayou")>=0 ||
+                type.indexOf("canal")>=0;
+  var isRes   = type.indexOf("reservoir")>=0;
+  var isLake  = type.indexOf("lake")>=0 && !isRes;
+  var big     = isRes || isLake;
+
+  // ── Wind × water size ──
+  if (ws >= 13) {
+    if (big)        mods.push({l:"Big Water", d:"handles wind chop",    m: 1});
+    else if (isPond)mods.push({l:"Small Pond",d:"wind muddies shallows",m:-2});
+    else if (isRiver)mods.push({l:"River",    d:"current buffers wind",  m: 0});
+  } else if (ws >= 5 && ws <= 12) {
+    if (big)        mods.push({l:"Big Water", d:"chop positions bait",   m: 1});
+  } else { // calm
+    if (isPond)     mods.push({l:"Small Pond",d:"calm favors ponds",    m: 1});
+    else if (big)   mods.push({l:"Big Water", d:"slick water tougher",   m:-1});
+  }
+
+  // ── Barometric × thermal mass (shallow reacts fast, current resists) ──
+  if (pl.indexOf("falling") >= 0) {
+    if (isPond)      mods.push({l:"Shallow",  d:"reacts fast to drop",  m: 1});
+    else if (isRiver)mods.push({l:"River",    d:"steady current bite",   m: 0});
+  } else if (pl.indexOf("rising") >= 0) {
+    if (isPond)      mods.push({l:"Shallow",  d:"post-front shutdown",   m:-1});
+    else if (isRiver)mods.push({l:"River",    d:"current resists front", m: 1});
+  }
+
+  // ── Baseline fishery quality by type (largemouth habitat) ──
+  if (isRes)        mods.push({l:"Reservoir",d:"prime bass structure",  m: 1});
+  else if (isRiver) mods.push({l:"Flowing",  d:"variable largemouth",   m:-1});
+
+  return mods;
+}
+
+// ═══ Intrinsic water attributes (Texas-specific knowledge) ═══
+// q: reputation (2 trophy, 1 good, 0 average, -1 pressured/marginal)
+// c: clarity (clear / stained / muddy)   d: depth (deep / mod / shallow)
+var KNOWN_WATERS = {
+  "Lake Fork":{q:2,c:"stained",d:"mod"},
+  "Sam Rayburn Reservoir":{q:2,c:"stained",d:"mod"},
+  "Toledo Bend Reservoir":{q:2,c:"stained",d:"mod"},
+  "Falcon Reservoir":{q:2,c:"clear",d:"mod"},
+  "Choke Canyon Reservoir":{q:2,c:"stained",d:"shallow"},
+  "Lake Travis":{q:1,c:"clear",d:"deep"},
+  "Lake Austin":{q:1,c:"clear",d:"mod"},
+  "Caddo Lake":{q:1,c:"muddy",d:"shallow"},
+  "Lake Conroe":{q:1,c:"stained",d:"mod"},
+  "Lake Palestine":{q:1,c:"stained",d:"mod"},
+  "Amistad Reservoir":{q:1,c:"clear",d:"deep"},
+  "Lake Buchanan":{q:1,c:"clear",d:"deep"},
+  "Canyon Lake":{q:1,c:"clear",d:"deep"},
+  "Possum Kingdom Lake":{q:1,c:"clear",d:"deep"},
+  "Lake Ray Roberts":{q:1,c:"stained",d:"mod"},
+  "Lake Texoma":{q:1,c:"stained",d:"mod"},
+  "Lake O the Pines":{q:1,c:"stained",d:"shallow"},
+  "Lake Bob Sandlin":{q:1,c:"stained",d:"mod"},
+  "Lake Cypress Springs":{q:1,c:"clear",d:"deep"},
+  "Lake Nacogdoches":{q:1,c:"stained",d:"mod"},
+  "Lake Whitney":{q:0,c:"clear",d:"deep"},
+  "Lake LBJ":{q:0,c:"clear",d:"mod"},
+  "Inks Lake":{q:0,c:"clear",d:"mod"},
+  "Medina Lake":{q:0,c:"clear",d:"deep"},
+  "Lake Tawakoni":{q:0,c:"stained",d:"shallow"},
+  "Lake Ray Hubbard":{q:0,c:"stained",d:"shallow"},
+  "Lake Lewisville":{q:0,c:"stained",d:"mod"},
+  "Lavon Lake":{q:0,c:"muddy",d:"shallow"},
+  "White Rock Lake":{q:-1,c:"muddy",d:"shallow"}
+};
+var EAST_REGIONS  = ["Quitman","Jasper","Tyler","Longview","Marshall","Carthage","Mt Pleasant","Mt Vernon","Jefferson","Nacogdoches","Rusk","Groesbeck","Mexia","Greenville","Sherman"];
+var CLEAR_REGIONS = ["Austin","Llano","Burnet","Kingsland","Marble Falls","New Braunfels","Del Rio","San Angelo","Lubbock","Amarillo","Silverton","Crosbyton"];
+
+function waterAttributes(lake) {
+  var k = KNOWN_WATERS[lake.name];
+  if (k) return k;
+  var type = (lake.type||"").toLowerCase();
+  var reg  = lake.region || "";
+  // Clarity from region
+  var c = "stained";
+  if (CLEAR_REGIONS.indexOf(reg) >= 0) c = "clear";
+  else if (EAST_REGIONS.indexOf(reg) >= 0) c = "stained";
+  else c = "stained";
+  // Depth from type
+  var d = "mod";
+  if (type.indexOf("pond")>=0 || type.indexOf("creek")>=0 || type.indexOf("stream")>=0) d = "shallow";
+  else if (type.indexOf("river")>=0 || type.indexOf("bayou")>=0) d = "shallow";
+  // Quality default
+  var q = 0;
+  if (type.indexOf("pond")>=0) q = -1;
+  return { q:q, c:c, d:d };
+}
+
+// Deterministic shoreline bearing for a water (stable per-lake)
+function lakeBearing(lake) {
+  var h = Math.abs(Math.sin(lake.lat*73.13 + lake.lon*129.7));
+  return Math.floor(h*360);
+}
+
+// Solunar major feeding window (moon overhead/underfoot ±1.5h)
+function inSolunarMajor(moonAge, hour) {
+  var upper = (12 + (moonAge/29.53)*24) % 24;
+  var lower = (upper + 12) % 24;
+  function near(t){ var d=Math.abs(hour-t); d=Math.min(d,24-d); return d<=1.5; }
+  return near(upper) || near(lower);
+}
+
+// Smooth compression so strong days still spread out (no hard clamp pileup).
+// Raw scores commonly run 4–16; this maps them into ~3–10 with the top end
+// progressively compressed so per-water nuance stays visible.
+function softScore(x) {
+  if (x > 6) x = 6 + (x - 6) * 0.42;
+  return Math.max(1, Math.min(10, x));
+}
+
+function scoreLake(lake, weather, trend, sun, moon) {
+  var sc=5, bd=[], now=new Date(), month=now.getMonth()+1, hour=now.getHours();
+
+  var pl=trend.trend||"stable";
+  if(pl==="stable"||pl==="slowly falling")  {sc+=2;bd.push({l:"Baro",  d:pl,           m:2});}
+  else if(pl==="rapidly falling")           {sc+=1;bd.push({l:"Baro",  d:pl,           m:1});}
+  else if(pl.indexOf("rising")!==-1)        {sc-=3;bd.push({l:"Baro",  d:pl,           m:-3});}
+  else                                      {      bd.push({l:"Baro",  d:"steady",      m:0});}
+
+  var ws=weather.wind_speed_mph;
+  if(ws>=5&&ws<=12)  {sc+=2;bd.push({l:"Wind",d:ws+"mph (ideal)",m:2});}
+  else if(ws<5)      {sc-=1;bd.push({l:"Wind",d:ws+"mph (calm)", m:-1});}
+  else if(ws>=15)    {sc-=2;bd.push({l:"Wind",d:ws+"mph (high)", m:-2});}
+  else               {      bd.push({l:"Wind",d:ws+"mph",         m:0});}
+
+  var air=weather.temperature_f, wt;
+  if(month>=3&&month<=5)wt=air-7.5; else if(month>=6&&month<=8)wt=air-10;
+  else if(month>=9&&month<=11)wt=air-5.5; else wt=air+2.5;
+  // Latitude-localized: southern TX waters run warmer, panhandle cooler
+  wt += (31.5 - lake.lat) * 1.1;
+  wt=Math.round(wt);
+  if(wt>=60&&wt<=75){sc+=2;bd.push({l:"Water",d:wt+"°F (ideal)",m:2});}
+  else if(wt>=55&&wt<60){sc+=1;bd.push({l:"Water",d:wt+"°F (good)",m:1});}
+  else if(wt>75&&wt<=82){sc+=0.5;bd.push({l:"Water",d:wt+"°F (warm)",m:0.5});}
+  else               {      bd.push({l:"Water",d:wt+"°F",         m:0});}
+
+  var srH=parseSunTime(sun.sunrise)??6, ssH=parseSunTime(sun.sunset)??20;
+  var tl="daytime";
+  if(hour>=srH-1&&hour<=srH+1)     {sc+=1;tl="dawn";  bd.push({l:"Time",d:tl,m:1});}
+  else if(hour>=ssH-1&&hour<=ssH+1){sc+=1;tl="dusk";  bd.push({l:"Time",d:tl,m:1});}
+  else if(hour>=10&&hour<=15)       {sc-=1;tl="midday";bd.push({l:"Time",d:tl,m:-1});}
+  else                              {                   bd.push({l:"Time",d:tl,m:0});}
+
+  var cl=weather.cloud_cover_pct, night=hour<srH||hour>ssH;
+  if(cl>=30||night){sc+=1;bd.push({l:"Clouds",d:night?"night":cl+"%",m:1});}
+  else             {sc-=1;bd.push({l:"Clouds",d:cl+"%",             m:-1});}
+
+  if(moon){
+    if(moon.score===3)     {sc+=2;bd.push({l:"Moon",d:moon.name+" +2",m:2});}
+    else if(moon.score===2){sc+=1;bd.push({l:"Moon",d:moon.name+" +1",m:1});}
+    else                   {      bd.push({l:"Moon",d:moon.name+" 0", m:0});}
+  }
+
+  // ── Water-type interaction (differentiates same-area waters) ──
+  var wmods = waterModifier(lake, weather, trend);
+  wmods.forEach(function(wm){ sc += wm.m; bd.push(wm); });
+
+  // ═══ Intrinsic & localized factors (make each water distinct) ═══
+  var attr = waterAttributes(lake);
+  var type = (lake.type||"").toLowerCase();
+  var isPond  = type.indexOf("pond")>=0;
+  var isRiver = type.indexOf("river")>=0||type.indexOf("creek")>=0||type.indexOf("stream")>=0||type.indexOf("bayou")>=0;
+  var bright  = cl < 30 && !night;
+
+  // Fishery reputation
+  if(attr.q===2)      {sc+=1.5; bd.push({l:"Fishery",d:"trophy water",   m:1.5});}
+  else if(attr.q===1) {sc+=0.8; bd.push({l:"Fishery",d:"strong fishery", m:0.8});}
+  else if(attr.q===-1){sc-=1;   bd.push({l:"Fishery",d:"pressured/marginal",m:-1});}
+
+  // Clarity × light: clear water spooky in bright sun, stained forgiving
+  if(attr.c==="clear"){
+    if(bright)        {sc-=1;   bd.push({l:"Clarity",d:"clear+bright tough",m:-1});}
+    else if(cl>=60||night){sc+=0.7;bd.push({l:"Clarity",d:"clear+low light",m:0.7});}
+  } else if(attr.c==="muddy"){
+    if(bright)        {sc+=0.5; bd.push({l:"Clarity",d:"muddy hides sun", m:0.5});}
+    else              {sc-=0.5; bd.push({l:"Clarity",d:"muddy+low light",m:-0.5});}
+  }
+
+  // Depth × season: shallow shines spring/fall, deep wins summer/winter
+  var spawn = month>=3&&month<=5, summer=month>=6&&month<=8, winter=month===12||month<=2;
+  if(attr.d==="shallow"){
+    if(spawn)         {sc+=1;   bd.push({l:"Depth",d:"shallow spring spawn",m:1});}
+    else if(summer)   {sc-=0.8; bd.push({l:"Depth",d:"shallow summer heat",m:-0.8});}
+    else if(winter)   {sc-=0.8; bd.push({l:"Depth",d:"shallow winter cold",m:-0.8});}
+  } else if(attr.d==="deep"){
+    if(summer)        {sc+=0.8; bd.push({l:"Depth",d:"deep summer refuge",m:0.8});}
+    else if(winter)   {sc+=0.6; bd.push({l:"Depth",d:"deep winter stability",m:0.6});}
+    else if(spawn)    {sc-=0.5; bd.push({l:"Depth",d:"deep slow spring",m:-0.5});}
+  }
+
+  // Fishing pressure: close to a metro = more pressured (skip rivers/ponds)
+  if(typeof userLat==="number" && !isRiver){
+    var metros=[[32.78,-96.80],[29.76,-95.37],[30.27,-97.74],[29.42,-98.49],[32.75,-97.33]];
+    var nearMetro=metros.some(function(m){return haversine(lake.lat,lake.lon,m[0],m[1])<25;});
+    if(nearMetro)     {sc-=0.6; bd.push({l:"Pressure",d:"urban-heavy traffic",m:-0.6});}
+    else if(metros.every(function(m){return haversine(lake.lat,lake.lon,m[0],m[1])>70;}))
+                      {sc+=0.6; bd.push({l:"Seclusion",d:"low fishing pressure",m:0.6});}
+  }
+
+  // Windward bank: does this lake's shoreline face into today's wind?
+  if(ws>=6 && typeof weather.wind_direction_deg==="number"){
+    var bearing=lakeBearing(lake);
+    var diff=Math.abs(((weather.wind_direction_deg-bearing+540)%360)-180);
+    if(diff<45)       {sc+=0.7; bd.push({l:"Windward",d:"bank stacks bait",m:0.7});}
+    else if(diff>135) {sc-=0.4; bd.push({l:"Leeward",d:"wind off the bank",m:-0.4});}
+  }
+
+  // Solunar major feeding window (time-based, shared)
+  if(moon && inSolunarMajor(moon.age||0, hour)){
+    sc+=0.8; bd.push({l:"Solunar",d:"major feed window",m:0.8});
+  }
+
+  var finalScore = softScore(sc);
+  return {score:Math.round(finalScore*10)/10,bd:bd,wt:wt,srH:srH,ssH:ssH};
+}
+// ═══════════════════════════════════════════
+// API FETCHING
+// ═══════════════════════════════════════════
+function fetchWeather(lat, lon) {
+  return fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon
+    +"&current=pressure_msl,wind_speed_10m,wind_direction_10m,cloud_cover,temperature_2m,relative_humidity_2m"
+    +"&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto")
+    .then(function(r){if(!r.ok)throw new Error("Weather failed");return r.json();})
+    .then(function(d){
+      var c=d.current;
+      return {pressure_hpa:c.pressure_msl,
+              pressure_inhg:Math.round(c.pressure_msl/33.8639*100)/100,
+              wind_speed_mph:Math.round(c.wind_speed_10m*10)/10,
+              wind_direction_deg:c.wind_direction_10m,
+              cloud_cover_pct:c.cloud_cover,
+              temperature_f:Math.round(c.temperature_2m*10)/10,
+              humidity_pct:c.relative_humidity_2m};
+    });
+}
+
+function fetchTrend(lat, lon) {
+  return fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon
+    +"&hourly=pressure_msl&timezone=auto&forecast_hours=6")
+    .then(function(r){if(!r.ok)throw new Error("Trend failed");return r.json();})
+    .then(function(d){
+      var p=d.hourly.pressure_msl;
+      if(p.length<2)return{trend:"unknown",delta:0};
+      var delta=p[p.length-1]-p[0], trend="stable";
+      if(delta<=-2)trend="rapidly falling"; else if(delta<=-0.5)trend="slowly falling";
+      else if(delta>=2)trend="rapidly rising"; else if(delta>=0.5)trend="slowly rising";
+      return{trend:trend,delta:Math.round(delta*100)/100};
+    });
+}
+
+function fetchSun(lat, lon) {
+  return fetch("https://api.sunrisesunset.io/json?lat="+lat+"&lng="+lon)
+    .then(function(r){if(!r.ok)throw new Error("Sun failed");return r.json();})
+    .then(function(d){return d.results;});
+}
+
+function windDir(deg) {
+  var d=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+  return d[Math.round(deg/22.5)%16];
+}
+
+// ═══════════════════════════════════════════
+// RENDERING — CONDITIONS
+// ═══════════════════════════════════════════
+function renderConditions(w, trend, sun, moon) {
+  document.getElementById("condTemp").textContent  = w.temperature_f+"°F";
+  document.getElementById("condHum").textContent   = w.humidity_pct+"% RH";
+  document.getElementById("condPres").textContent  = w.pressure_inhg+" in";
+
+  var tMap={"stable":"→ stable","slowly falling":"↓ slow","rapidly falling":"↓↓ fast",
+            "slowly rising":"↑ slow","rapidly rising":"↑↑ fast"};
+  var tEl=document.getElementById("condTrend");
+  tEl.textContent=tMap[trend.trend]||trend.trend;
+  tEl.style.color=(trend.trend.indexOf("falling")!==-1||trend.trend==="stable")?"var(--good)":"var(--ok)";
+
+  document.getElementById("condWind").textContent = w.wind_speed_mph+" mph";
+  document.getElementById("condDir").textContent  = windDir(w.wind_direction_deg);
+  document.getElementById("condMoon").innerHTML = moon.icon;
+
+  var ms=moon.name.replace("Waxing Crescent","Cres ↑").replace("Waning Crescent","Cres ↓")
+    .replace("Waxing Gibbous","Gib ↑").replace("Waning Gibbous","Gib ↓")
+    .replace("First Quarter","1st Qtr").replace("Last Quarter","Last Qtr");
+  document.getElementById("condMoonSub").textContent = ms;
+
+  var t=new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+  document.getElementById("statusText").textContent = "Updated "+t;
+}
+
+// ═══════════════════════════════════════════
+// RENDERING — HERO + BAITS
+// ═══════════════════════════════════════════
+function renderHero(top, baits, moon) {
+  var el=document.getElementById("heroCard");
+  var sc=scoreColor(top.score), hex=scoreHex(top.score);
+  var chips=baits.slice(0,3).map(function(b){return '<span class="hero-chip bait-link" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span></span>';}).join("");
+  var dist=top.dist<10?top.dist.toFixed(1):Math.round(top.dist);
+  el.innerHTML=
+    '<div class="hero-lbl"><span style="width:18px;height:18px;display:inline-block;vertical-align:middle">'+IC.trophy+'</span> Best Bet Today</div>'+
+    '<div class="hero-body">'+
+      '<div class="hero-info">'+
+        '<div class="hero-name">'+top.name+'</div>'+
+        '<div class="hero-sub">'+dist+'mi · '+top.type+' · '+moon.icon+' '+moon.name+'</div>'+
+        '<div class="hero-baits">'+chips+'</div>'+
+      '</div>'+
+      '<div class="hero-ring">'+
+        '<svg width="76" height="76" viewBox="0 0 76 76">'+
+          '<circle cx="38" cy="38" r="32" fill="none" stroke="var(--border)" stroke-width="6"/>'+
+          '<circle cx="38" cy="38" r="32" fill="none" stroke="'+hex+'" stroke-width="6"'+
+            ' stroke-dasharray="'+(2*Math.PI*32*top.score/10).toFixed(1)+' 999"'+
+            ' stroke-linecap="round" transform="rotate(-90 38 38)"/>'+
+          '<text x="38" y="38" text-anchor="middle" dominant-baseline="central"'+
+            ' fill="'+hex+'" font-size="32" font-weight="900" font-family="-apple-system">'+top.score+'</text>'+
+        '</svg>'+
+      '</div>'+
+    '</div>';
+  el.style.display="block";
+}
+
+function renderBaits(baits) {
+  var el=document.getElementById("baitsStrip");
+  var chips=baits.map(function(b){
+    return '<a class="bait-chip bait-link" href="'+b.url+'" target="_blank" rel="noopener" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span> <span class="bait-why">'+b.why+'</span> <span class="bait-buy">Guide →</span></a>';
+  }).join("");
+  el.innerHTML='<div class="baits-hdr">'+IC.target+' Recommended Baits Right Now <span class="baits-hdr-sub">tap for how-to</span></div><div class="baits-row">'+chips+'</div>';
+  el.style.display="block";
+}
+
+// ═══════════════════════════════════════════
+// RENDERING — LAKE LIST
+// ═══════════════════════════════════════════
+function renderLakes(weather, trend, sun, moon) {
+  var container=document.getElementById("lakesList");
+  var sectionLbl=document.getElementById("sectionLbl");
+  var noNearby=document.getElementById("noNearby");
+
+  if (!userLat || !userLon) {
+    container.innerHTML='<div class="loading-screen"><span style="width:22px;height:22px;display:inline-block;vertical-align:middle">'+IC.search+'</span> Search for a location above to see nearby waters</div>';
+    return;
+  }
+
+  // Score and sort all lakes by distance from user
+  var scored=ALL_LAKES.map(function(lake){
+    var dist=haversine(userLat,userLon,lake.lat,lake.lon);
+    var res=scoreLake(lake,weather,trend,sun,moon);
+    return Object.assign({},lake,{dist:dist},res);
+  });
+  scored.sort(function(a,b){return a.dist-b.dist;});
+
+  // Show nearest N, then re-sort by score
+  var nearest=scored.slice(0,MAX_SHOWN);
+  var maxDist=nearest[nearest.length-1].dist;
+  nearest.sort(function(a,b){return b.score-a.score||a.dist-b.dist;});
+
+  // Warn if far away
+  var closest=scored[0];
+  if(closest.dist>100){
+    noNearby.textContent=' Near ' + Math.round(closest.dist) + 'mi away. Showing closest ' + MAX_SHOWN + ' waters in Texas.';
+    noNearby.style.display="block";
+  } else {
+    noNearby.style.display="none";
+  }
+
+  // Update location pill
+  var pill=document.getElementById("locPill");
+  var pillName=document.getElementById("locPillName");
+  var pillDist=document.getElementById("locPillDist");
+  pill.classList.add("visible");
+  pillName.textContent=userLabel||"Custom Location";
+  pillDist.textContent="Showing "+nearest.length+" nearest waters";
+
+  // Save history
+  saveHistory(nearest.map(function(l){return{name:l.name,score:l.score};}));
+
+  var srH=nearest[0].srH||6, ssH=nearest[0].ssH||20, hour=new Date().getHours();
+  var _wa=waterAttributes(nearest[0]);
+  var baits=getBaits(weather,trend,nearest[0].wt,moon,hour,srH,ssH,_wa.c,_wa.d);
+  renderHero(nearest[0],baits,moon);
+  renderBaits(baits);
+  sectionLbl.style.display="block";
+  sectionLbl.textContent="Waters Within ~"+Math.round(maxDist)+"mi — Ranked by Score";
+
+  // Store for filter/sort
+  window._lastNearest = nearest;
+  window._lastWeather = weather;
+  window._lastTrend = trend;
+  window._lastMoon = moon;
+  document.getElementById("filterBar").style.display = "flex";
+  document.getElementById("filterSortRow").style.display = "flex";
+  renderFilteredCards(nearest, weather, trend, moon);
+}
+
+// ── Filter & Sort logic ──
+var _activeFilter = "all";
+var _activeSort = "score";
+
+function passesFilter(lake) {
+  var f = _activeFilter;
+  if (f === "all") return true;
+  if (f === "score-hot") return lake.score >= 7;
+  if (f === "score-ok") return lake.score >= 5 && lake.score < 7;
+  if (f === "score-cold") return lake.score < 5;
+  if (f === "close") return lake.dist < 30;
+  if (f === "mid") return lake.dist >= 30 && lake.dist < 60;
+  if (f === "far") return lake.dist >= 60;
+  if (f === "lake") return (lake.type||"").toLowerCase() === "lake";
+  if (f === "reservoir") return (lake.type||"").toLowerCase() === "reservoir";
+  return true;
+}
+
+function sortLakes(arr, mode) {
+  var sorted = arr.slice();
+  if (mode === "score") sorted.sort(function(a,b){ return b.score - a.score; });
+  else if (mode === "distance") sorted.sort(function(a,b){ return a.dist - b.dist; });
+  else if (mode === "name") sorted.sort(function(a,b){ return a.name.localeCompare(b.name); });
+  else if (mode === "temp") sorted.sort(function(a,b){ return b.wt - a.wt; });
+  return sorted;
+}
+
+function renderFilteredCards(nearest, weather, trend, moon) {
+  var filtered = nearest.filter(passesFilter);
+  var sorted = sortLakes(filtered, _activeSort);
+  document.getElementById("filterCount").textContent = sorted.length + " of " + nearest.length;
+
+  var srH = nearest[0] ? nearest[0].srH || 6 : 6;
+  var ssH = nearest[0] ? nearest[0].ssH || 20 : 20;
+  var container = document.getElementById("lakesList");
+
+  var html = "";
+  sorted.forEach(function(lake, i) {
+    var hex=scoreHex(lake.score);
+    var distLabel=lake.dist<1?Math.round(lake.dist*5280)+"ft":lake.dist.toFixed(1)+"mi";
+    var trend2=getTrend(lake.name);
+    var trendHtml=trend2?'<span class="card-trend" style="color:'+trend2.color+'">'+trend2.arrow+'</span>':'';
+
+    var tags=lake.bd.map(function(b){
+      var cls=b.m>0?"pos":b.m<0?"neg":"neu";
+      return '<span class="stag '+cls+'">'+b.l+' '+(b.m>0?"+":"")+b.m+'</span>';
+    }).join("");
+
+    var _wa2=waterAttributes(lake);
+    var mini=getBaits(weather,trend,lake.wt,moon,new Date().getHours(),srH,ssH,_wa2.c,_wa2.d)
+      .slice(0,2).map(function(b){return '<span class="mini-chip bait-link" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+b.name+' <span class="bait-color">'+b.color+'</span></span>';}).join("");
+
+    var cid = _storeCard({
+      name:lake.name, lat:lake.lat, lon:lake.lon, type:lake.type,
+      region:lake.region, dist:lake.dist, score:lake.score,
+      bd:lake.bd, wt:lake.wt, srH:lake.srH, ssH:lake.ssH
+    });
+    html+=
+      '<div class="lake-card" onclick="openDetail(\'' + cid + '\')">'+
+        '<div class="card-bar" style="background:'+hex+'"></div>'+
+        '<div class="card-body">'+
+          '<div class="card-top">'+
+            '<div class="card-info">'+
+              '<div class="card-name">'+(i===0?IC.trophy+' ':"")+lake.name+'</div>'+
+              '<div class="card-meta">'+distLabel+' · '+lake.type+' · '+lake.region+' · '+IC.water+' '+lake.wt+'°F</div>'+
+            '</div>'+
+            '<div class="card-right">'+
+              '<svg width="64" height="64" viewBox="0 0 64 64">'+
+                '<circle cx="32" cy="32" r="26" fill="none" stroke="var(--border)" stroke-width="5"/>'+
+                '<circle cx="32" cy="32" r="26" fill="none" stroke="'+hex+'" stroke-width="5"'+
+                  ' stroke-dasharray="'+(2*Math.PI*26*lake.score/10).toFixed(1)+' 999"'+
+                  ' stroke-linecap="round" transform="rotate(-90 32 32)"/>'+
+                '<text x="32" y="32" text-anchor="middle" dominant-baseline="central"'+
+                  ' fill="'+hex+'" font-size="24" font-weight="900" font-family="-apple-system">'+lake.score+'</text>'+
+              '</svg>'+
+              trendHtml+
+            '</div>'+
+          '</div>'+
+          '<div class="score-tags">'+tags+'</div>'+
+          '<div class="card-baits">'+mini+'</div>'+
+        '</div>'+
+      '</div>';
+  });
+  container.innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+// MAP
+// ═══════════════════════════════════════════
+function initMap() {
+  if(map)return;
+  map=L.map("map",{center:[31.5,-97.5],zoom:6,zoomControl:false,attributionControl:false});
+  // Esri World Imagery (satellite) — water bodies clearly visible
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
+    maxZoom:19, attribution:"Esri"
+  }).addTo(map);
+  // Reference labels overlay — roads, places, boundaries on top of satellite
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{
+    maxZoom:19, opacity:0.7
+  }).addTo(map);
+  L.control.zoom({position:"bottomleft"}).addTo(map);
+  var Leg=L.Control.extend({options:{position:"topright"},onAdd:function(){
+    var d=L.DomUtil.create("div","map-legend");
+    d.innerHTML='<h4>Score</h4>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#E8DDD0"></div>Hot (7-10)</div>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#9E8B7A"></div>OK (5-6)</div>'+
+      '<div class="leg-item"><div class="leg-dot" style="background:#7a5050"></div>Cold (1-4)</div>'+
+      '<div class="leg-item" style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><div class="leg-dot" style="background:#3a9ed8;box-shadow:0 0 6px #3a9ed8"></div>OSM Water Body</div>';
+    return d;
+  }});
+  map.addControl(new Leg());
+  // Overpass water body overlay — fetches ALL named water bodies in viewport
+  var overpassTimer=null;
+  map.on("moveend zoomend",function(){
+    if(map.getZoom()<8) {
+      clearOverpassMarkers();
+      return;
+    }
+    clearTimeout(overpassTimer);
+    overpassTimer=setTimeout(fetchMapWaterBodies,600);
+  });
+}
+
+function renderMapMarkers() {
+  initMap();
+  mapMarkers.forEach(function(m){map.removeLayer(m);}); mapMarkers=[];
+  var moon=getMoon();
+  ALL_LAKES.forEach(function(lake){
+    // Find nearest grid point for weather
+    var g=nearestGrid(lake.lat,lake.lon);
+    var gw=gridWeather[g.key];
+    if(!gw)return;
+    var res=scoreLake(lake,gw.weather,gw.trend,gw.sun,moon);
+    var hex=scoreHex(res.score);
+    var r=7+res.score*1.1;
+    var circle=L.circleMarker([lake.lat,lake.lon],{
+      radius:r,fillColor:hex,color:"#1e3a54",weight:2,opacity:1,fillOpacity:res.score>=7?0.9:0.65
+    }).addTo(map);
+    circle.bindTooltip(res.score.toString(),{permanent:true,direction:"center",className:"marker-label",offset:[0,0]});
+    var dist=userLat?haversine(userLat,userLon,lake.lat,lake.lon):null;
+    var distStr=dist?((dist<10?dist.toFixed(1):Math.round(dist))+"mi"):"–";
+    var ph=res.bd.map(function(b){
+      var cls=b.m>0?"pos":b.m<0?"neg":"neu";
+      return '<span class="ptag stag '+cls+'">'+b.l+' '+(b.m>0?"+":"")+b.m+'</span>';
+    }).join("");
+    circle.bindPopup(
+      '<div class="popup-name">'+lake.name+'</div>'+
+      '<div class="popup-score" style="background:'+hex+'22;color:'+hex+'">⭐ '+res.score+'/10</div>'+
+      '<div class="popup-meta">'+lake.type+' · '+lake.region+' · '+distStr+' from you</div>'+
+      '<div class="popup-tags">'+ph+'</div>',
+      {maxWidth:240}
+    );
+    mapMarkers.push(circle);
+  });
+  if(mapMarkers.length&&userLat){
+    map.setView([userLat,userLon],8);
+  }
+}
+
+function loadGridWeather() {
+  var remaining=GRID.filter(function(g){return !gridWeather[g.key];});
+  if(!remaining.length){renderMapMarkers();return;}
+  var promises=remaining.map(function(g){
+    return Promise.all([fetchWeather(g.lat,g.lon),fetchTrend(g.lat,g.lon),fetchSun(g.lat,g.lon)])
+      .then(function(res){gridWeather[g.key]={weather:res[0],trend:res[1],sun:res[2]};});
+  });
+  Promise.all(promises).then(renderMapMarkers).catch(function(e){console.error("Grid weather:",e);});
+}
+
+// ═══════════════════════════════════════════
+// MAP — Overpass water body overlay
+// Fetches ALL named water bodies in the current viewport
+// ═══════════════════════════════════════════
+function clearOverpassMarkers() {
+  overpassMarkers.forEach(function(m){ map.removeLayer(m); });
+  overpassMarkers = [];
+}
+
+function fetchMapWaterBodies() {
+  if(!map || map.getZoom() < 8) return;
+  var b = map.getBounds();
+  var south = b.getSouth(), west = b.getWest(), north = b.getNorth(), east = b.getEast();
+
+  // Cache key — round to ~0.1° to avoid re-fetching on tiny pans
+  var ck = Math.round(south*10)+"_"+Math.round(west*10)+"_"+Math.round(north*10)+"_"+Math.round(east*10);
+  if(overpassLoaded[ck]) return;
+  overpassLoaded[ck] = true;
+
+  // Bounding box for Overpass (south, west, north, east)
+  var bbox = south + "," + west + "," + north + "," + east;
+  var query =
+    "[out:json][timeout:20];" +
+    "(" +
+    "way[\"natural\"=\"water\"][\"name\"](" + bbox + ");" +
+    "relation[\"natural\"=\"water\"][\"name\"](" + bbox + ");" +
+    "way[\"waterway\"][\"name\"](" + bbox + ");" +
+    ");" +
+    "out center 200;";
+
+  var ENDPOINTS = [
+    "https://overpass.openstreetmap.fr/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter"
+  ];
+
+  function tryEP(idx) {
+    if(idx >= ENDPOINTS.length) return;
+    var ctrl = new AbortController();
+    var to = setTimeout(function(){ ctrl.abort(); }, 18000);
+    fetch(ENDPOINTS[idx], {
+      method: "POST",
+      body: "data=" + encodeURIComponent(query),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: ctrl.signal
+    })
+    .then(function(r){ clearTimeout(to); if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(data){
+      clearTimeout(to);
+      if(data.elements) renderOverpassWaterBodies(data.elements);
+    })
+    .catch(function(e){
+      clearTimeout(to);
+      if(e.name === "AbortError" || idx+1 < ENDPOINTS.length) tryEP(idx+1);
+    });
+  }
+  tryEP(0);
+}
+
+function renderOverpassWaterBodies(elements) {
+  // Build a set of known lake names so we don't duplicate scored markers
+  var known = {};
+  ALL_LAKES.forEach(function(l){ known[l.name.toLowerCase()] = true; });
+
+  var seen = {};
+  elements.forEach(function(el){
+    var name = el.tags && el.tags.name;
+    if(!name) return;
+    var nameLower = name.toLowerCase();
+    if(known[nameLower] || seen[nameLower]) return;
+    seen[nameLower] = true;
+
+    var lat = (el.center && el.center.lat) || el.lat;
+    var lon = (el.center && el.center.lon) || el.lon;
+    if(!lat || !lon) return;
+
+    var waterType = (el.tags.water || el.tags.waterway || "water").toLowerCase();
+    var typeLabel = WATER_TYPES[waterType] || "Water";
+
+    var dot = L.circleMarker([lat, lon], {
+      radius: 4,
+      fillColor: "#3a9ed8",
+      color: "#1a6da8",
+      weight: 1.5,
+      opacity: 0.9,
+      fillOpacity: 0.8
+    }).addTo(map);
+    dot.bindPopup(
+      '<div class="popup-name">' + name + '</div>' +
+      '<div class="popup-meta">' + typeLabel + ' · OSM data</div>' +
+      '<div class="popup-meta" style="margin-top:4px">Tap a scored marker for fishing details</div>',
+      { maxWidth: 220 }
+    );
+    overpassMarkers.push(dot);
+  });
+}
+
+// ═══════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════
+function switchView(v) {
+  currentView=v;
+  document.getElementById("tabList").classList.toggle("active",v==="list");
+  document.getElementById("tabMap").classList.toggle("active",v==="map");
+  document.getElementById("tabNearby").classList.toggle("active",v==="nearby");
+  document.getElementById("tabHotspots").classList.toggle("active",v==="hotspots");
+  document.getElementById("tabBank").classList.toggle("active",v==="bank");
+  document.getElementById("listView").style.display=v==="list"?"block":"none";
+  document.getElementById("mapView").classList.toggle("active",v==="map");
+  document.getElementById("nearbyView").classList.toggle("active",v==="nearby");
+  document.getElementById("hotspotsView").classList.toggle("active",v==="hotspots");
+  document.getElementById("bankView").classList.toggle("active",v==="bank");
+  if(v==="map"){
+    if(map)setTimeout(function(){map.invalidateSize();},100);
+    loadGridWeather();
+    // Trigger Overpass water body overlay after map is ready
+    setTimeout(fetchMapWaterBodies, 500);
+  }
+  if(v==="hotspots"){
+    renderHotspots();
+    // Load grid weather for live scoring if not already cached
+    var remaining = GRID.filter(function(g){ return !gridWeather[g.key]; });
+    if(remaining.length > 0) {
+      loadGridWeatherForHotspots();
+    } else if(weatherData) {
+      // Grid already loaded, re-render with scores
+      renderHotspots();
+    }
+  }
+  if(v==="bank"){
+    renderBankFishing();
+  }
+}
+
+// ═══════════════════════════════════════════
+// LOADING / ERROR
+// ═══════════════════════════════════════════
+function showLoading() {
+  document.getElementById("lakesList").innerHTML='<div class="loading-screen"><div class="spinner"></div><span>Fetching conditions…</span></div>';
+  document.getElementById("heroCard").style.display="none";
+  document.getElementById("baitsStrip").style.display="none";
+  document.getElementById("sectionLbl").style.display="none";
+  document.getElementById("noNearby").style.display="none";
+}
+function showError(msg) {
+  document.getElementById("lakesList").innerHTML='<div class="error-msg">'+IC.warn+' '+escHtml(msg||'Something went wrong')+'<br><br><button class="refresh-btn" onclick="loadReport()">↻ Try Again</button></div>';
+}
+
+// ═══════════════════════════════════════════
+// MAIN FLOW
+// ═══════════════════════════════════════════
+function loadReport() {
+  if(!userLat||!userLon){
+      document.getElementById("lakesList").innerHTML=
+        '<div class="loading-screen"><span style="font-size:22px;display:inline-block;vertical-align:middle">'+IC.search+'</span><span>Search for a city or tap '+IC.pin+' to start</span></div>';
+      return Promise.resolve();
+    }
+  showLoading();
+  var g=nearestGrid(userLat,userLon);
+  return Promise.all([fetchWeather(userLat,userLon),fetchTrend(userLat,userLon),fetchSun(userLat,userLon)])
+    .then(function(res){
+      weatherData=res[0]; pressureTrend=res[1]; sunData=res[2];
+      // Also cache this grid point for map
+      gridWeather[g.key]={weather:weatherData,trend:pressureTrend,sun:sunData};
+      var moon=getMoon();
+      renderConditions(weatherData,pressureTrend,sunData,moon);
+      renderLakes(weatherData,pressureTrend,sunData,moon);
+      if(currentView==="map")loadGridWeather();
+    })
+    .catch(function(e){showError(e.message||"Failed to load data.");console.error(e);});
+}
+
+function refreshData() {
+  var btn=document.getElementById("refreshBtn");
+  btn.classList.add("loading");
+  btn.innerHTML='<span class="ri">↻</span> Refreshing…';
+  hotspotLiveScores = null; // invalidate cache
+  loadReport().then(function(){
+    btn.classList.remove("loading");
+    btn.innerHTML='<span class="ri">↻</span> Refresh Conditions';
+  }).catch(function(){
+    btn.classList.remove("loading");
+    btn.innerHTML='<span class="ri">↻</span> Refresh Conditions';
+  });
+}
+
+// ═══════════════════════════════════════════
+// NEARBY — Overpass API (OpenStreetMap live)
+// ═══════════════════════════════════════════
+var nearbyLat = null, nearbyLon = null;
+var nearbyRadiusM = 8047; // 5 miles in meters
+var nearbyResults = [];
+
+var WATER_TYPES = {
+  reservoir:"Reservoir", lake:"Lake", pond:"Pond",
+  river:"River", stream:"Creek", creek:"Creek",
+  oxbow:"Oxbow", lagoon:"Lagoon", basin:"Basin",
+  canal:"Canal", ditch:"Ditch", marsh:"Marsh",
+  wetland:"Wetland", bayou:"Bayou"
+};
+
+function setRadius(miles) {
+  nearbyRadiusM = miles * 1609.34;
+  [5,10,25,50].forEach(function(m) {
+    var el = document.getElementById("r"+m);
+    if(el) el.classList.toggle("active", m===miles);
+  });
+  if(nearbyLat) fetchNearby();
+}
+
+function nearbyLocate() {
+  var btn = document.getElementById("nearbyGpsBtn");
+  var txt = document.getElementById("nearbyBtnText");
+  if(!navigator.geolocation) {
+    renderNearbyError("Geolocation not supported on this device.");
+    return;
+  }
+  btn.classList.add("locating");
+  txt.textContent = "Getting your location…";
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      nearbyLat = pos.coords.latitude;
+      nearbyLon = pos.coords.longitude;
+      btn.classList.remove("locating");
+      txt.textContent = "Refresh Nearby Waters";
+      document.getElementById("radiusRow").style.display = "flex";
+      fetchNearby();
+    },
+    function(err) {
+      btn.classList.remove("locating");
+      txt.textContent = "Find Water Near Me";
+      renderNearbyError("Location access denied. Please allow location in your browser settings.");
+    },
+    { enableHighAccuracy:true, timeout:12000, maximumAge:60000 }
+  );
+}
+
+function fetchNearby() {
+  var list = document.getElementById("nearbyList");
+  var cnt  = document.getElementById("nearbyCount");
+
+  list.innerHTML = '<div class="loading-screen"><div class="spinner"></div>' +
+    '<span id="nearbyLoadMsg">Scanning nearby water…</span>' +
+    '<small style="color:var(--dim);font-size:11px;margin-top:4px">Querying OpenStreetMap — may take 10-20s</small></div>';
+  cnt.textContent = "";
+
+  // Progress timer so user knows it's working
+  var elapsed = 0;
+  var timer = setInterval(function() {
+    elapsed += 5;
+    var el = document.getElementById("nearbyLoadMsg");
+    if (el) el.textContent = "Scanning nearby water… " + elapsed + "s";
+  }, 5000);
+
+  var r = Math.round(nearbyRadiusM);
+  // Explicit way/relation/node to avoid nwr timeout issues on some servers
+  var query =
+    "[out:json][timeout:25];" +
+    "(" +
+    "way[\"natural\"=\"water\"][\"name\"](around:" + r + "," + nearbyLat + "," + nearbyLon + ");" +
+    "relation[\"natural\"=\"water\"][\"name\"](around:" + r + "," + nearbyLat + "," + nearbyLon + ");" +
+    "way[\"waterway\"][\"name\"](around:" + r + "," + nearbyLat + "," + nearbyLon + ");" +
+    "node[\"natural\"=\"water\"][\"name\"](around:" + r + "," + nearbyLat + "," + nearbyLon + ");" +
+    ");" +
+    "out center 80;";
+
+  // Confirmed working public Overpass instances with CORS
+  var ENDPOINTS = [
+    "https://overpass.openstreetmap.fr/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter"
+  ];
+
+  function tryEndpoint(idx) {
+    if (idx >= ENDPOINTS.length) {
+      clearInterval(timer);
+      renderNearbyError("All Overpass servers failed. Check your connection and try again.");
+      return;
+    }
+
+    var controller = new AbortController();
+    var fetchTimeout = setTimeout(function() { controller.abort(); }, 28000);
+
+    fetch(ENDPOINTS[idx], {
+      method: "POST",
+      body: "data=" + encodeURIComponent(query),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: controller.signal
+    })
+    .then(function(r) {
+      clearTimeout(fetchTimeout);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      clearInterval(timer);
+      if (!data.elements) throw new Error("No elements in response");
+      processNearbyResults(data.elements);
+    })
+    .catch(function(e) {
+      clearTimeout(fetchTimeout);
+      if (e.name === "AbortError") {
+        // Timed out — try next endpoint
+        tryEndpoint(idx + 1);
+      } else if (idx + 1 < ENDPOINTS.length) {
+        // Server error — try next
+        tryEndpoint(idx + 1);
+      } else {
+        clearInterval(timer);
+        renderNearbyError("Could not reach Overpass servers. Check your connection and try again.<br><br>" +
+          "<small style='color:var(--dim)'>Error: " + e.message + "</small>");
+      }
+    });
+  }
+
+  tryEndpoint(0);
+}
+
+function processNearbyResults(elements) {
+  var seen = {};
+  var waters = [];
+
+  elements.forEach(function(el) {
+    var name = el.tags && el.tags.name;
+    if (!name) return;
+
+    // Get center coords — ways/relations use el.center, nodes use el.lat/el.lon
+    var lat = (el.center && el.center.lat) || el.lat;
+    var lon = (el.center && el.center.lon) || el.lon;
+    if (!lat || !lon) return;
+
+    var dist = haversine(nearbyLat, nearbyLon, lat, lon);
+
+    // Dedup: same name within 0.5mi = same water body (catches split waterway segments)
+    var nameLower = name.toLowerCase();
+    if (seen[nameLower] !== undefined) {
+      // Keep the closer segment
+      if (dist < seen[nameLower].dist) {
+        seen[nameLower].dist = dist;
+        seen[nameLower].lat  = lat;
+        seen[nameLower].lon  = lon;
+      }
+      return;
+    }
+
+    var waterType = (el.tags.water || el.tags.waterway || "water").toLowerCase();
+    var typeLabel = WATER_TYPES[waterType] || capitalise(waterType) || "Water";
+
+    var entry = {
+      name: name, lat: lat, lon: lon,
+      type: typeLabel, rawType: waterType,
+      dist: dist, tags: el.tags
+    };
+    seen[nameLower] = entry;
+    waters.push(entry);
+  });
+
+  // Sort by distance, nearest first
+  waters.sort(function(a, b) { return a.dist - b.dist; });
+  nearbyResults = waters;
+  renderNearby(waters);
+}
+
+function capitalise(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+}
+
+function renderNearby(waters) {
+  var list = document.getElementById("nearbyList");
+  var cnt  = document.getElementById("nearbyCount");
+
+  if(!waters.length) {
+    cnt.textContent = "No results";
+    list.innerHTML =
+      '<div class="nearby-empty">'+
+        '<div class="ne-icon">'+IC.terrain+'</div>'+
+        '<p>No named water bodies found<br>within this radius</p>'+
+        '<small>Try expanding the radius above</small>'+
+      '</div>';
+    return;
+  }
+
+  cnt.textContent = waters.length + " found";
+
+  // We need weather to score — use nearest grid point
+  var g = nearestGrid(nearbyLat, nearbyLon);
+  var gw = gridWeather[g.key];
+  var moon = getMoon();
+
+  // If grid weather not cached yet, fetch it first
+  if(!gw) {
+    Promise.all([fetchWeather(g.lat,g.lon), fetchTrend(g.lat,g.lon), fetchSun(g.lat,g.lon)])
+      .then(function(res){
+        gridWeather[g.key] = {weather:res[0],trend:res[1],sun:res[2]};
+        renderNearbyCards(waters, gridWeather[g.key], moon);
+      })
+      .catch(function(){ renderNearbyCards(waters, null, moon); });
+    return;
+  }
+  renderNearbyCards(waters, gw, moon);
+}
+
+function renderNearbyCards(waters, gw, moon) {
+  var list = document.getElementById("nearbyList");
+  var hasWeather = gw && gw.weather && gw.trend && gw.sun;
+  var html = "";
+
+  // Disclaimer note
+  html += '<div class="nc-note">'+
+    IC.warn + ' <strong>Live OSM data</strong> — these waters may be small, private, or seasonal. ' +
+    'Scores use nearest regional weather. Always check access & regulations before fishing.'+
+  '</div>';
+
+  waters.forEach(function(w, i) {
+    var score=null, hex="#4a6070", tags="", baits="", detailBd=[], detailWt=null;
+    if(hasWeather) {
+      var fakeLake = { name:w.name, lat:w.lat, lon:w.lon, type:w.type };
+      var res = scoreLake(fakeLake, gw.weather, gw.trend, gw.sun, moon);
+      score = res.score; detailBd = res.bd; detailWt = res.wt;
+      hex = scoreHex(score);
+      var srH=res.srH||6, ssH=res.ssH||20, hour=new Date().getHours();
+      tags = res.bd.map(function(b){
+        var cls=b.m>0?"pos":b.m<0?"neg":"neu";
+        return '<span class="stag '+cls+'">'+b.l+' '+(b.m>0?"+":"")+b.m+'</span>';
+      }).join("");
+      var _wa3=waterAttributes(res);
+      baits = getBaits(gw.weather, gw.trend, res.wt, moon, hour, srH, ssH, _wa3.c, _wa3.d)
+        .slice(0,2).map(function(b){ return '<span class="mini-chip bait-link" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+b.name+' <span class="bait-color">'+b.color+'</span></span>'; }).join("");
+    }
+
+    var distLabel = w.dist<0.1 ? Math.round(w.dist*5280)+"ft" :
+                    w.dist<1   ? (w.dist*5280).toFixed(0)+"ft" :
+                    w.dist<10  ? w.dist.toFixed(2)+"mi" : w.dist.toFixed(1)+"mi";
+
+    var ringHtml = score!==null ?
+      '<svg width="64" height="64" viewBox="0 0 64 64">'+
+        '<circle cx="32" cy="32" r="26" fill="none" stroke="var(--border)" stroke-width="5"/>'+
+        '<circle cx="32" cy="32" r="26" fill="none" stroke="'+hex+'" stroke-width="5"'+
+          ' stroke-dasharray="'+(2*Math.PI*26*score/10).toFixed(1)+' 999"'+
+          ' stroke-linecap="round" transform="rotate(-90 32 32)"/>'+
+        '<text x="32" y="32" text-anchor="middle" dominant-baseline="central"'+
+          ' fill="'+hex+'" font-size="24" font-weight="900" font-family="-apple-system">'+score+'</text>'+
+      '</svg>' :
+      '<div style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;'+
+        'font-size:22px;background:var(--card2);border-radius:50%;border:1px solid var(--border)">💧</div>';
+
+    // Extra tags from OSM
+    var osmTags = "";
+    if(w.tags.access==="private")   osmTags+='<span class="stag neg">Private</span>';
+    if(w.tags.access==="no")        osmTags+='<span class="stag neg">No Access</span>';
+    if(w.tags.fishing==="yes"||w.tags.fishing==="permitted") osmTags+='<span class="stag pos">Fishing ✓</span>';
+    if(w.tags.fishing==="no")       osmTags+='<span class="stag neg">No Fishing</span>';
+    if(w.tags.fee==="yes")          osmTags+='<span class="stag neu">Fee Area</span>';
+
+    var detailData = JSON.stringify({
+      name:w.name, lat:w.lat, lon:w.lon, type:w.type,
+      dist:w.dist, score:(score||0), bd:detailBd, wt:detailWt
+    }).replace(/"/g,"&quot;");
+
+    var ncid = _storeCard({
+      name:w.name, lat:w.lat, lon:w.lon, type:w.type,
+      dist:w.dist, score:(score||0), bd:detailBd, wt:detailWt
+    });
+
+    html +=
+      '<div class="nearby-card" onclick="openDetail(\'' + ncid + '\')">'+
+        '<div class="nc-bar" style="background:'+hex+'"></div>'+
+        '<div class="nc-body">'+
+          '<div class="nc-top">'+
+            '<div class="nc-info">'+
+              '<div class="nc-name">'+(i===0?IC.pin+' ':"")+w.name+'</div>'+
+              '<div class="nc-meta">'+w.type+' · '+distLabel+' away</div>'+
+            '</div>'+
+            '<div class="nc-right">'+ringHtml+'<span class="nc-dist" style="color:'+hex+'">'+distLabel+'</span></div>'+
+          '</div>'+
+          (tags||osmTags ? '<div class="nc-tags">'+osmTags+tags+'</div>' : '')+
+          (baits ? '<div class="nc-baits">'+baits+'</div>' : '')+
+        '</div>'+
+      '</div>';
+  });
+
+  list.innerHTML = html;
+}
+
+function renderNearbyError(msg) {
+  document.getElementById("nearbyList").innerHTML =
+    '<div class="error-msg">'+IC.warn+' '+msg+'</div>';
+}
+
+// Global store for clickable card data (avoids HTML attribute quoting issues)
+var _cardData = {};
+var _cardIdx  = 0;
+
+function _storeCard(obj) {
+  var id = "cd" + (_cardIdx++);
+  _cardData[id] = obj;
+  return id;
+}
+// ═══════════════════════════════════════════
+var detailMap = null;
+var detailMarker = null;
+var detailPulse = null;
+var _detailLat = null, _detailLon = null;
+
+function noPhotos(name, cont, score) {
+  var label = '';
+  if (score >= 7) label = 'Hot Spot';
+  else if (score >= 5) label = 'Fair Bite';
+  else label = 'Slow Day';
+  var accent = score >= 7 ? 'var(--good)' : score >= 5 ? 'var(--ok)' : 'var(--bad)';
+  var gradient = score >= 7 
+    ? 'linear-gradient(135deg, #1a1a10 0%, #2a2a18 40%, #3a3520 100%)'
+    : score >= 5 
+    ? 'linear-gradient(135deg, #1a1a10 0%, #2a2a18 60%, #3a3520 100%)'
+    : 'linear-gradient(135deg, #151510 0%, #1a1a10 60%, #2a2a18 100%)';
+  var dotPattern = 'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.02) 8px, rgba(255,255,255,0.02) 9px)';
+  cont.innerHTML = '<div class="detail-scenic-card" style="height:160px;border-radius:var(--radius);background:' + gradient + ';' + dotPattern + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(158,139,122,.2);">' +
+    '<span style="font-size:32px;opacity:.35;">\U0001F41F</span>' +
+    '<span style="font-size:16px;font-weight:700;color:var(--text);">' + name + '</span>' +
+    '<span style="font-size:12px;color:' + accent + ';font-weight:600;">' + label + '</span>' +
+    '</div>';
+}
+
+// ═══════════════════════════════════════════
+// PHOTO LOADER — Esri Satellite imagery (deterministic, always shows the actual lake)
+// ═══════════════════════════════════════════
+var _photoCache = {};
+try { var _cached = JSON.parse(localStorage.getItem('photo_cache') || '{}'); Object.assign(_photoCache, _cached); } catch(e) {}
+
+// Purge any old cached Wikimedia photos (non-satellite) — they may be unrelated images
+(function purgeOldCache() {
+  var changed = false;
+  for (var k in _photoCache) {
+    if (!_photoCache[k].satellite) {
+      delete _photoCache[k];
+      changed = true;
+    }
+  }
+  if (changed) {
+    try { localStorage.setItem('photo_cache', JSON.stringify(_photoCache)); } catch(e) {}
+  }
+})();
+
+function savePhotoCache() {
+  try { localStorage.setItem('photo_cache', JSON.stringify(_photoCache)); } catch(e) {}
+}
+
+function loadLakePhoto(name, cont, score, lat, lon) {
+  var cacheKey = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+  // Check cache first
+  if (_photoCache[cacheKey]) {
+    renderLakePhoto(cont, _photoCache[cacheKey].url, _photoCache[cacheKey].credit, score, name, _photoCache[cacheKey].satellite);
+    return;
+  }
+
+  // Esri satellite image — always shows the actual water body, no API key needed
+  var satUrl = buildSatelliteImage(lat, lon, name);
+  var satCredit = 'Satellite imagery · Esri World Imagery';
+  _photoCache[cacheKey] = { url: satUrl, credit: satCredit, satellite: true };
+  savePhotoCache();
+  renderLakePhoto(cont, satUrl, satCredit, score, name, true);
+}
+
+// ── Esri Satellite Static Image ──
+function buildSatelliteImage(lat, lon, name) {
+  // Calculate a bounding box around the lake center
+  // ~0.06 degrees ≈ 4 miles — tight enough to show the water body clearly
+  var pad = 0.06;
+  var bbox = (lon - pad) + ',' + (lat - pad) + ',' + (lon + pad) + ',' + (lat + pad);
+  var url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export' +
+    '?bbox=' + bbox +
+    '&bboxSR=4326' +
+    '&size=800,400' +
+    '&format=jpg' +
+    '&f=image' +
+    '&imageSR=4326' +
+    '&dpi=96';
+  return url;
+}
+
+function renderLakePhoto(cont, imgUrl, credit, score, name, isSatellite) {
+  var label = '';
+  if (score >= 7) label = 'Hot Spot';
+  else if (score >= 5) label = 'Fair Bite';
+  else label = 'Slow Day';
+  var accent = score >= 7 ? 'var(--good)' : score >= 5 ? 'var(--ok)' : 'var(--bad)';
+  var safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  var satBadge = isSatellite ? '<span class="sat-badge">🛰 Satellite</span>' : '';
+  
+  cont.innerHTML = 
+    '<div class="lake-photo-wrapper" style="position:relative;">' +
+      '<img src="' + imgUrl + '" alt="' + safeName + '" style="width:100%;height:160px;object-fit:cover;border-radius:var(--radius);display:block;" loading="lazy">' +
+      '<div class="lake-photo-overlay"></div>' +
+      satBadge +
+      '<div class="lake-photo-info">' +
+        '<span class="lake-photo-name">' + safeName + '</span>' +
+        '<span class="lake-photo-label" style="color:' + accent + ';">' + label + '</span>' +
+      '</div>' +
+    '</div>' +
+    (credit ? '<div class="detail-photo-credit">' + credit + '</div>' : '');
+  
+  var img = cont.querySelector('img');
+  if (img) {
+    img.onerror = function() {
+      noPhotos(name, cont, score);
+    };
+  }
+}
+
+function openDetail(lake) {
+  // Accept a store key string or a raw object
+  if (typeof lake === "string") lake = _cardData[lake];
+  if (!lake) return;
+  _detailLat = lake.lat;
+  _detailLon = lake.lon;
+
+  var moon = getMoon();
+  var hex  = scoreHex(lake.score);
+  var hour = new Date().getHours();
+  var srH  = lake.srH || 6;
+  var ssH  = lake.ssH || 20;
+
+  // ── Badge & name ──
+  document.getElementById("detailBadge").innerHTML = IC.lake + " " + (lake.type || "Lake");
+  document.getElementById("detailName").textContent  = lake.name;
+
+  // Meta line
+  var distStr = (lake.dist != null)
+    ? ((lake.dist < 10 ? lake.dist.toFixed(1) : Math.round(lake.dist)) + "mi away · ")
+    : "";
+  document.getElementById("detailMeta").innerHTML =
+      escHtml(distStr) + escHtml(lake.region || "") + (lake.wt != null ? " · " + IC.wave + " ~" + escHtml(lake.wt) + "°F" : "");
+
+  // ── Score ring ──
+  document.getElementById("detailRing").innerHTML =
+    '<svg width="88" height="88" viewBox="0 0 88 88">' +
+      '<circle cx="44" cy="44" r="36" fill="none" stroke="var(--border)" stroke-width="7"/>' +
+      '<circle cx="44" cy="44" r="36" fill="none" stroke="' + hex + '" stroke-width="7"' +
+        ' stroke-dasharray="' + (2*Math.PI*36*lake.score/10).toFixed(1) + ' 999"' +
+        ' stroke-linecap="round" transform="rotate(-90 44 44)"/>' +
+      '<text x="44" y="44" text-anchor="middle" dominant-baseline="central"' +
+        ' fill="' + hex + '" font-size="32" font-weight="900" font-family="-apple-system">' + lake.score + '</text>' +
+    '</svg>';
+
+  // ── Score breakdown tags ──
+  var tagsHtml = (lake.bd || []).map(function(b) {
+    var cls = b.m > 0 ? "pos" : b.m < 0 ? "neg" : "neu";
+    return '<span class="stag ' + cls + '">' + b.l + ' ' + (b.m > 0 ? "+" : "") + b.m + '</span>';
+  }).join("");
+  document.getElementById("detailTags").innerHTML = tagsHtml;
+
+  // ── Strategy ──
+  document.getElementById("detailStrategy").innerHTML = buildStrategy(lake, moon, hour, srH, ssH);
+
+  // ── Baits ──
+  var gw = weatherData ? { weather: weatherData, trend: pressureTrend, sun: sunData } : null;
+  if (!gw) {
+    var g = nearestGrid(lake.lat, lake.lon);
+    gw = gridWeather[g.key];
+  }
+  var _wa4=waterAttributes(lake);
+  var baits = gw
+    ? getBaits(gw.weather, gw.trend, lake.wt || 70, moon, hour, srH, ssH, _wa4.c, _wa4.d)
+    : [{ name:"Texas Rig", why:"universal" }, { name:"Ned Rig", why:"finesse" }, { name:"Spinnerbait", why:"search bait" }];
+
+  document.getElementById("detailBaits").innerHTML = baits.map(function(b) {
+    // Ensure bait has color + url (fallback baits may not)
+    if (!b.color) {
+      b.color = bestColor(b.name, (gw&&gw.weather)||{wind_speed_mph:5,cloud_cover_pct:30}, lake.wt||70, hour, srH, ssH);
+      var info = BAIT_SHOP[b.name] || { brand:"", query:b.name+" bass lure" };
+      b.shop = info;
+      b.url = "https://www.amazon.com/s?k=" + encodeURIComponent(info.query + " " + b.color);
+    }
+    return '<a class="detail-bait-chip bait-link" href="'+b.url+'" target="_blank" rel="noopener" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+IC.hook+' ' + b.name +
+      ' <span class="bait-color">'+b.color+'</span>' +
+      ' <span class="dbc-why">' + b.why + '</span>' +
+      (b.shop&&b.shop.brand ? ' <span class="dbc-brand">'+b.shop.brand+'</span>' : '') +
+      ' <span class="dbc-buy">Guide →</span></a>';
+  }).join("");
+
+  // ── Bank Access section ──
+  var bankAccessEl = document.getElementById("detailBankAccess");
+  var bankAccessContent = document.getElementById("detailBankAccessContent");
+  if(lake.bankAccess || lake.bankData) {
+    var ba = lake.bankAccess;
+    var bd2 = lake.bankData;
+    var typeIcon = { park:"🌳", pier:"🎣", ramp:"🚗", wade:"🚶", bank:"📍" };
+    var typeLabel = { park:"Park / Shore", pier:"Fishing Pier", ramp:"Boat Ramp Bank", wade:"Wade Area", bank:"Bank Access" };
+    var html = "";
+
+    if(ba && ba.summary) {
+      html += '<div class="bank-access-summary">'+escHtml(ba.summary)+'</div>';
+    } else if(bd2) {
+      // Generate summary from scoring data
+      var tips = [];
+      if(bd2.wade) tips.push("wade-in access available");
+      if(bd2.tags) bd2.tags.forEach(function(t){ if(t.cls==="good") tips.push(t.label.toLowerCase()); });
+      var gradeDesc = bd2.grade==="A" ? "Excellent bank fishing" : bd2.grade==="B" ? "Good bank fishing" : bd2.grade==="C" ? "Moderate bank access" : "Limited bank fishing";
+      html += '<div class="bank-access-summary"><b>'+gradeDesc+'</b>'+(tips.length ? " — "+tips.join(", ")+"." : ".")+'</div>';
+    }
+
+    if(ba && ba.points && ba.points.length > 0) {
+      ba.points.forEach(function(pt, i) {
+        var icon = typeIcon[pt.type] || "📍";
+        var lbl  = typeLabel[pt.type] || pt.type;
+        var navUrl = "https://maps.google.com/?q="+pt.lat+","+pt.lon;
+        html += '<div class="bank-access-point">'
+          + '<div class="bap-icon">'+icon+'</div>'
+          + '<div class="bap-body">'
+            + '<div class="bap-name">'+(i+1)+'. '+escHtml(pt.name)+'</div>'
+            + '<span class="bap-type '+pt.type+'">'+lbl+'</span>'
+            + '<div class="bap-notes">'+escHtml(pt.notes)+'</div>'
+          + '</div>'
+          + '<button class="bap-nav-btn" onclick="window.open(\''+navUrl+'\',\'_blank\')">Nav →</button>'
+          + '</div>';
+      });
+    } else if(bd2) {
+      // Generic tips based on scoring dimensions
+      var rows = [];
+      if(bd2.wade) rows.push({ icon:"🚶", type:"wade", label:"Wade Area", note:"Shallow, accessible bottom — wade out to reach structure and grass edges." });
+      if(bd2.tags) bd2.tags.forEach(function(t){
+        if(t.label==="Fishing Pier" || t.label==="Good Shore Access") rows.push({ icon:"🌳", type:"park", label:"Shore Access", note:"Public shoreline with good casting room." });
+        if(t.label==="Lots of Structure") rows.push({ icon:"📍", type:"bank", label:"Bank Structure", note:"Docks, points, and laydowns reachable from the bank — target these with jigs or Texas-rigged plastics." });
+        if(t.label==="Easy Parking") rows.push({ icon:"🚗", type:"ramp", label:"Boat Ramp Area", note:"Ramp area with adjacent bank — fish the riprap and wing walls early morning." });
+      });
+      if(rows.length === 0) rows.push({ icon:"📍", type:"bank", label:"General Bank Access", note:"Search for public parks, boat ramps, and fishing piers around this lake for shore access." });
+      rows.slice(0,4).forEach(function(r, i) {
+        var navUrl = "https://maps.google.com/?q="+escHtml(lake.name)+"+fishing+"+r.type+"+Texas";
+        html += '<div class="bank-access-point">'
+          + '<div class="bap-icon">'+r.icon+'</div>'
+          + '<div class="bap-body">'
+            + '<div class="bap-name">'+(i+1)+'. '+r.label+'</div>'
+            + '<span class="bap-type '+r.type+'">'+typeLabel[r.type]||r.type+'</span>'
+            + '<div class="bap-notes">'+r.note+'</div>'
+          + '</div>'
+          + '<button class="bap-nav-btn" onclick="window.open(\''+navUrl+'\',\'_blank\')">Search →</button>'
+          + '</div>';
+      });
+    }
+
+    bankAccessContent.innerHTML = html;
+    bankAccessEl.style.display = "";
+  } else {
+    bankAccessEl.style.display = "none";
+  }
+
+  // ── Open overlay ──
+  document.getElementById("detailOverlay").classList.add("open");
+  document.getElementById("detailOverlay").scrollTop = 0;
+  document.body.style.overflow = "hidden";
+
+  // ── Detail map ──
+  setTimeout(function() { initDetailMap(lake.lat, lake.lon, lake.name, hex, lake.score, lake.bankAccess || null); }, 80);
+  loadLakePhoto(lake.name, document.getElementById("detailSceneCard"), lake.score, lake.lat, lake.lon);
+}
+
+function closeDetail() {
+  document.getElementById("detailOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function initDetailMap(lat, lon, name, hex, score, bankAccess) {
+  // Zoom levels — wide enough to show the full lake even if the stored
+  // coordinate is a dam or town center rather than the exact geographic center.
+  var type = (name||"").toLowerCase();
+  var zoom;
+  if (type.indexOf("river")>=0 || type.indexOf("creek")>=0 || type.indexOf("stream")>=0)
+    zoom = 14;
+  else if (type.indexOf("pond")>=0)
+    zoom = 13;
+  else if (type.indexOf("reservoir")>=0 || type.indexOf("lake")>=0) {
+    if (KNOWN_WATERS[name] && KNOWN_WATERS[name].d === "deep")
+      zoom = 11;
+    else
+      zoom = 12;
+  } else {
+    zoom = 13;
+  }
+
+  if (!detailMap) {
+    detailMap = L.map("detailMap", {
+      center: [lat, lon], zoom: zoom,
+      zoomControl: true, attributionControl: false,
+      dragging: true, scrollWheelZoom: false
+    });
+    // Esri satellite imagery — water clearly visible as blue against terrain
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19
+    }).addTo(detailMap);
+    // Reference labels overlay
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19, opacity: 0.7
+    }).addTo(detailMap);
+  } else {
+    detailMap.setView([lat, lon], zoom);
+    if (detailMarker) detailMap.removeLayer(detailMarker);
+    if (detailPulse) detailMap.removeLayer(detailPulse);
+  }
+
+  // Pulsing accuracy ring — subtle, shows exact location on the water
+  detailPulse = L.circle([lat, lon], {
+    radius: 200,
+    color: hex,
+    weight: 2,
+    fillColor: hex,
+    fillOpacity: 0.06,
+    opacity: 0.5,
+    className: "detail-pulse-ring"
+  }).addTo(detailMap);
+
+  // Custom pin — shows the score, anchored precisely on the water
+  var pinIcon = L.divIcon({
+    className: "",
+    html: '<div class="detail-pin" style="background:' + hex + ';border-color:#1e3a54;">' +
+      score + '</div><div class="detail-pin-pulse" style="background:' + hex + '"></div>',
+    iconSize: [44, 44], iconAnchor: [22, 22]
+  });
+
+  detailMarker = L.marker([lat, lon], { icon: pinIcon }).addTo(detailMap);
+  detailMarker.bindPopup('<strong>' + name + '</strong>', { closeButton: false }).openPopup();
+
+  // ── Bank access point markers ──
+  if(bankAccess && bankAccess.points) {
+    var apColors = { park:"#6db87a", pier:"#7aaae0", ramp:"#d4a93a", wade:"#56c8c8", bank:"#c09a55" };
+    var apEmoji  = { park:"🌳", pier:"🎣", ramp:"🚗", wade:"🚶", bank:"📍" };
+    bankAccess.points.forEach(function(pt) {
+      var color = apColors[pt.type] || "#c09a55";
+      var emoji = apEmoji[pt.type] || "📍";
+      var apIcon = L.divIcon({
+        className: "",
+        html: '<div style="background:'+color+';width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid rgba(255,255,255,0.6);box-shadow:0 2px 8px rgba(0,0,0,0.5);">'+emoji+'</div>',
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+      var m = L.marker([pt.lat, pt.lon], { icon: apIcon }).addTo(detailMap);
+      m.bindPopup('<strong>'+pt.name+'</strong><br><small style="color:#888">'+pt.notes+'</small>', { maxWidth: 220 });
+    });
+    // Fit map to show all access points
+    var allPts = [[lat, lon]].concat(bankAccess.points.map(function(p){ return [p.lat, p.lon]; }));
+    try { detailMap.fitBounds(allPts, { padding: [30, 30], maxZoom: 14 }); } catch(e) {}
+  }
+
+  setTimeout(function() { detailMap.invalidateSize(); }, 100);
+}
+
+function openAppleMaps() {
+  if (_detailLat == null) return;
+  var name = encodeURIComponent(document.getElementById("detailName").textContent);
+  window.open("https://maps.apple.com/?ll=" + _detailLat + "," + _detailLon + "&q=" + name + "&t=m", "_blank");
+}
+
+function openGoogleMaps() {
+  if (_detailLat == null) return;
+  var name = encodeURIComponent(document.getElementById("detailName").textContent);
+  window.open("https://www.google.com/maps/dir/?api=1&destination=" + _detailLat + "," + _detailLon + "&destination_place_id=" + name, "_blank");
+}
+
+// Swipe-left or Escape to close detail / lure guide
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") { closeLureGuide(); closeDetail(); }
+});
+
+// ── Strategy builder ──
+function buildStrategy(lake, moon, hour, srH, ssH) {
+  var rows = [];
+  var w = weatherData || (function(){ var g=nearestGrid(lake.lat,lake.lon); var gw=gridWeather[g.key]; return gw&&gw.weather; })();
+  var trend = pressureTrend || (function(){ var g=nearestGrid(lake.lat,lake.lon); var gw=gridWeather[g.key]; return gw&&gw.trend; })();
+
+  // Time of day
+  var isNight = hour < srH || hour > ssH;
+  var isDawn  = hour >= srH-1 && hour <= srH+1;
+  var isDusk  = hour >= ssH-1 && hour <= ssH+1;
+  var timeTip;
+  if (isDawn)       timeTip = "Dawn bite is on — work shallow cover aggressively. Bass are actively feeding.";
+  else if (isDusk)  timeTip = "Evening bite window. Move to points and transitions as light fades.";
+  else if (isNight) timeTip = "Night fishing — slow down, use dark profiles. Target shallow rocky structure.";
+  else if (hour >= 10 && hour <= 15) timeTip = "Midday lull. Go deeper or find shade. Finesse presentations work best.";
+  else              timeTip = "Morning feeding period winding down. Cover water fast, then slow down.";
+  rows.push({ icon:IC.clock, label:"Time of Day", text: timeTip });
+
+  // Pressure
+  var trendStr = (trend && trend.trend) || "stable";
+  var baroTip;
+  if (trendStr === "rapidly falling")  baroTip = "Pressure dropping fast — fish are pre-front feeding hard. This is your best window. Cover water quickly.";
+  else if (trendStr === "slowly falling") baroTip = "Slow pressure drop — bass are actively feeding. Good window, don't waste it.";
+  else if (trendStr === "stable")      baroTip = "Stable pressure — fish are patterned and predictable. Match what worked here before.";
+  else if (trendStr === "slowly rising") baroTip = "Post-front recovery. Fish may be sluggish. Slow down presentations, target deeper structure.";
+  else                                  baroTip = "High pressure spike. Fish are tight to cover and deep. Go finesse — Ned rig, drop shot.";
+  rows.push({ icon:IC.baro, label:"Barometric Trend", text: baroTip });
+
+  // Wind
+  var windTip;
+  if (w) {
+    var ws = w.wind_speed_mph;
+    if      (ws < 2)    windTip = "Glassy water — bass can see everything. Downsize tackle, use lighter line, go natural colors.";
+    else if (ws <= 5)   windTip = "Light breeze — decent conditions. Work windward banks where baitfish accumulate.";
+    else if (ws <= 12)  windTip = "Perfect wind — waves break up light penetration and push baitfish. Fish the windward shore.";
+    else if (ws <= 18)  windTip = "Strong wind. Stay on the leeward side for boat control. Bass stack on wind-blown points.";
+    else                windTip = "High winds — tough conditions. Use heavier tackle, stay close to protected coves.";
+    rows.push({ icon:IC.wind, label:"Wind " + ws + " mph", text: windTip });
+  }
+
+  // Water temp
+  var wt = lake.wt;
+  var tempTip;
+  if      (wt < 50)  tempTip = "Cold water — metabolism is very slow. Fish deep, move extremely slowly. Jigs and spoons.";
+  else if (wt < 60)  tempTip = "Cool water — bass moving to shallows on warm days. Target sunny shallow flats in afternoons.";
+  else if (wt <= 70) tempTip = "Prime temperature range — bass are most active and catchable. Full range of techniques work.";
+  else if (wt <= 80) tempTip = "Warm but fishable. Focus on early/late, shade, and deeper cooler water mid-day.";
+  else               tempTip = "Hot water — stress on bass. Target shaded docks, deep timber, and thermoclines.";
+  rows.push({ icon:IC.temp, label:"Water ~" + wt + "°F", text: tempTip });
+
+  // Moon
+  var moonTip;
+  if (moon.score === 3)      moonTip = moon.name + " — peak solunar period. Feeding activity is highest around moonrise/moonset.";
+  else if (moon.score === 2) moonTip = moon.name + " — moderate lunar influence. Some solunar feeding windows during the day.";
+  else                       moonTip = moon.name + " — low lunar influence. Rely on time-of-day patterns instead.";
+  rows.push({ icon: moon.icon, label:"Moon — " + moon.name, text: moonTip });
+
+  // Water type specific tip
+  var typeTip = null;
+  var type = (lake.type || "").toLowerCase();
+  if (type.includes("river") || type.includes("creek") || type.includes("stream")) {
+    typeTip = "Moving water — position upstream of structure and let current bring bait to fish. Target eddies and seams.";
+  } else if (type.includes("pond")) {
+    typeTip = "Small pond — fan cast from the bank systematically. Work all visible cover. Bass have limited range.";
+  } else if (type.includes("reservoir")) {
+    typeTip = "Reservoir — target main lake points, creek channel swings, and standing timber. Depth changes are key.";
+  } else if (type.includes("lake")) {
+    typeTip = "Natural lake — focus on weed edges, laydowns, and rock piles. Bass orient to the sharpest structure breaks.";
+  }
+  if (typeTip) rows.push({ icon:IC.lake, label:"Water Type — " + (lake.type||"Water"), text: typeTip });
+
+  return rows.map(function(r) {
+    return '<div class="strategy-row">' +
+      '<div class="sr-icon">' + r.icon + '</div>' +
+      '<div class="sr-body"><div class="sr-label">' + r.label + '</div><div class="sr-text">' + r.text + '</div></div>' +
+    '</div>';
+  }).join("");
+}
+
+// ═══════════════════════════════════════════
+// SETTINGS — Google Custom Search API keys
+// ═══════════════════════════════════════════
+function showSettings() {
+  var csKey = localStorage.getItem('google_cs_key') || '';
+  var cx = localStorage.getItem('google_cs_cx') || '';
+  var modal = document.getElementById('settingsModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'settingsModal';
+    modal.className = 'settings-modal';
+    modal.innerHTML = '<div class="settings-panel">' +
+      '<h3>Photo API Settings</h3>' +
+      '<p>Enter your Google Custom Search API keys to load real lake photos. <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--good)">Get API key</a> & <a href="https://programmablesearchengine.google.com/" target="_blank" style="color:var(--good)">Search Engine ID</a></p>' +
+      '<input id="apiKeyInput" type="text" placeholder="API key (AIzaSy...)">' +
+      '<input id="cxInput" type="text" placeholder="Search Engine ID (CAX...)">' +
+      '<div><button class="settings-save" onclick="saveApiKeys()">Save</button>' +
+      '<button class="settings-close" onclick="hideSettings()">Close</button></div>' +
+      '<div class="settings-status disconnected" id="settingsStatus">Not connected</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) hideSettings(); });
+  }
+  document.getElementById('apiKeyInput').value = csKey;
+  document.getElementById('cxInput').value = cx;
+  updateSettingsStatus(csKey, cx);
+  modal.classList.add('open');
+}
+
+function hideSettings() {
+  var modal = document.getElementById('settingsModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function saveApiKeys() {
+  var csKey = document.getElementById('apiKeyInput').value.trim();
+  var cx = document.getElementById('cxInput').value.trim();
+  localStorage.setItem('google_cs_key', csKey);
+  localStorage.setItem('google_cs_cx', cx);
+  updateSettingsStatus(csKey, cx);
+}
+
+function updateSettingsStatus(csKey, cx) {
+  var el = document.getElementById('settingsStatus');
+  if (!el) return;
+  if (csKey && csKey.length > 10 && cx && cx.length > 10) {
+    el.className = 'settings-status connected';
+    el.textContent = '✓ Google Photos ready — open a lake to load images';
+  } else {
+    el.className = 'settings-status disconnected';
+    el.textContent = 'Not connected — photos will show lake info card';
+  }
+}
+
+// ═══════════════════════════════════════════
+// SVG ICONS (clean, minimalist line-art)
+// ═══════════════════════════════════════════
+var IC = {
+  fish:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12c3-5.5 8-8 13-8 2.8 0 5.2 1 6.5 2.5C19 6 16.5 6.5 15 8c2 0 4 .5 5.5 1.5C19 11 16.5 11.5 15 12c1.5.5 4 1 5.5 2.5C19 16 16.5 16.5 15 16c1.5 1.5 4 2 7 1.5-1.3 1.5-3.7 2.5-6.5 2.5-5 0-10-2.5-13-8z" fill="currentColor" fill-opacity="0.12"/><circle cx="6.5" cy="10.5" r="1.8" fill="currentColor" stroke="none"/><path d="M15 8c2 0 4 .5 5.5 1.5M15 12c1.5.5 4 1 5.5 2.5M15 16c1.5 1.5 4 2 7 1.5" stroke-opacity="0.5"/></svg>',
+  pin:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" fill="currentColor" fill-opacity="0.12"/><path d="M12 8.5l1.8 3.5-1.8 4.5-1.8-4.5z" fill="currentColor" stroke="none" opacity="0.6"/><circle cx="12" cy="8.5" r="2.2"/></svg>',
+  search:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="7" fill="currentColor" fill-opacity="0.08"/><path d="M10.5 7.5a3 3 0 0 1 3 3" stroke-opacity="0.4"/><path d="M16 16l4.5 4.5" stroke-width="2.5"/></svg>',
+  temp:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V4a2 2 0 0 0-4 0v10.76a4.5 4.5 0 1 0 4 0z" fill="currentColor" fill-opacity="0.1"/><circle cx="12" cy="18" r="2.5" fill="currentColor"/><path d="M12 4v11" stroke-opacity="0.4" stroke-dasharray="2 2"/></svg>',
+  wind:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h11a3 3 0 1 0-2.5-4.5" stroke-opacity="0.5"/><path d="M3 12h15a3 3 0 1 1-2.5 4.5"/><path d="M3 16h9a2.5 2.5 0 1 1-2 3.5" stroke-opacity="0.5"/></svg>',
+  baro:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity="0.08"/><path d="M12 12l4-3" stroke-width="2.5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><path d="M12 6v1.5M12 16.5V18M6 12H7.5M16.5 12H18" stroke-opacity="0.4"/></svg>',
+  moon:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor" fill-opacity="0.15"/><circle cx="15.5" cy="10" r="0.8" fill="currentColor" stroke="none" opacity="0.4"/><circle cx="17" cy="14" r="0.6" fill="currentColor" stroke="none" opacity="0.3"/></svg>',
+  map:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l7-4 8 4 7-4v16l-7 4-8-4-7 4z" fill="currentColor" fill-opacity="0.08"/><path d="M8 2v16M16 6v16" stroke-opacity="0.5"/><circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none" opacity="0.5"/></svg>',
+  signal:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10a11 11 0 0 1 15 0" stroke-opacity="0.4"/><path d="M7 13.5a7 7 0 0 1 10 0" stroke-opacity="0.6"/><path d="M9.5 17a3 3 0 0 1 5 0"/><circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none"/><path d="M12 19.5v-3" stroke-opacity="0.3" stroke-dasharray="1.5 1.5"/></svg>',
+  list:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" fill="currentColor" fill-opacity="0.08"/><path d="M7 8h2.5M7 12h2.5M7 16h2.5" stroke-width="2.2"/><path d="M12.5 8h5M12.5 12h5M12.5 16h3" stroke-opacity="0.6"/></svg>',
+  water:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0" fill="currentColor" fill-opacity="0.06"/><path d="M2 17c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M2 7c2-3 4-3 6 0s4 3 6 0 4-3 6 0" stroke-opacity="0.3"/></svg>',
+  wave:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0" fill="currentColor" fill-opacity="0.1"/><path d="M2 15c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M2 19.5c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0" stroke-opacity="0.4" stroke-width="1.5"/></svg>',
+  hook:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V5a3 3 0 0 0-6 0v1" stroke-opacity="0.5"/><path d="M12 9V4a3 3 0 0 0-3 3v5a6 6 0 0 0 12 0" fill="currentColor" fill-opacity="0.08"/><circle cx="12" cy="12" r="2.5" fill="currentColor" fill-opacity="0.15"/><path d="M17 16l-2 2" stroke-width="2.2"/></svg>',
+  target:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity="0.06"/><circle cx="12" cy="12" r="5.5" stroke-opacity="0.5"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" stroke-opacity="0.3"/></svg>',
+  clock:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity="0.08"/><path d="M12 7v5l3.5 2" stroke-width="2.2"/><path d="M12 3.5v1.5M12 19v1.5" stroke-opacity="0.3"/><path d="M7 6.5l1 1M16 16.5l1 1" stroke-opacity="0.3" stroke-width="1.2"/></svg>',
+  trophy:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v6a6 6 0 0 1-12 0z" fill="currentColor" fill-opacity="0.15"/><path d="M6 7H4a2.5 2.5 0 0 0 0 5h2M18 7h2a2.5 2.5 0 0 1 0 5h-2" stroke-opacity="0.5"/><path d="M4 21h16M10 16v2.5c0 .5-.5 1-1 1.2-1.2.5-2 2-2 2.3M14 16v2.5c0 .5.5 1 1 1.2 1.2.5 2 2 2 2.3" stroke-opacity="0.6"/><path d="M12 4v6" stroke-opacity="0.3" stroke-dasharray="1.5 1.5"/></svg>',
+  lake:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0" fill="currentColor" fill-opacity="0.1"/><path d="M2 18c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0"/><path d="M2 8c1.5-1.8 3-1.8 4.5 0s3 1.8 4.5 0 3-1.8 4.5 0 3 1.8 4.5 0" stroke-opacity="0.3" stroke-width="1.5"/></svg>',
+  bolt:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.2"/><path d="M13 2L4 14h7l-1 8 10-12h-7z" stroke-linejoin="round"/><path d="M11 8l-3 4h4z" fill="currentColor" stroke="none" opacity="0.5"/></svg>',
+  snow:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1" stroke-opacity="0.5"/><path d="M9 4l3 2 3-2M9 20l3-2 3 2M4 9l2 3-2 3M20 9l-2 3 2 3" stroke-width="2.2"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" opacity="0.5"/></svg>',
+  car:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14v-5a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3z" fill="currentColor" fill-opacity="0.1"/><path d="M5 12l2.5-6h9L19 12" stroke-opacity="0.6"/><circle cx="7.5" cy="18" r="2" fill="currentColor" fill-opacity="0.15"/><circle cx="16.5" cy="18" r="2" fill="currentColor" fill-opacity="0.15"/><path d="M7 14h2.5M14.5 14H17" stroke-opacity="0.3" stroke-width="1.2"/></svg>',
+  reservoir:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4" fill="currentColor" fill-opacity="0.06"/><rect x="3" y="10" width="18" height="10" rx="2" fill="currentColor" fill-opacity="0.1"/><path d="M12 10V2" stroke-opacity="0.5"/><path d="M9 5h6" stroke-opacity="0.3" stroke-width="1.2"/><path d="M6 15c1-1 2-1 3 0s2 1 3 0 2-1 3 0 2 1 3 0" stroke-opacity="0.4" stroke-width="1.5"/></svg>',
+  warn:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" fill="currentColor" fill-opacity="0.1"/><path d="M12 9v4" stroke-width="2.2"/><circle cx="12" cy="17" r="1.2" fill="currentColor" stroke="none"/><path d="M9 7l-4 7" stroke-opacity="0.3" stroke-width="1.2"/></svg>',
+  terrain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 21l-3-5-4 4-3-4 6-8 5 6z" fill="currentColor" fill-opacity="0.15"/><path d="M17 12l-3-4-2 5" fill="currentColor" fill-opacity="0.08"/><path d="M8 12l2-2.5 2 2.5" stroke-opacity="0.3" stroke-width="1.2"/></svg>',
+  flame:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4-3 8-7 8-12a8 8 0 0 0-16 0c0 5 4 9 8 12z" fill="currentColor" fill-opacity="0.12"/><path d="M12 22c-1.5-1.5-3-3.5-3-6a3 3 0 0 1 6 0c0 2.5-1.5 4.5-3 6z" fill="currentColor" fill-opacity="0.25"/><path d="M12 15c-.5-.5-1-1.5-1-2.5a1 1 0 0 1 2 0c0 1-.5 2-1 2.5z" fill="currentColor" stroke="none" opacity="0.5"/></svg>',
+  drop:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7l5.7 5.6a8 8 0 1 1-11.4 0z" fill="currentColor" fill-opacity="0.15"/><path d="M12 6.5l3 3a4 4 0 0 1 1 3" stroke-opacity="0.4" stroke-width="1.2"/></svg>',
+  arrow:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14" stroke-opacity="0.4"/><path d="M13 6l6 6-6 6" stroke-width="2.2"/><path d="M5 12l3-2M5 12l3 2" stroke-opacity="0.3" stroke-width="1.2"/></svg>',
+  back:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5" stroke-opacity="0.4"/><path d="M11 6l-6 6 6 6" stroke-width="2.2"/><path d="M19 12l-3-2M19 12l-3 2" stroke-opacity="0.3" stroke-width="1.2"/></svg>',
+  nav:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9-9 9z" fill="currentColor" fill-opacity="0.1"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 4.5v2M12 17.5v2M4.5 12h2M17.5 12h2" stroke-opacity="0.3" stroke-width="1.2"/></svg>'
+};
+
+function icon(name, cls) {
+  if (!IC[name]) return '';
+  var extra = cls ? ' class="' + cls + '"' : '';
+  return IC[name].replace('<svg', '<svg' + extra);
+}
+
+// ═══════════════════════════════════════════
+// FILTER / SORT EVENT WIRING
+// ═══════════════════════════════════════════
+document.getElementById("filterBar").addEventListener("click", function(e) {
+  var chip = e.target.closest(".filter-chip");
+  if (!chip) return;
+  _activeFilter = chip.getAttribute("data-filter");
+  var chips = document.querySelectorAll(".filter-chip");
+  for (var i = 0; i < chips.length; i++) chips[i].classList.remove("active");
+  chip.classList.add("active");
+  if (window._lastNearest) renderFilteredCards(window._lastNearest, window._lastWeather, window._lastTrend, window._lastMoon);
+});
+document.getElementById("sortSelect").addEventListener("change", function(e) {
+  _activeSort = e.target.value;
+  if (window._lastNearest) renderFilteredCards(window._lastNearest, window._lastWeather, window._lastTrend, window._lastMoon);
+});
+
+// ═══════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════
+// Restore last location from localStorage
+try {
+  var saved=JSON.parse(localStorage.getItem("bass-loc")||"null");
+  if(saved&&saved.lat&&saved.lon){
+    userLat=saved.lat; userLon=saved.lon; userLabel=saved.label||"Saved Location";
+    document.getElementById("searchInput").value=userLabel;
+    document.getElementById("searchClear").classList.add("visible");
+  }
+} catch(e){}
+
+loadReport();
+setInterval(function(){if(document.visibilityState==="visible"&&userLat)loadReport();},15*60*1000);
+
+// ═══════════════════════════════════════════════════════════════
+// SWIMMING FISH CYCLE — natural, dynamic animation engine.
+// Fish swims left off-screen, re-enters from the right, returns to icon.
+// Features: variable speed (accel/decel), multi-frequency bob, body
+// rotation, bubble trail, splash effects, dynamic tail speed, random timing.
+// Fish always faces left (natural image orientation).
+// ═══════════════════════════════════════════════════════════════
+function startFishCycle() {
+  var staticIcon = document.getElementById('staticIcon');
+  var wrap       = document.querySelector('header .swim-fish-wrap');
+  var fishImg    = document.querySelector('header .swim-fish');
+  var headerEl   = document.querySelector('header');
+  if (!staticIcon || !wrap || !fishImg || !headerEl) return;
+
+  // Accessibility: skip the swim cycle entirely for reduced-motion users.
+  // The idle float remains (slowed via the media query below).
+  var reduceMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var busy = false;
+  var nextTimer = null;
+
+  // ── Dynamic bubble emitter — wobble drift, varied size/speed/opacity ──
+  // Bubbles are appended to document.body (not header) so they can drift
+  // above the header without being clipped by overflow:hidden.
+  function emitDynamicBubble(viewportX, viewportY) {
+    var b = document.createElement('div');
+    b.className = 'fish-bubble';
+    var size = 4 + Math.random() * 8;
+    b.style.width  = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left   = viewportX + 'px';
+    b.style.top    = viewportY + 'px';
+    b.style.position = 'fixed';
+    document.body.appendChild(b);
+
+    var driftX     = (Math.random() - 0.5) * 36;
+    var driftY     = -30 - Math.random() * 45;
+    var wobbleAmp  = 4 + Math.random() * 10;
+    var wobbleFreq = 2 + Math.random() * 3;
+    var duration   = 1500 + Math.random() * 1800;
+    var peakOp     = 0.6 + Math.random() * 0.3;
+
+    var steps = 10, frames = [];
+    for (var i = 0; i <= steps; i++) {
+      var t = i / steps;
+      var wx = Math.sin(t * Math.PI * wobbleFreq) * wobbleAmp * (1 - t);
+      var px = driftX * t + wx;
+      var py = driftY * t;
+      var sc = 1 - t * (0.2 + Math.random() * 0.3);
+      var op = t < 0.1 ? peakOp * (t * 10) : peakOp * (1 - t * t);
+      frames.push({
+        transform: 'translate(' + px.toFixed(1) + 'px,' + py.toFixed(1) + 'px) scale(' + sc.toFixed(2) + ')',
+        opacity: op
+      });
+    }
+    b.animate(frames, { duration: duration, easing: 'ease-out' });
+    setTimeout(function() { if (b.parentNode) b.remove(); }, duration + 200);
+  }
+
+  // ── Continuous bubble emitter — always running ──
+  // Emits from the swimming fish's mouth when busy, from the static icon
+  // when idle.  Fish faces LEFT so the mouth is on the LEFT side.
+  // Uses viewport coordinates so bubbles can float above the header.
+  var bubbleTimerId = null;
+  function scheduleBubble() {
+    if (document.visibilityState !== 'visible') {
+      bubbleTimerId = setTimeout(scheduleBubble, 2000);
+      return;
+    }
+    if (busy) {
+      var wr = wrap.getBoundingClientRect();
+      var hdrRect = headerEl.getBoundingClientRect();
+      if (wr.left >= hdrRect.left - 80 && wr.left <= hdrRect.right + 80) {
+        // Mouth is on the left side of the left-facing fish
+        var mx = wr.left + wr.width * 0.15;
+        var my = wr.top  + wr.height * 0.45;
+        var c1 = 1 + Math.floor(Math.random() * 2);
+        for (var i = 0; i < c1; i++)
+          emitDynamicBubble(mx + (Math.random() - 0.5) * 6, my + (Math.random() - 0.5) * 5);
+      }
+      bubbleTimerId = setTimeout(scheduleBubble, 150 + Math.random() * 250);
+    } else {
+      // Idle: no bubbles — only emit during swim animation
+      bubbleTimerId = setTimeout(scheduleBubble, 800 + Math.random() * 1400);
+    }
+  }
+
+  // ── Splash ripple ──
+  function emitSplash(x, y) {
+    var s = document.createElement('div');
+    s.className = 'fish-splash';
+    s.style.left = (x - 12) + 'px';
+    s.style.top  = (y - 12) + 'px';
+    s.style.width  = '24px';
+    s.style.height = '24px';
+    headerEl.appendChild(s);
+    s.animate([
+      { transform: 'scale(0.3)', opacity: 0.6, borderWidth: '2px' },
+      { transform: 'scale(2.5)', opacity: 0,   borderWidth: '0.5px' }
+    ], { duration: 800, easing: 'ease-out' });
+    setTimeout(function() { if (s.parentNode) s.remove(); }, 900);
+  }
+
+  // ── Set tail wiggle speed dynamically (faster swim = faster tail) ──
+  function setTailSpeed(durationPx) {
+    // Duration in seconds — clamp 0.3s (fast dart) to 0.65s (lazy cruise)
+    var sec = Math.max(0.3, Math.min(0.65, durationPx / 5000));
+    fishImg.style.animationDuration = sec.toFixed(2) + 's';
+  }
+
+  // ── Generate natural swim keyframes ──
+  // X uses easing (accel/cruise/decel) instead of linear.
+  // Y bobs with two superposed sine waves (slow large + fast small).
+  // Body rotates slightly to follow the vertical curve.
+  function swimFrames(xFrom, xTo, opts) {
+    opts = opts || {};
+    var cycles  = opts.cycles  || 3;
+    var bobAmp  = opts.bobAmp  || 4;   // vertical bob amplitude (% of header height)
+    var n       = opts.steps   || 40;
+    var ease    = opts.ease    || 'cruise';
+
+    var frames = [];
+    for (var i = 0; i <= n; i++) {
+      var t = i / n;
+
+      // Eased horizontal progress — fish don't swim at constant speed
+      var ex;
+      if (ease === 'accel')       ex = t * t;
+      else if (ease === 'decel')  ex = 1 - (1 - t) * (1 - t);
+      else if (ease === 'dart')   ex = t < 0.25 ? t * t * 4 : 1 - (1 - t) * (1 - t) * 0.8;
+      else                        ex = t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t); // ease-in-out
+
+      var x = xFrom + (xTo - xFrom) * ex;
+
+      // Dual-frequency vertical bob for organic undulation
+      var y = -50
+            + bobAmp       * Math.sin(t * Math.PI * 2 * cycles)
+            + (bobAmp*0.3) * Math.sin(t * Math.PI * 2 * cycles * 2.7 + 1.3);
+
+      // Body tilt follows the vertical direction of travel
+      var rot = 2.5 * Math.cos(t * Math.PI * 2 * cycles);
+
+      frames.push({
+        transform: 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(2) + '%) rotate(' + rot.toFixed(2) + 'deg)',
+        offset: t
+      });
+    }
+    return frames;
+  }
+
+  // ── The main swim cycle ──
+  function swimCycle() {
+    if (busy) return;
+    busy = true;
+
+    var iconRect = staticIcon.getBoundingClientRect();
+    var hdrRect  = headerEl.getBoundingClientRect();
+    var startX   = iconRect.left - hdrRect.left + 2;
+    var offLeft  = -70;                    // off-screen left
+    var offRight = hdrRect.width + 30;     // off-screen right
+
+    fishImg.classList.remove('wiggle-right', 'wiggle-left');
+    fishImg.classList.add('wiggle-left');
+    wrap.style.zIndex = '10';
+
+    // Pause idle float, fade icon out
+    staticIcon.classList.add('dimmed');
+    staticIcon.style.transition = 'opacity 0.5s ease';
+    wrap.style.transition       = 'opacity 0.5s ease';
+    staticIcon.style.opacity = '0';
+    wrap.style.opacity = '1';
+
+    // ── Phase 1: swim left from icon, accelerating off the left edge ──
+    // ~30% of the time the fish darts instead of cruising for variety.
+    var dist1 = Math.abs(startX - offLeft);
+    var dur1  = 1800 + Math.random() * 800;
+    var ease1 = Math.random() < 0.3 ? 'dart' : 'accel';
+    setTailSpeed(dist1 / (dur1 / 1000));
+    var anim1 = wrap.animate(swimFrames(startX, offLeft, {
+      cycles: 2, bobAmp: 5, ease: ease1, steps: 35
+    }), { duration: dur1, easing: 'linear', fill: 'forwards' });
+
+    anim1.onfinish = function() {
+      // Fish stays at off-screen-left position via fill:forwards (no cancel yet)
+
+      // Small splash as fish exits left
+      emitSplash(0, hdrRect.height * 0.5);
+
+      // ── Fade out while fish is off-screen left ──
+      wrap.style.transition = 'opacity 0.4s ease';
+      wrap.style.opacity = '0';
+
+      // Off-screen pause — random 700-2400ms (fish cruising around back)
+      var pauseMs = 700 + Math.random() * 1700;
+      setTimeout(function() {
+
+        // ── Cancel Phase 1 (releases the fill) and reposition to right ──
+        anim1.cancel();
+        wrap.style.transition = '';
+        wrap.style.opacity = '0'; // stay invisible until Phase 2 fades it in
+
+        // Splash as fish re-enters from the right
+        emitSplash(hdrRect.width - 10, hdrRect.height * 0.5);
+
+        // ── Phase 2: enter from right, swim left back to icon — decelerating ──
+        var dist2 = Math.abs(offRight - startX);
+        var dur2  = 3500 + Math.random() * 1800;
+        setTailSpeed(dist2 / (dur2 / 1000));
+
+        // Build frames with opacity fade-in at start, fade-out at end
+        var phase2Frames = swimFrames(offRight, startX, {
+          cycles: 3, bobAmp: 4, ease: 'decel', steps: 50
+        });
+        phase2Frames.forEach(function(f) {
+          if (f.offset < 0.08)       f.opacity = (f.offset / 0.08);        // fade in
+          else if (f.offset > 0.94)  f.opacity = (1 - f.offset) / 0.06;   // fade out at end
+          else                       f.opacity = 1;
+        });
+
+        var anim2 = wrap.animate(phase2Frames, {
+          duration: dur2, easing: 'linear', fill: 'forwards'
+        });
+
+        anim2.onfinish = function() {
+          anim2.cancel();
+          fishImg.classList.remove('wiggle-left');
+          fishImg.style.animationDuration = '';
+          wrap.style.opacity = '0';
+          staticIcon.style.opacity = '1';
+          staticIcon.classList.remove('dimmed');
+          busy = false;
+
+          scheduleNext();
+        };
+      }, pauseMs);
+    };
+  }
+
+  // ── Random scheduling — genuinely unpredictable 14-32 second gaps
+  // so the fish never feels mechanical or attention-grabbing. ──
+  function scheduleNext() {
+    if (nextTimer) clearTimeout(nextTimer);
+    var delay = 14000 + Math.random() * 18000;
+    nextTimer = setTimeout(function() {
+      if (document.visibilityState === 'visible') swimCycle();
+      else scheduleNext(); // reschedule if tab was hidden
+    }, delay);
+  }
+
+  // Kick off with a short initial delay
+  if (!reduceMotion) scheduleNext();
+  // Start continuous bubble emitter (harmless even when swim is disabled)
+  scheduleBubble();
+}
+
+
+// ═══════════════════════════════════════════
+// BASS HOTSPOTS — iNaturalist observation density
+// ═══════════════════════════════════════════
+var INAT_DENSITY = {
+  "Lady Bird Lake":{obs:757,rg:543,sp:"Micropterus nigricans"},
+  "Lake Austin":{obs:745,rg:534,sp:"Micropterus nigricans"},
+  "Walter E. Long Lake":{obs:719,rg:522,sp:"Micropterus nigricans"},
+  "Brushy Creek Lake":{obs:608,rg:434,sp:"Micropterus nigricans"},
+  "Lake Pflugerville":{obs:420,rg:311,sp:"Micropterus nigricans"},
+  "Lake Worth":{obs:367,rg:285,sp:"Micropterus nigricans"},
+  "Lake Georgetown":{obs:322,rg:225,sp:"Micropterus nigricans"},
+  "Lake Lewisville":{obs:249,rg:180,sp:"Micropterus nigricans"},
+  "Eagle Mountain Lake":{obs:240,rg:172,sp:"Micropterus nigricans"},
+  "Lake Arlington":{obs:234,rg:186,sp:"Micropterus nigricans"},
+  "White Rock Lake":{obs:228,rg:160,sp:"Micropterus nigricans"},
+  "Lake Houston":{obs:223,rg:207,sp:"Micropterus nigricans"},
+  "Benbrook Lake":{obs:221,rg:172,sp:"Micropterus nigricans"},
+  "Lake Grapevine":{obs:200,rg:149,sp:"Micropterus nigricans"},
+  "Lake Dunlap":{obs:183,rg:129,sp:"Micropterus nigricans"},
+  "Canyon Lake":{obs:173,rg:116,sp:"Micropterus nigricans"},
+  "Lake McQueeney":{obs:172,rg:119,sp:"Micropterus nigricans"},
+  "Lake Travis":{obs:166,rg:119,sp:"Micropterus nigricans"},
+  "Joe Pool Lake":{obs:164,rg:108,sp:"Micropterus nigricans"},
+  "Lake Granbury":{obs:160,rg:125,sp:"Micropterus nigricans"},
+  "Mountain Creek Lake":{obs:153,rg:99,sp:"Micropterus nigricans"},
+  "Lake Nacogdoches":{obs:150,rg:117,sp:"Micropterus nigricans"},
+  "Lake Placid":{obs:146,rg:103,sp:"Micropterus nigricans"},
+  "Lake Ray Hubbard":{obs:132,rg:98,sp:"Micropterus nigricans"},
+  "Waco Lake":{obs:127,rg:94,sp:"Micropterus nigricans"},
+  "Lake Conroe":{obs:100,rg:74,sp:"Micropterus nigricans"},
+  "Lake Bryan":{obs:96,rg:69,sp:"Micropterus nigricans"},
+  "Stillhouse Hollow Lake":{obs:87,rg:53,sp:"Micropterus nigricans"},
+  "Squaw Creek Reservoir":{obs:84,rg:75,sp:"Micropterus nigricans"},
+  "Lake Weatherford":{obs:81,rg:68,sp:"Micropterus nigricans"},
+  "Belton Lake":{obs:79,rg:46,sp:"Micropterus nigricans"},
+  "Inks Lake":{obs:69,rg:58,sp:"Micropterus nigricans"},
+  "Lake LBJ":{obs:67,rg:53,sp:"Micropterus nigricans"},
+  "Lake Buchanan":{obs:65,rg:55,sp:"Micropterus nigricans"},
+  "Lake Tyler East":{obs:63,rg:42,sp:"Micropterus nigricans"},
+  "Braunig Lake":{obs:62,rg:52,sp:"Micropterus nigricans"},
+  "Lake Ray Roberts":{obs:59,rg:46,sp:"Micropterus nigricans"},
+  "Gibbons Creek Reservoir":{obs:59,rg:45,sp:"Micropterus nigricans"},
+  "Calaveras Lake":{obs:57,rg:45,sp:"Micropterus nigricans"},
+  "Lake Tyler West":{obs:56,rg:36,sp:"Micropterus nigricans"},
+  "Lake Marble Falls":{obs:44,rg:35,sp:"Micropterus nigricans"},
+  "Lake Kirby":{obs:40,rg:31,sp:"Micropterus nigricans"},
+  "Lavon Lake":{obs:39,rg:32,sp:"Micropterus nigricans"},
+  "Caddo Lake":{obs:34,rg:24,sp:"Micropterus nigricans"},
+  "Lake Cherokee":{obs:33,rg:33,sp:"Micropterus nigricans"},
+  "Lake Athens":{obs:33,rg:28,sp:"Micropterus nigricans"},
+  "Medina Lake":{obs:32,rg:22,sp:"Micropterus nigricans"},
+  "Lake Abilene":{obs:29,rg:23,sp:"Micropterus nigricans"},
+  "Possum Kingdom Lake":{obs:29,rg:23,sp:"Micropterus nigricans"},
+  "Lake Texoma":{obs:25,rg:22,sp:"Micropterus nigricans"},
+  "Sam Rayburn Reservoir":{obs:25,rg:17,sp:"Micropterus nigricans"},
+  "Somerville Lake":{obs:24,rg:17,sp:"Micropterus nigricans"},
+  "Lake Fort Phantom Hill":{obs:23,rg:19,sp:"Micropterus nigricans"},
+  "Lake Palo Pinto":{obs:23,rg:19,sp:"Micropterus nigricans"},
+  "Lake Whitney":{obs:23,rg:19,sp:"Micropterus nigricans"},
+  "Aquilla Lake":{obs:23,rg:19,sp:"Micropterus nigricans"},
+  "Lake Striker":{obs:23,rg:21,sp:"Micropterus nigricans"},
+  "Lake Jacksonville":{obs:23,rg:20,sp:"Micropterus nigricans"},
+  "Lake Casa Blanca":{obs:23,rg:20,sp:"Micropterus nigricans"},
+  "Twin Buttes Reservoir":{obs:22,rg:19,sp:"Micropterus nigricans"},
+  "Lake Nasworthy":{obs:22,rg:19,sp:"Micropterus nigricans"},
+  "Lake O the Pines":{obs:22,rg:18,sp:"Micropterus nigricans"},
+  "Lake Diversion":{obs:21,rg:19,sp:"Micropterus nigricans"},
+  "Richland Chambers Reservoir":{obs:21,rg:16,sp:"Micropterus nigricans"},
+  "Lake Fork":{obs:19,rg:19,sp:"Micropterus nigricans"},
+  "Lake Corpus Christi":{obs:18,rg:17,sp:"Micropterus nigricans"},
+  "Lake Amon G. Carter":{obs:17,rg:14,sp:"Micropterus nigricans"},
+  "Lake Tawakoni":{obs:17,rg:11,sp:"Micropterus nigricans"},
+  "Lake Bob Sandlin":{obs:17,rg:14,sp:"Micropterus nigricans"},
+  "Toledo Bend Reservoir":{obs:17,rg:15,sp:"Micropterus nigricans"},
+  "Nocona Lake":{obs:16,rg:15,sp:"Micropterus nigricans"},
+  "Lake Palestine":{obs:13,rg:4,sp:"Micropterus nigricans"},
+  "Lake Texana":{obs:13,rg:9,sp:"Micropterus nigricans"},
+  "OC Fisher Lake":{obs:12,rg:9,sp:"Micropterus nigricans"},
+  "Falcon Reservoir":{obs:12,rg:12,sp:"Micropterus nigricans"},
+  "Lake Brownwood":{obs:11,rg:8,sp:"Micropterus nigricans"},
+  "Martin Creek Lake":{obs:10,rg:10,sp:"Micropterus nigricans"},
+  "Lake Livingston":{obs:10,rg:8,sp:"Micropterus nigricans"},
+  "Coleto Creek Reservoir":{obs:10,rg:6,sp:"Micropterus nigricans"},
+  "Amistad Reservoir":{obs:10,rg:9,sp:"Micropterus nigricans"},
+  "Hubbard Creek Reservoir":{obs:8,rg:7,sp:"Micropterus nigricans"},
+  "Lake Coleman":{obs:7,rg:5,sp:"Micropterus nigricans"},
+  "Lake Cypress Springs":{obs:6,rg:6,sp:"Micropterus nigricans"},
+  "Lake Limestone":{obs:6,rg:5,sp:"Micropterus nigricans"},
+  "Lake Alan Henry":{obs:5,rg:1,sp:"(Micropterus punctulatus)"},
+  "E.V. Spence Reservoir":{obs:5,rg:5,sp:"(Micropterus salmoides)"},
+  "Lake Proctor":{obs:4,rg:2,sp:"Micropterus nigricans"},
+  "Lake Eddleman":{obs:4,rg:2,sp:"Micropterus nigricans"},
+  "Lake Throckmorton":{obs:4,rg:4,sp:"Micropterus nigricans"},
+  "Bardwell Lake":{obs:4,rg:1,sp:"(Micropterus)"},
+  "Choke Canyon Reservoir":{obs:4,rg:4,sp:"Micropterus nigricans"},
+  "White River Lake":{obs:3,rg:3,sp:"Micropterus nigricans"},
+  "Lake Graham":{obs:3,rg:1,sp:"(Micropterus salmoides)"},
+  "Millers Creek Reservoir":{obs:3,rg:3,sp:"Micropterus nigricans"},
+  "Lake Murvaul":{obs:3,rg:3,sp:"Micropterus nigricans"},
+  "Lake Mexia":{obs:3,rg:2,sp:"Micropterus nigricans"},
+  "Bluestem Lake":{obs:2,rg:1,sp:"(Micropterus salmoides)"},
+  "Lake Arrowhead":{obs:2,rg:1,sp:"Micropterus nigricans"},
+  "Lake Colorado City":{obs:1,rg:1,sp:"Micropterus nigricans"},
+  "O.H. Ivie Reservoir":{obs:1,rg:1,sp:"Micropterus nigricans"},
+  "Lake J.B. Thomas":{obs:1,rg:1,sp:"Micropterus nigricans"},
+  "Lake Sweetwater":{obs:1,rg:1,sp:"(Micropterus salmoides)"},
+  "Lake Stamford":{obs:1,rg:0,sp:"(Micropterus salmoides)"},
+  "Lake Winters":{obs:1,rg:0,sp:"Micropterus nigricans"},
+  "Lake Kickapoo":{obs:1,rg:1,sp:"Micropterus nigricans"},
+  "Lake Meredith":{obs:0,rg:0,sp:"—"},
+  "Lake Mackenzie":{obs:0,rg:0,sp:"—"},
+  "Champion Creek Reservoir":{obs:0,rg:0,sp:"—"},
+  "Lake Daniel":{obs:0,rg:0,sp:"—"},
+};
+
+// Lake surface areas (acres) from TWDB + TPWD
+var LAKE_AREAS = {
+  "Lake Meredith":{area:8640.07,src:"TWDB"},
+  "Lake Mackenzie":{area:250.0,src:"TWDB"},
+  "White River Lake":{area:751.5,src:"TWDB"},
+  "Lake Alan Henry":{area:2271.7,src:"TWDB"},
+  "Lake Colorado City":{area:1618.0,src:"TPWD"},
+  "Champion Creek Reservoir":{area:821.5,src:"TWDB"},
+  "E.V. Spence Reservoir":{area:3584.58,src:"TWDB"},
+  "OC Fisher Lake":{area:1295.89,src:"TWDB"},
+  "Twin Buttes Reservoir":{area:1444.3,src:"TWDB"},
+  "Lake Nasworthy":{area:1233.7,src:"TWDB"},
+  "O.H. Ivie Reservoir":{area:19149.0,src:"TPWD"},
+  "Lake J.B. Thomas":{area:3369.39,src:"TWDB"},
+  "Lake Sweetwater":{area:233.1,src:"TWDB"},
+  "Lake Stamford":{area:3870.6,src:"TWDB"},
+  "Lake Fort Phantom Hill":{area:3242.2,src:"TWDB"},
+  "Lake Abilene":{area:147.4,src:"TWDB"},
+  "Lake Brownwood":{area:6233.91,src:"TWDB"},
+  "Lake Coleman":{area:1729.74,src:"TWDB"},
+  "Lake Proctor":{area:4230.06,src:"TWDB"},
+  "Possum Kingdom Lake":{area:17096.17,src:"TWDB"},
+  "Lake Palo Pinto":{area:2166.04,src:"TWDB"},
+  "Lake Graham":{area:2151.11,src:"TWDB"},
+  "Hubbard Creek Reservoir":{area:9002.97,src:"TWDB"},
+  "Millers Creek Reservoir":{area:1519.2,src:"TWDB"},
+  "Lake Texoma":{area:84125.21,src:"TWDB"},
+  "Lake Arrowhead":{area:13082.37,src:"TWDB"},
+  "Lake Kickapoo":{area:5534.23,src:"TWDB"},
+  "Lake Amon G. Carter":{area:1394.1,src:"TWDB"},
+  "Nocona Lake":{area:1249.44,src:"TWDB"},
+  "Lake Ray Roberts":{area:25600.0,src:"TPWD"},
+  "Lake Lewisville":{area:29592.0,src:"TPWD"},
+  "Lavon Lake":{area:21600.15,src:"TWDB"},
+  "Lake Ray Hubbard":{area:21073.62,src:"TWDB"},
+  "Lake Tawakoni":{area:37879.0,src:"TPWD"},
+  "Lake Grapevine":{area:6684.0,src:"TPWD"},
+  "Eagle Mountain Lake":{area:8900.34,src:"TWDB"},
+  "Lake Worth":{area:3179.24,src:"TWDB"},
+  "Benbrook Lake":{area:3635.0,src:"TPWD"},
+  "Lake Weatherford":{area:926.19,src:"TWDB"},
+  "Lake Granbury":{area:8142.99,src:"TWDB"},
+  "White Rock Lake":{area:1088.0,src:"TPWD"},
+  "Joe Pool Lake":{area:6782.99,src:"TWDB"},
+  "Lake Arlington":{area:1899.61,src:"TWDB"},
+  "Mountain Creek Lake":{area:2971.2,src:"TWDB"},
+  "Squaw Creek Reservoir":{area:3272.0,src:"TPWD"},
+  "Lake Whitney":{area:23500.0,src:"TPWD"},
+  "Aquilla Lake":{area:3099.99,src:"TWDB"},
+  "Waco Lake":{area:8580.25,src:"TWDB"},
+  "Lake Fork":{area:25244.73,src:"TWDB"},
+  "Lake Bob Sandlin":{area:8755.41,src:"TWDB"},
+  "Lake Cypress Springs":{area:3207.28,src:"TWDB"},
+  "Lake O the Pines":{area:19780.0,src:"TPWD"},
+  "Caddo Lake":{area:28533.9,src:"TWDB"},
+  "Martin Creek Lake":{area:4903.34,src:"TWDB"},
+  "Lake Murvaul":{area:3397.0,src:"TPWD"},
+  "Lake Palestine":{area:23013.87,src:"TWDB"},
+  "Lake Tyler East":{area:2302.8,src:"TWDB"},
+  "Lake Tyler West":{area:2302.8,src:"TWDB"},
+  "Lake Nacogdoches":{area:2145.24,src:"TWDB"},
+  "Lake Striker":{area:1938.75,src:"TWDB"},
+  "Lake Jacksonville":{area:1320.0,src:"TPWD"},
+  "Lake Athens":{area:1799.0,src:"TPWD"},
+  "Sam Rayburn Reservoir":{area:91088.8,src:"TWDB"},
+  "Toledo Bend Reservoir":{area:177129.6,src:"TWDB"},
+  "Lake Limestone":{area:12553.0,src:"TPWD"},
+  "Lake Mexia":{area:1048.0,src:"TPWD"},
+  "Richland Chambers Reservoir":{area:43202.9,src:"TWDB"},
+  "Bardwell Lake":{area:3395.4,src:"TWDB"},
+  "Lake Conroe":{area:19878.15,src:"TWDB"},
+  "Lake Houston":{area:11433.78,src:"TWDB"},
+  "Lake Livingston":{area:90000.0,src:"TPWD"},
+  "Somerville Lake":{area:11456.0,src:"TPWD"},
+  "Lake Bryan":{area:829.0,src:"TPWD"},
+  "Gibbons Creek Reservoir":{area:2527.74,src:"TWDB"},
+  "Lake Travis":{area:17075.63,src:"TWDB"},
+  "Lake Austin":{area:1560.38,src:"TWDB"},
+  "Lake Buchanan":{area:22425.54,src:"TWDB"},
+  "Inks Lake":{area:790.06,src:"TWDB"},
+  "Lake LBJ":{area:6406.48,src:"TWDB"},
+  "Lake Marble Falls":{area:599.23,src:"TWDB"},
+  "Canyon Lake":{area:5996.75,src:"TWDB"},
+  "Stillhouse Hollow Lake":{area:6429.0,src:"TPWD"},
+  "Belton Lake":{area:12385.0,src:"TPWD"},
+  "Medina Lake":{area:1101.58,src:"TWDB"},
+  "Calaveras Lake":{area:3624.0,src:"TPWD"},
+  "Braunig Lake":{area:1350.0,src:"TPWD"},
+  "Lake Dunlap":{area:410.0,src:"TPWD"},
+  "Lake Placid":{area:198.0,src:"TPWD"},
+  "Coleto Creek Reservoir":{area:2350.93,src:"TWDB"},
+  "Lake Texana":{area:10240.09,src:"TWDB"},
+  "Choke Canyon Reservoir":{area:5778.3,src:"TWDB"},
+  "Lake Corpus Christi":{area:10780.93,src:"TWDB"},
+  "Falcon Reservoir":{area:30465.4,src:"TWDB"},
+  "Lake Casa Blanca":{area:1680.0,src:"TPWD"},
+  "Amistad Reservoir":{area:16538.69,src:"TWDB"},
+  "Lady Bird Lake":{area:468.0,src:"TPWD"},
+  "Walter E. Long Lake":{area:1269.0,src:"TPWD"},
+  "Lake Georgetown":{area:1297.0,src:"TPWD"},
+  "Lake Kirby":{area:740.0,src:"TPWD"},
+  "Lake Daniel":{area:950.0,src:"TPWD"},
+  "Lake Winters":{area:337.0,src:"TPWD"},
+  "Brushy Creek Lake":{area:null,src:null},
+  "Lake Pflugerville":{area:null,src:null},
+  "Lake McQueeney":{area:null,src:null},
+  "Lake Cherokee":{area:null,src:null},
+  "Lake Diversion":{area:null,src:null},
+  "Lake Eddleman":{area:null,src:null},
+  "Lake Throckmorton":{area:null,src:null},
+  "Bluestem Lake":{area:null,src:null},
+};
+var ACRES_TO_KM2 = 0.00404686;
+
+// TPWD stocking database — real bass stocking history per lake (scraped from tpwd.texas.gov)
+// fl=Florida strain, sl=ShareLunker trophy genetics, ls=Lone Star bass program
+var TPWD_STOCK = {
+  "Sam Rayburn Reservoir":{total:41473970,recent:4394846,lastYr:2026,fl:true,sl:true,ls:true},
+  "Toledo Bend Reservoir":{total:24780767,recent:4460808,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Ray Hubbard":{total:21433881,recent:189802,lastYr:2025,fl:true,sl:true,ls:true},
+  "Lake Lewisville":{total:18329577,recent:938632,lastYr:2024,fl:true,sl:true,ls:true},
+  "Lake Fork":{total:18031910,recent:3411995,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Palestine":{total:16753133,recent:1929246,lastYr:2025,fl:true,sl:true,ls:true},
+  "Amistad Reservoir":{total:15695727,recent:1656106,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Tawakoni":{total:12221311,recent:1361310,lastYr:2026,fl:true,sl:true,ls:false},
+  "Lake Conroe":{total:10473068,recent:733089,lastYr:2026,fl:true,sl:true,ls:true},
+  "Falcon Reservoir":{total:10256345,recent:1752205,lastYr:2026,fl:true,sl:true,ls:true},
+  "Caddo Lake":{total:10075569,recent:809976,lastYr:2025,fl:true,sl:true,ls:true},
+  "Hubbard Creek Reservoir":{total:6317709,recent:264474,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Corpus Christi":{total:6161109,recent:613842,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Austin":{total:6152008,recent:561863,lastYr:2026,fl:true,sl:true,ls:true},
+  "Somerville Lake":{total:6128712,recent:427941,lastYr:2025,fl:true,sl:true,ls:true},
+  "Choke Canyon Reservoir":{total:6086577,recent:1333997,lastYr:2024,fl:true,sl:true,ls:true},
+  "Possum Kingdom Lake":{total:6006515,recent:590419,lastYr:2025,fl:true,sl:true,ls:true},
+  "Lake Arrowhead":{total:5017749,recent:1407042,lastYr:2025,fl:true,sl:false,ls:false},
+  "Lake Livingston":{total:4630467,recent:146736,lastYr:2024,fl:true,sl:true,ls:true},
+  "Lake Ray Roberts":{total:4597272,recent:469782,lastYr:2024,fl:true,sl:true,ls:true},
+  "Lake Granbury":{total:4519893,recent:166157,lastYr:2026,fl:true,sl:false,ls:true},
+  "Benbrook Lake":{total:4407868,recent:68454,lastYr:2026,fl:true,sl:false,ls:true},
+  "Walter E. Long Lake":{total:4370796,recent:101157,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lake Bob Sandlin":{total:4130438,recent:453630,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Brownwood":{total:4083759,recent:348999,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Worth":{total:3996979,recent:83640,lastYr:2023,fl:true,sl:false,ls:true},
+  "Calaveras Lake":{total:3875914,recent:0,lastYr:2014,fl:true,sl:false,ls:false},
+  "Lake Athens":{total:3693560,recent:407216,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Proctor":{total:3579102,recent:0,lastYr:2019,fl:true,sl:false,ls:false},
+  "Eagle Mountain Lake":{total:3557125,recent:153253,lastYr:2025,fl:true,sl:true,ls:true},
+  "Bardwell Lake":{total:3527922,recent:0,lastYr:2017,fl:true,sl:false,ls:false},
+  "Lake Fort Phantom Hill":{total:3509073,recent:417834,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Texana":{total:3418759,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Lake J.B. Thomas":{total:3418759,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Lavon Lake":{total:3380149,recent:198761,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Whitney":{total:3281736,recent:475600,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lake Meredith":{total:3241687,recent:48162,lastYr:2026,fl:true,sl:false,ls:false},
+  "Lake Grapevine":{total:3231174,recent:96000,lastYr:2021,fl:true,sl:false,ls:false},
+  "Lake Houston":{total:3046720,recent:419430,lastYr:2026,fl:true,sl:false,ls:true},
+  "Waco Lake":{total:2980550,recent:585957,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Texoma":{total:2932606,recent:178447,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Travis":{total:2825076,recent:284967,lastYr:2026,fl:true,sl:true,ls:true},
+  "Twin Buttes Reservoir":{total:2745957,recent:459873,lastYr:2025,fl:true,sl:true,ls:true},
+  "Lake Graham":{total:2368974,recent:126735,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Jacksonville":{total:2331237,recent:39130,lastYr:2020,fl:true,sl:true,ls:false},
+  "Canyon Lake":{total:2303515,recent:339348,lastYr:2023,fl:true,sl:false,ls:true},
+  "Medina Lake":{total:2086876,recent:0,lastYr:2018,fl:true,sl:false,ls:false},
+  "Joe Pool Lake":{total:2012809,recent:238492,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Buchanan":{total:1898059,recent:0,lastYr:2019,fl:true,sl:false,ls:false},
+  "Lake Casa Blanca":{total:1854748,recent:346630,lastYr:2026,fl:true,sl:true,ls:true},
+  "Stillhouse Hollow Lake":{total:1751053,recent:213515,lastYr:2024,fl:true,sl:false,ls:true},
+  "Coleto Creek Reservoir":{total:1623586,recent:455512,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lake Kickapoo":{total:1595822,recent:1169132,lastYr:2026,fl:false,sl:false,ls:false},
+  "Lake Nasworthy":{total:1585251,recent:0,lastYr:2019,fl:true,sl:false,ls:false},
+  "Martin Creek Lake":{total:1520005,recent:129123,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Limestone":{total:1506481,recent:283501,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Arlington":{total:1489268,recent:38421,lastYr:2023,fl:true,sl:false,ls:true},
+  "Lake Murvaul":{total:1341079,recent:240946,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Nacogdoches":{total:1292623,recent:190874,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Cypress Springs":{total:1210187,recent:156323,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Colorado City":{total:1151196,recent:44249,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Winters":{total:1127170,recent:0,lastYr:2019,fl:true,sl:false,ls:false},
+  "Millers Creek Reservoir":{total:1109281,recent:179665,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Palo Pinto":{total:1081650,recent:48719,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Alan Henry":{total:894389,recent:48750,lastYr:2026,fl:true,sl:true,ls:false},
+  "Lake Sweetwater":{total:889337,recent:61658,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Daniel":{total:856794,recent:52905,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Amon G. Carter":{total:841810,recent:74859,lastYr:2025,fl:true,sl:true,ls:true},
+  "Lake Mexia":{total:818520,recent:249965,lastYr:2025,fl:true,sl:false,ls:false},
+  "White River Lake":{total:806427,recent:66356,lastYr:2026,fl:true,sl:false,ls:true},
+  "Squaw Creek Reservoir":{total:729536,recent:0,lastYr:1996,fl:true,sl:false,ls:false},
+  "Champion Creek Reservoir":{total:709587,recent:138652,lastYr:2024,fl:true,sl:false,ls:true},
+  "Lake Weatherford":{total:685249,recent:16435,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Striker":{total:593424,recent:0,lastYr:1999,fl:true,sl:false,ls:false},
+  "White Rock Lake":{total:581206,recent:15635,lastYr:2024,fl:true,sl:true,ls:true},
+  "Lake Placid":{total:571799,recent:61823,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Kirby":{total:549219,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Aquilla Lake":{total:531960,recent:98748,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lady Bird Lake":{total:478840,recent:14787,lastYr:2025,fl:true,sl:true,ls:false},
+  "Nocona Lake":{total:467090,recent:49110,lastYr:2026,fl:true,sl:true,ls:true},
+  "Inks Lake":{total:458956,recent:20606,lastYr:2024,fl:true,sl:true,ls:false},
+  "Lake Abilene":{total:434635,recent:10293,lastYr:2021,fl:true,sl:false,ls:false},
+  "Lake Pflugerville":{total:407652,recent:305538,lastYr:2022,fl:true,sl:true,ls:true},
+  "Lake Mackenzie":{total:315706,recent:0,lastYr:2017,fl:true,sl:false,ls:false},
+  "Lake Dunlap":{total:270495,recent:168208,lastYr:2026,fl:true,sl:true,ls:true},
+  "Lake Bryan":{total:218787,recent:114682,lastYr:2026,fl:true,sl:false,ls:true},
+  "Bluestem Lake":{total:215242,recent:0,lastYr:2018,fl:true,sl:false,ls:false},
+  "Lake Marble Falls":{total:202252,recent:103632,lastYr:2026,fl:true,sl:false,ls:true},
+  "Lake Georgetown":{total:168671,recent:30331,lastYr:2025,fl:true,sl:false,ls:true},
+  "Lake Throckmorton":{total:109313,recent:15812,lastYr:2021,fl:true,sl:false,ls:false},
+  "Lake McQueeney":{total:59652,recent:0,lastYr:2007,fl:true,sl:true,ls:false},
+  "Mountain Creek Lake":{total:21641,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Lake Coleman":{total:19764,recent:1621,lastYr:2023,fl:true,sl:true,ls:true},
+  "OC Fisher Lake":{total:12013,recent:0,lastYr:2016,fl:true,sl:false,ls:false},
+  "Lake Stamford":{total:7000,recent:0,lastYr:1970,fl:false,sl:false,ls:false},
+  "Gibbons Creek Reservoir":{total:2466,recent:1000,lastYr:2026,fl:true,sl:false,ls:false},
+  "Brushy Creek Lake":{total:1928,recent:0,lastYr:1992,fl:true,sl:false,ls:false},
+  "Braunig Lake":{total:1875,recent:0,lastYr:2015,fl:true,sl:false,ls:false},
+  "Richland Chambers Reservoir":{total:1500,recent:0,lastYr:1976,fl:true,sl:false,ls:false},
+  "Lake O the Pines":{total:600,recent:0,lastYr:1970,fl:false,sl:false,ls:false},
+  "Lake LBJ":{total:407,recent:0,lastYr:1996,fl:false,sl:false,ls:false},
+};
+var hotspotSortMode = "live"; // "live", "quality", or "observed"
+var hotspotLiveScores = null; // cached scores from grid weather
+
+function loadGridWeatherForHotspots() {
+  var list = document.getElementById("hotspotsList");
+  if (list && hotspotSortMode === "live") {
+    list.innerHTML = '<div class="hotspots-loading"><div class="spinner"></div><span>Loading live conditions across Texas…</span></div>';
+  }
+  var remaining = GRID.filter(function(g){ return !gridWeather[g.key]; });
+  if(!remaining.length) {
+    computeHotspotLiveScores();
+    renderHotspots();
+    return;
+  }
+  var promises = remaining.map(function(g){
+    return Promise.all([fetchWeather(g.lat,g.lon),fetchTrend(g.lat,g.lon),fetchSun(g.lat,g.lon)])
+      .then(function(res){gridWeather[g.key]={weather:res[0],trend:res[1],sun:res[2]};})
+      .catch(function(e){ console.error("Grid fetch failed for "+g.key, e); });
+  });
+  Promise.all(promises).then(function() {
+    computeHotspotLiveScores();
+    renderHotspots();
+  }).catch(function(e){ console.error("Grid weather for hotspots:", e); });
+}
+
+function computeHotspotLiveScores() {
+  var moon = getMoon();
+  var scores = {};
+  ALL_LAKES.forEach(function(lake){
+    var g = nearestGrid(lake.lat, lake.lon);
+    var gw = gridWeather[g.key];
+    if(gw) {
+      var res = scoreLake(lake, gw.weather, gw.trend, gw.sun, moon);
+      scores[lake.name] = { score: res.score, bd: res.bd, wt: res.wt };
+    }
+  });
+  hotspotLiveScores = scores;
+}
+
+function renderHotspots() {
+  var list = document.getElementById("hotspotsList");
+  if (!list) return;
+
+  // ── LIVE SCORE MODE ──
+  if (hotspotSortMode === "live") {
+    document.getElementById("hotspotsSub").textContent = "live fishing conditions across Texas";
+    var infoEl = document.getElementById("hotspotsInfo");
+    infoEl.innerHTML = '<b>How this works:</b> All 109 Texas lakes scored with the same real-time forecast model as the Report tab — ' +
+      'weather, barometric trend, water temperature, wind, moon phase, and each lake\'s intrinsic characteristics. ' +
+      'This is <b>not</b> a population census — it predicts which lakes have the best fishing conditions <i>right now</i>. ' +
+      'Trophy waters naturally rank higher due to fishery reputation bonuses.';
+
+    if (!hotspotLiveScores) {
+      loadGridWeatherForHotspots();
+      return;
+    }
+
+    var entries = [];
+    ALL_LAKES.forEach(function(lake){
+      var ls = hotspotLiveScores[lake.name];
+      if (ls) {
+        entries.push({
+          name: lake.name, lat: lake.lat, lon: lake.lon,
+          region: lake.region, type: lake.type,
+          score: ls.score, bd: ls.bd, wt: ls.wt
+        });
+      }
+    });
+    entries.sort(function(a,b){ return b.score - a.score; });
+
+    var maxScore = entries.length > 0 ? entries[0].score : 1;
+    if (maxScore === 0) maxScore = 1;
+
+    var html = "";
+    entries.forEach(function(e, i) {
+      var rank = i + 1;
+      var isTop3 = rank <= 3;
+      var hex = scoreHex(e.score);
+      var pct = Math.round((e.score / 10) * 100);
+      var circ = 2 * Math.PI * 18;
+      var dashLen = (circ * e.score / 10).toFixed(1);
+
+      // Top 3 factors
+      var factorsHtml = "";
+      var topFactors = e.bd.slice(0, 4);
+      topFactors.forEach(function(b){
+        var cls = b.m > 0 ? "pos" : b.m < 0 ? "neg" : "neu";
+        var sign = b.m > 0 ? "+" : "";
+        factorsHtml += '<span class="hotspot-factor ' + cls + '">' + escHtml(b.l) + ' ' + sign + b.m + '</span>';
+      });
+
+      var safeName = e.name.replace(/'/g, "\\'");
+      html += '<div class="hotspot-card' + (isTop3 ? ' top-3' : '') + '" onclick="hotspotTap(\'' + safeName + '\')">';
+      html += '<div class="hotspot-rank">' + rank + '</div>';
+      html += '<div class="hotspot-body">';
+      html += '<div class="hotspot-name">' + escHtml(e.name) + '</div>';
+      html += '<div class="hotspot-meta"><span>' + escHtml(e.region) + '</span><span>• ' + (e.wt ? e.wt + '°F water' : '') + '</span></div>';
+      html += '<div class="hotspot-factors">' + factorsHtml + '</div>';
+      html += '</div>';
+      html += '<div class="hotspot-score-ring">';
+      html += '<svg width="42" height="42" viewBox="0 0 42 42">';
+      html += '<circle cx="21" cy="21" r="18" fill="none" stroke="var(--border)" stroke-width="4"/>';
+      html += '<circle cx="21" cy="21" r="18" fill="none" stroke="' + hex + '" stroke-width="4"';
+      html += ' stroke-dasharray="' + dashLen + ' ' + circ.toFixed(1) + '" stroke-linecap="round" transform="rotate(-90 21 21)"/>';
+      html += '</svg>';
+      html += '<div class="hotspot-score-val" style="color:' + hex + '">' + e.score + '</div>';
+      html += '</div>';
+      html += '</div>';
+    });
+
+    list.innerHTML = html;
+    return;
+  }
+
+  // ── FISHERY QUALITY MODE ──
+  if (hotspotSortMode === "quality") {
+    document.getElementById("hotspotsSub").textContent = "intrinsic fishery reputation";
+    var infoEl2 = document.getElementById("hotspotsInfo");
+    infoEl2.innerHTML = '<b>How this works:</b> Each lake is rated by its intrinsic bass fishery quality based on ' +
+      'TPWD fisheries knowledge, lake characteristics, and established angler reputation. ' +
+      '<b>Trophy</b> = known big-bass factory (Fork, Rayburn, Toledo Bend, Falcon, Choke Canyon). ' +
+      '<b>Strong</b> = solid fishery with good structure and bass habitat. ' +
+      '<b>Average</b> = decent fishing, nothing special. ' +
+      '<b>Marginal</b> = pressured, small, or poor habitat. ' +
+      'Stocking data from <span class="src-tag">TPWD</span> shows total bass stocked, genetics programs ' +
+      '(FL strain, ShareLunker trophy genetics, Lone Star bass), and recent activity since 2020. ' +
+      'This is a static ranking — it doesn\'t change with weather.';
+
+    var qEntries = [];
+    ALL_LAKES.forEach(function(lake){
+      var attr = waterAttributes(lake);
+      var qualityLabel = attr.q === 2 ? "Trophy" : attr.q === 1 ? "Strong" : attr.q === -1 ? "Marginal" : "Average";
+      var qualityClass = attr.q === 2 ? "trophy" : attr.q === 1 ? "strong" : attr.q === -1 ? "marginal" : "average";
+      var inat = INAT_DENSITY[lake.name];
+      var obsCount = inat ? inat.obs : 0;
+      var stock = TPWD_STOCK[lake.name];
+      qEntries.push({
+        name: lake.name, lat: lake.lat, lon: lake.lon,
+        region: lake.region, type: lake.type,
+        q: attr.q, qualityLabel: qualityLabel, qualityClass: qualityClass,
+        clarity: attr.c, depth: attr.d, obs: obsCount,
+        stock: stock
+      });
+    });
+    // Sort by quality desc, then by stocking total desc as tiebreaker
+    qEntries.sort(function(a,b){
+      if (b.q !== a.q) return b.q - a.q;
+      var at = a.stock ? a.stock.total : 0;
+      var bt = b.stock ? b.stock.total : 0;
+      return bt - at;
+    });
+
+    var html2 = "";
+    qEntries.forEach(function(e, i) {
+      var rank = i + 1;
+      var isTop3 = rank <= 3;
+      var safeName = e.name.replace(/'/g, "\\'");
+      var clarityLabel = e.clarity.charAt(0).toUpperCase() + e.clarity.slice(1);
+      var depthLabel = e.depth === "mod" ? "Mid-depth" : e.depth.charAt(0).toUpperCase() + e.depth.slice(1);
+
+      // Stocking info
+      var stockHtml = "";
+      if (e.stock) {
+        var stockTotal = e.stock.total;
+        var stockStr = stockTotal >= 1000000 ? (stockTotal / 1000000).toFixed(1) + 'M' : stockTotal >= 1000 ? Math.round(stockTotal / 1000) + 'K' : stockTotal;
+        var genetics = [];
+        if (e.stock.sl) genetics.push('ShareLunker');
+        if (e.stock.fl) genetics.push('FL strain');
+        if (e.stock.ls) genetics.push('LoneStar');
+        var genStr = genetics.length > 0 ? ' • ' + genetics.join(', ') : '';
+        var recentStr = e.stock.recent > 0 ? ' • ' + (e.stock.recent >= 1000000 ? (e.stock.recent / 1000000).toFixed(1) + 'M' : Math.round(e.stock.recent / 1000) + 'K') + ' since 2020' : '';
+        stockHtml = '<span>• ' + stockStr + ' stocked' + genStr + recentStr + '</span>';
+      } else {
+        stockHtml = '<span class="sp">• no TPWD stocking</span>';
+      }
+
+      html2 += '<div class="hotspot-card' + (isTop3 ? ' top-3' : '') + '" onclick="hotspotTap(\'' + safeName + '\')">';
+      html2 += '<div class="hotspot-rank">' + rank + '</div>';
+      html2 += '<div class="hotspot-body">';
+      html2 += '<div class="hotspot-name">' + escHtml(e.name) + '</div>';
+      html2 += '<div class="hotspot-meta">';
+      html2 += '<span>' + escHtml(e.region) + '</span>';
+      html2 += '<span>• ' + clarityLabel + ' water</span>';
+      html2 += '<span>• ' + depthLabel + '</span>';
+      html2 += stockHtml;
+      html2 += '</div>';
+      html2 += '</div>';
+      html2 += '<div class="hotspot-bar-wrap">';
+      html2 += '<span class="hotspot-quality-badge ' + e.qualityClass + '">' + e.qualityLabel + '</span>';
+      html2 += '</div>';
+      html2 += '</div>';
+    });
+
+    list.innerHTML = html2;
+    return;
+  }
+
+  // ── OBSERVED MODE (iNaturalist) ──
+  if (hotspotSortMode === "observed") {
+    document.getElementById("hotspotsSub").textContent = "iNaturalist observations per km²";
+    var infoEl3 = document.getElementById("hotspotsInfo");
+    infoEl3.innerHTML = '<b>How this works:</b> Bass observation counts from <span class="src-tag">iNaturalist</span> ' +
+      'within 20km of each lake, normalized by lake surface area. ' +
+      '⚠️ <b>This measures photographer activity, not bass density.</b> ' +
+      'Urban lakes (Austin area) rank high because young, tech-savvy people post there. ' +
+      'Remote trophy waters (Lake Fork, Falcon) rank low despite being world-class bass fisheries. ' +
+      'Use this as a secondary signal only.';
+
+    var oEntries = [];
+    ALL_LAKES.forEach(function(lake) {
+      var d = INAT_DENSITY[lake.name];
+      if (d) {
+        var a = LAKE_AREAS[lake.name];
+        var areaAcres = a ? a.area : null;
+        var areaSrc = a ? a.src : null;
+        var areaKm2 = (areaAcres && areaAcres > 0) ? areaAcres * ACRES_TO_KM2 : null;
+        var obsPerKm2 = (areaKm2 && areaKm2 > 0) ? d.obs / areaKm2 : null;
+        oEntries.push({
+          name: lake.name, lat: lake.lat, lon: lake.lon,
+          region: lake.region, type: lake.type,
+          obs: d.obs, rg: d.rg, sp: d.sp,
+          areaAcres: areaAcres, areaKm2: areaKm2,
+          obsPerKm2: obsPerKm2, areaSrc: areaSrc
+        });
+      }
+    });
+    // Sort by obs/km² descending; nulls go to bottom
+    oEntries.sort(function(a, b) {
+      if (a.obsPerKm2 === null && b.obsPerKm2 === null) return b.obs - a.obs;
+      if (a.obsPerKm2 === null) return 1;
+      if (b.obsPerKm2 === null) return -1;
+      return b.obsPerKm2 - a.obsPerKm2;
+    });
+
+    var maxObs = oEntries.length > 0 ? oEntries[0].obs : 1;
+    if (maxObs === 0) maxObs = 1;
+    var maxDensity = 0;
+    oEntries.forEach(function(e) {
+      if (e.obsPerKm2 !== null && e.obsPerKm2 > maxDensity) maxDensity = e.obsPerKm2;
+    });
+    if (maxDensity === 0) maxDensity = 1;
+
+    var html3 = "";
+    oEntries.forEach(function(e, i) {
+      var rank = i + 1;
+      var isTop3 = rank <= 3;
+      var pct = Math.round((e.obs / maxObs) * 100);
+      var conf = e.rg >= 50 ? "High" : e.rg >= 15 ? "Medium" : e.rg > 0 ? "Low" : "None";
+      var confColor = e.rg >= 50 ? "var(--good)" : e.rg >= 15 ? "var(--ok)" : "var(--bad)";
+
+      var spDisplay = e.sp;
+      if (spDisplay && spDisplay !== "—") {
+        spDisplay = spDisplay.replace(/^Micropterus\s+/, "M. ");
+        spDisplay = spDisplay.replace(/[()]/g, "");
+      }
+
+      var metricHtml;
+      if (e.obsPerKm2 !== null) {
+        var densityPct = Math.round((e.obsPerKm2 / maxDensity) * 100);
+        metricHtml = '<div class="hotspot-density">' + e.obsPerKm2.toFixed(1) + '<small> obs/km²</small></div>'
+          + '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + densityPct + '%"></div></div>'
+          + '<div class="hotspot-raw-count">' + e.obs + ' total</div>';
+      } else {
+        metricHtml = '<div class="hotspot-count">' + e.obs + '<small> obs</small></div>'
+          + '<div class="hotspot-bar"><div class="hotspot-bar-fill" style="width:' + pct + '%"></div></div>'
+          + '<div class="hotspot-raw-count">no area data</div>';
+      }
+
+      var areaBadge = '';
+      if (e.areaSrc) {
+        areaBadge = '<span class="area-src">' + e.areaSrc + '</span>';
+      } else if (e.obs > 0) {
+        areaBadge = '<span class="area-src none">no area</span>';
+      }
+
+      var safeName = e.name.replace(/'/g, "\\'");
+      html3 += '<div class="hotspot-card' + (isTop3 ? ' top-3' : '') + '" onclick="hotspotTap(\'' + safeName + '\')">';
+      html3 += '<div class="hotspot-rank">' + rank + '</div>';
+      html3 += '<div class="hotspot-body">';
+      html3 += '<div class="hotspot-name">' + escHtml(e.name) + '</div>';
+      html3 += '<div class="hotspot-meta">';
+      html3 += '<span>' + escHtml(e.region) + '</span>';
+      if (spDisplay && spDisplay !== "—") {
+        html3 += '<span class="sp">• ' + escHtml(spDisplay) + '</span>';
+      }
+      html3 += '<span>• ' + e.rg + ' verified</span>';
+      html3 += areaBadge;
+      html3 += '</div>';
+      html3 += '</div>';
+      html3 += '<div class="hotspot-bar-wrap">';
+      html3 += metricHtml;
+      html3 += '<div class="hotspot-confidence" style="color:' + confColor + '">' + conf + ' conf</div>';
+      html3 += '</div>';
+      html3 += '</div>';
+    });
+
+    list.innerHTML = html3;
+    return;
+  }
+}
+
+function hotspotToggleSort(mode) {
+  hotspotSortMode = mode;
+  document.getElementById("sortLive").classList.toggle("active", mode === "live");
+  document.getElementById("sortQuality").classList.toggle("active", mode === "quality");
+  document.getElementById("sortObserved").classList.toggle("active", mode === "observed");
+  renderHotspots();
+}
+
+function hotspotTap(name) {
+  // Find the lake
+  var lake = null;
+  for (var i = 0; i < ALL_LAKES.length; i++) {
+    if (ALL_LAKES[i].name === name) { lake = ALL_LAKES[i]; break; }
+  }
+  if (!lake) return;
+
+  // Set location context (so closing the detail lands on the right spot)
+  userLat = lake.lat;
+  userLon = lake.lon;
+  userLabel = lake.name + " (" + lake.region + ")";
+  document.getElementById("searchInput").value = userLabel;
+
+  // Get score data — prefer cached live scores, else compute from grid weather
+  var score = 5, bd = [], wt = null;
+  if (hotspotLiveScores && hotspotLiveScores[name]) {
+    score = hotspotLiveScores[name].score;
+    bd = hotspotLiveScores[name].bd;
+    wt = hotspotLiveScores[name].wt;
+  } else {
+    var g = nearestGrid(lake.lat, lake.lon);
+    var gw = gridWeather[g.key];
+    if (gw) {
+      var moon = getMoon();
+      var res = scoreLake(lake, gw.weather, gw.trend, gw.sun, moon);
+      score = res.score;
+      bd = res.bd;
+      wt = res.wt;
+    }
+  }
+
+  // Store card and open the detail/breakdown overlay
+  var cid = _storeCard({
+    name: lake.name, lat: lake.lat, lon: lake.lon,
+    type: lake.type, region: lake.region,
+    score: score, bd: bd, wt: wt,
+    srH: lake.srH, ssH: lake.ssH,
+    dist: null
+  });
+  openDetail(cid);
+}
+
+// ═══════════════════════════════════════════
+// BANK FISHING TAB
+// ═══════════════════════════════════════════
+
+// Bank fishing scores for all 109 TX waters.
+// Scoring factors (static, knowledge-based):
+//   shoreAccess  (1-10): Public shoreline length / park access
+//   parking      (1-10): Ease of parking / facilities
+//   depth        (1-10): Fishable depth reachable from bank (shallower = better)
+//   structure    (1-10): Docks, points, laydowns, submerged structure from shore
+//   crowd        (1-10): 10=remote/uncrowded, 1=urban/crowded (lower is worse)
+//   wade         (bool): Sandy/gravelly bottom safe to wade
+//   family       (bool): Paved parking, restrooms, low hazard, beginner-friendly
+// Final score = weighted average, clamped 1-10
+
+// Access point types: park | pier | ramp | wade | bank
+// Each entry: { name, type, lat, lon, notes }
+
+var BANK_ACCESS_POINTS = {
+  "White Rock Lake": {
+    summary: "Full paved trail circles the entire 9-mile shoreline. Multiple dedicated fishing spots with benches and lighting. No permit needed.",
+    points: [
+      { name:"Winfrey Point", type:"park", lat:32.836, lon:-96.718, notes:"Paved lot, restrooms, multiple casting points along the northwest bank." },
+      { name:"Bath House Cultural Center Pier", type:"pier", lat:32.828, lon:-96.720, notes:"Lighted fishing pier, very beginner-friendly. Best at dawn/dusk." },
+      { name:"White Rock Lake Park South Shore", type:"wade", lat:32.821, lon:-96.714, notes:"Sandy shallows on the south end — wade to reach submerged structure near old road beds." },
+      { name:"Mockingbird Lane Cove", type:"bank", lat:32.840, lon:-96.707, notes:"Narrow inlet channel funnels baitfish — excellent ambush point for largemouth." }
+    ]
+  },
+  "Lady Bird Lake": {
+    summary: "Hike-and-bike trail runs both banks for 10+ miles through downtown Austin. Kayak/canoe access everywhere but much of it is no-wake. No bank fishing permits required.",
+    points: [
+      { name:"Auditorium Shores", type:"park", lat:30.260, lon:-97.762, notes:"Large open grass bank, paved parking. Popular but bass hold near the far bridge pilings." },
+      { name:"Roy G. Guerrero Park", type:"park", lat:30.245, lon:-97.711, notes:"Quieter east end, shaded banks, submerged timber — less pressure than downtown." },
+      { name:"Longhorn Dam Tailrace", type:"bank", lat:30.245, lon:-97.709, notes:"Below the dam — flowing water concentrates fish. Wade carefully on rocky bottom." },
+      { name:"Tom Miller Dam Bank", type:"bank", lat:30.268, lon:-97.773, notes:"West end rocky point. Consistent structure for topwater in early morning." }
+    ]
+  },
+  "Lake Nasworthy": {
+    summary: "City-owned lake in San Angelo with paved fishing piers and a sandy wade-in shoreline. Texas State Park fishing permit required.",
+    points: [
+      { name:"San Angelo State Park South Shore", type:"wade", lat:31.398, lon:-100.518, notes:"Gently sloping sandy bank. Wade out 20-30 ft to reach grass edges at 3-4 ft depth." },
+      { name:"Lake Nasworthy Fishing Pier", type:"pier", lat:31.410, lon:-100.503, notes:"Lighted pier off Loop 306. Good for catfish and bass at night. Restrooms on-site." },
+      { name:"Spring Creek Inlet", type:"bank", lat:31.415, lon:-100.512, notes:"Creek mouth that flushes baitfish into the lake. Work a topwater along the channel edge." }
+    ]
+  },
+  "Lake Ray Roberts": {
+    summary: "State Park surrounds the lake with 30+ miles of accessible shoreline. Multiple fishing piers and wade-friendly coves on the north end.",
+    points: [
+      { name:"Johnson Branch Unit Pier", type:"pier", lat:33.402, lon:-97.004, notes:"Large covered fishing pier with cleaning station. Plenty of parking. Bass hold near pier pilings at dawn." },
+      { name:"Isle du Bois Unit Cove", type:"wade", lat:33.366, lon:-97.034, notes:"Shallow gravel-bottom cove. Wade to flooded brush on the east side at 2-4 ft depth." },
+      { name:"Greenbelt Corridor Flats", type:"bank", lat:33.340, lon:-97.040, notes:"Flat grassy bank with brush piles — fish parallel to shore with a Texas-rigged worm." }
+    ]
+  },
+  "Benbrook Lake": {
+    summary: "US Army Corps of Engineers lake west of Fort Worth with 4 public day-use areas and good bank access. No permit beyond state fishing license.",
+    points: [
+      { name:"Mustang Park Day Use", type:"park", lat:32.631, lon:-97.479, notes:"Paved parking, restrooms, riprap bank good for flipping jigs. Bass stack along the rocks." },
+      { name:"Holiday Park Boat Ramp Bank", type:"ramp", lat:32.647, lon:-97.475, notes:"Gravel bank beside ramp. Shallow flat extends 50 ft — good with a weightless Senko." },
+      { name:"Bear Creek Cove", type:"bank", lat:32.640, lon:-97.490, notes:"Wooded creek arm with laydowns. Access trail off Dutch Branch Rd. Topwater in the morning." }
+    ]
+  },
+  "Lake Grapevine": {
+    summary: "Corps of Engineers lake with Meadowmere Park and Murrell Park providing excellent bank access. Riprap and coves around the marina are productive.",
+    points: [
+      { name:"Meadowmere Park Shore", type:"park", lat:32.965, lon:-97.066, notes:"Concrete fishing platform and mowed bank. Easy parking, restrooms. Work the riprap with crankbaits." },
+      { name:"Murrell Park Cove", type:"wade", lat:32.985, lon:-97.073, notes:"Sandy cove near the north campground. Wade out to brush piles at 4-5 ft." },
+      { name:"Silver Lake Inlet", type:"bank", lat:32.960, lon:-97.055, notes:"Narrow creek channel that drains Silver Lake — concentrates bass near the mouth early morning." }
+    ]
+  },
+  "Joe Pool Lake": {
+    summary: "Loyd Park and Lynn Creek Park are the go-to bank access spots — paved fishing areas and good structure nearby.",
+    points: [
+      { name:"Loyd Park Fishing Area", type:"park", lat:32.647, lon:-97.029, notes:"Dedicated paved fishing area, restrooms, lots of riprap. Night fishing permitted with permit." },
+      { name:"Lynn Creek Park Marina Bank", type:"pier", lat:32.660, lon:-97.010, notes:"Dock area with ledge structure below. Swimbaits work well along the dock face." },
+      { name:"Cedar Hill State Park Shoreline", type:"wade", lat:32.620, lon:-97.010, notes:"Sandy point on the southwest arm. Wade south along the bank to submerged roadbed structure." }
+    ]
+  },
+  "Lake Whitney": {
+    summary: "State park and Corps areas give miles of rocky shoreline access. The dam tailrace is walk-in only but loaded with fish.",
+    points: [
+      { name:"Lake Whitney State Park Bank", type:"park", lat:31.854, lon:-97.369, notes:"Paved lot, pier, and mowed bank inside state park. Swim jigs near cliff walls are productive." },
+      { name:"Whitney Dam Tailrace", type:"wade", lat:31.875, lon:-97.357, notes:"Walk the rocky bank below the dam. Flowing water — good for largemouth and spotted bass. Slippery rocks — use felt soles." },
+      { name:"Lofers Bend West Cove", type:"bank", lat:31.900, lon:-97.380, notes:"Corps campground cove. Gentle gravel slope — good for beginning anglers." }
+    ]
+  },
+  "Lake Proctor": {
+    summary: "Corps of Engineers lake near Comanche — very low pressure and easy walk-in access to shallow coves. Excellent wade fishing.",
+    points: [
+      { name:"Copperas Creek Park Shore", type:"wade", lat:31.985, lon:-98.444, notes:"Flat sandy bank on the upper creek arm. Wade to submerged timber at 2-3 ft depth. Extremely low pressure." },
+      { name:"South Bend Park Fishing Area", type:"park", lat:31.975, lon:-98.432, notes:"Paved lot, covered picnic, and rock jetty. Fish the jetty tip at dusk with a swimbait." },
+      { name:"Day Use Area Bank", type:"bank", lat:31.970, lon:-98.450, notes:"Gravel bank beside the main day use area. Popping frogs work along the lily pads in summer." }
+    ]
+  },
+  "Lake Brownwood": {
+    summary: "State park gives 500+ acres of public access and a lighted pier. Good rocky points perfect for bank fishing.",
+    points: [
+      { name:"Lake Brownwood State Park Pier", type:"pier", lat:31.875, lon:-99.012, notes:"Lighted fishing pier inside state park. Bass cruise the pier at night. Camping adjacent." },
+      { name:"State Park Rocky Point", type:"wade", lat:31.870, lon:-99.020, notes:"Gradual rocky slope on the state park's west side. Crank the point at dawn." },
+      { name:"Big Ridge Park Shore", type:"bank", lat:31.880, lon:-99.000, notes:"County park with open grass bank and shaded trees — family-friendly with picnic tables." }
+    ]
+  },
+  "Lake Somerville": {
+    summary: "State Park covers both sides (Birch Creek and Nails Creek units) with combined miles of fishable shoreline. Shallow, weedy, perfect for bank anglers.",
+    points: [
+      { name:"Birch Creek Unit Pier", type:"pier", lat:30.353, lon:-96.554, notes:"Fishing pier and sandy beach in the state park. Bass cruise the weed edge 30-40 ft out — try a buzzbait at first light." },
+      { name:"Nails Creek Unit Cove", type:"wade", lat:30.362, lon:-96.600, notes:"Shallow clear cove. Wade carefully to avoid spooking fish. Soft plastics on light line excel here." },
+      { name:"Overlook Park Bank", type:"park", lat:30.350, lon:-96.570, notes:"Free Corp of Engineers day-use area. Grassy bank over a gentle slope — excellent for families." }
+    ]
+  },
+  "Granger Lake": {
+    summary: "Small Corps lake in Williamson County with exceptional bank access and almost no boat pressure. Shallow lake — nearly every bank is fishable.",
+    points: [
+      { name:"Wilson H. Fox Park Shore", type:"park", lat:30.685, lon:-97.390, notes:"Paved parking and a grassy bank that extends 400 ft along the lake. Consistent bass bite near the boat dock pilings." },
+      { name:"Taylor Park Wade Area", type:"wade", lat:30.700, lon:-97.375, notes:"Sandy flat on the north shore. Wade the shallows at dawn with a popper — Granger bass hit topwater hard." },
+      { name:"San Gabriel Creek Arm", type:"bank", lat:30.675, lon:-97.410, notes:"Creek inlet. Fish the transition from silty creek bottom to the main lake — largemouth stack here in fall." }
+    ]
+  },
+  "Lake Georgetown": {
+    summary: "Canyon lake setting with rocky points and cedar bluffs. Corps parks give good bank access though steep banks limit wading.",
+    points: [
+      { name:"Cedar Breaks Park Pier", type:"pier", lat:30.692, lon:-97.762, notes:"Covered pier and cleaning station. Deep water close to shore — drop a drop-shot along the bluff." },
+      { name:"Jim Hogg Park Rocky Point", type:"bank", lat:30.705, lon:-97.780, notes:"Rocky peninsula jutting into the main lake. Cast crankbaits along the rock ledges at 6-10 ft depth." },
+      { name:"Tejas Park Cove", type:"wade", lat:30.695, lon:-97.770, notes:"Shallower cove at the park's east end. Gravelly bottom — safe to wade. Finesse plastics on spinning gear." }
+    ]
+  },
+  "Stillhouse Hollow Lake": {
+    summary: "Corps lake near Killeen with large parks and a long dam-face bank. Excellent structure bass fishing from shore.",
+    points: [
+      { name:"Dana Peak Park Shore", type:"park", lat:30.998, lon:-97.557, notes:"Huge park with miles of mowed bank, fishing piers, and riprap along the dam road. Very family-friendly." },
+      { name:"Lampasas River Arm", type:"bank", lat:31.050, lon:-97.600, notes:"Walk-in bank on the upper river arm. Clear water, rocky bottom — sight-fish shallow bass in spring." },
+      { name:"Overlook Riprap", type:"bank", lat:30.990, lon:-97.560, notes:"Rocky riprap on the dam's west face. Carolina-rig a craw along the base — deep fish stack here in summer." }
+    ]
+  },
+  "Lake Bastrop": {
+    summary: "LCRA lake in Bastrop with Lost Pines access. Sandy pine-forest banks, very light pressure, excellent for wading.",
+    points: [
+      { name:"Bastrop State Park Bank", type:"wade", lat:30.116, lon:-97.267, notes:"Sandy bank inside Bastrop State Park. Wade the shallow east end — bass hold in the submerged stumps left by the 2011 fire." },
+      { name:"Lake Bastrop South Shore", type:"park", lat:30.108, lon:-97.270, notes:"LCRA park with paved access and restrooms. Dock pilings hold fish all year." },
+      { name:"North Shore Fishing Access", type:"bank", lat:30.120, lon:-97.261, notes:"Gravel bank on the north side of the lake. Light pressure, good morning bite near the cove entrance." }
+    ]
+  },
+  "Caddo Lake": {
+    summary: "Unique cypress-swamp setting. Wading is not recommended (deep muck, snakes) but the boat ramp banks and state park docks are excellent for casting into the timber.",
+    points: [
+      { name:"Caddo Lake State Park Dock", type:"pier", lat:32.691, lon:-94.183, notes:"Fishing dock inside state park. Cast into flooded cypress knees — guaranteed bass cover. Canoe rentals available." },
+      { name:"Uncertain Landing Bank", type:"bank", lat:32.696, lon:-94.175, notes:"Small gravel bank at the public boat landing. Pitch jigs into the cypress trees on either side." },
+      { name:"Carters Lake Cove", type:"bank", lat:32.680, lon:-94.200, notes:"Quiet backwater cove accessible by a short walk from the main road. Weedless frogs work over the lily pad mats." }
+    ]
+  },
+  "Choke Canyon Reservoir": {
+    summary: "State park with an excellent lighted fishing pier and open shoreline. South Texas largemouth — big fish, low pressure.",
+    points: [
+      { name:"Calliham Unit Fishing Pier", type:"pier", lat:28.474, lon:-98.342, notes:"150-ft lighted pier inside Calliham Unit state park. Night fishing is exceptional. Big bass cruise the pier at dusk." },
+      { name:"South Shore Day Use Bank", type:"park", lat:28.470, lon:-98.350, notes:"Riprap bank at the day use area — stable footing, large rocks. Jig the base of the riprap." },
+      { name:"Tilden Area Cove", type:"wade", lat:28.480, lon:-98.360, notes:"Shallow sandy flat on the north end. Low pressure, excellent wading. Fish Texas-rigged plastics slow in the summer heat." }
+    ]
+  },
+  "Lake Meredith": {
+    summary: "National Recreation Area — all shorelines are free public access. Rocky canyon walls mean most bank fishing is from ledges above the water, but several sandy coves exist.",
+    points: [
+      { name:"Sanford-Yake Ramp Bank", type:"ramp", lat:35.396, lon:-101.639, notes:"Wide gravel bank beside the main ramp. Fish the point just north with a crankbait at the rock ledges." },
+      { name:"Blue Creek Cove", type:"wade", lat:35.420, lon:-101.710, notes:"Sandy-bottom cove accessible from the camping area. Good wade-in access at low water. Bass hold in submerged brush." },
+      { name:"Plum Creek Canyon Bank", type:"bank", lat:35.450, lon:-101.680, notes:"Remote canyon arm. Walk down the trail 0.3 miles to a ledge bank — very little pressure." }
+    ]
+  },
+  "Lake Fort Phantom Hill": {
+    summary: "City of Abilene lake with a paved road around most of it and multiple pull-off bank access spots.",
+    points: [
+      { name:"Fort Phantom Hill Park Pier", type:"pier", lat:32.580, lon:-99.724, notes:"City-run pier with parking and restrooms. Fish the pilings at first light." },
+      { name:"Main Dam Bank", type:"bank", lat:32.567, lon:-99.714, notes:"Riprap along the dam face. Cast parallel to the rocks with a jig — bass hold in the cracks." },
+      { name:"North Cove Wade Area", type:"wade", lat:32.590, lon:-99.730, notes:"Shallow gravel cove on the north end. Good wading depth (2-3 ft). Finesse plastics in clear water." }
+    ]
+  },
+  "Braunig Lake": {
+    summary: "San Antonio city lake with warm water year-round from the power plant. Excellent paved fishing piers and accessible bank — bass fishing 12 months a year.",
+    points: [
+      { name:"Main Fishing Pier #1", type:"pier", lat:29.310, lon:-98.378, notes:"Large paved pier, accessible, wheelchair-friendly. Warm discharge water nearby — bass active all winter." },
+      { name:"North Shore Pier #2", type:"pier", lat:29.318, lon:-98.373, notes:"Second pier on the north bank. Work swimbaits along the warm-water channel edge." },
+      { name:"Creek Inlet Bank", type:"bank", lat:29.315, lon:-98.385, notes:"Creek arm on the west side. Flipping jigs into the feeder channel early morning is very productive." }
+    ]
+  },
+  "Lake Corpus Christi": {
+    summary: "State park with fishing pier and open grassy bank. Good bank access throughout the north end.",
+    points: [
+      { name:"Lake Corpus Christi State Park Pier", type:"pier", lat:27.893, lon:-97.877, notes:"Long fishing pier inside state park. Bass and drum both caught here. Restrooms and camping adjacent." },
+      { name:"Matthews Park Shore", type:"park", lat:27.900, lon:-97.870, notes:"Paved city park with open bank and shade trees. Good for casting Senkos along the bank edge." },
+      { name:"Mesquite Flat Cove", type:"wade", lat:27.885, lon:-97.885, notes:"Shallow cove on the south side. Sandy bottom — good wading at lower water stages." }
+    ]
+  },
+  "Lake Tawakoni": {
+    summary: "State park and county access areas provide good bank spots. Timber-filled coves are the main draw.",
+    points: [
+      { name:"Lake Tawakoni State Park Pier", type:"pier", lat:32.857, lon:-95.950, notes:"Fishing pier and cleaning station inside state park. Launch or fish from bank. Timber nearby." },
+      { name:"Point Aquarius Shore", type:"bank", lat:32.842, lon:-95.950, notes:"Community access point near Point Aquarius subdivision. Fish the submerged timber edge." },
+      { name:"Caddo Creek Arm", type:"wade", lat:32.870, lon:-95.970, notes:"Upper creek arm — shallow enough to wade at normal pool. Isolated timber. Very productive in fall." }
+    ]
+  },
+  "Lake Palestine": {
+    summary: "Several county parks and the state park access give decent shore options. Heavily timbered with good soft-plastic bass fishing.",
+    points: [
+      { name:"Dogwood Park Pier", type:"pier", lat:31.978, lon:-95.570, notes:"Paved pier and restrooms at county park. Fish the drop-off just beyond the pier end." },
+      { name:"Jim Hogg County Park Bank", type:"bank", lat:31.952, lon:-95.590, notes:"Open grassy bank. Brush piles were placed along the shore — ask locals for exact locations." },
+      { name:"Kickapoo Creek Arm", type:"bank", lat:32.000, lon:-95.610, notes:"Upper creek arm with flooded timber. Walk-in access from FM 279. Best early season." }
+    ]
+  },
+  "Wright Patman Lake": {
+    summary: "Corps lake near Texarkana with multiple parks and miles of timbered shoreline accessible on foot.",
+    points: [
+      { name:"Atlanta State Park Shore", type:"park", lat:33.067, lon:-94.200, notes:"State park with fishing pier and 200 ft of open bank. Excellent topwater action near the timbered points." },
+      { name:"Sulphur River Arm", type:"wade", lat:33.080, lon:-94.230, notes:"Shallow upper river arm — wade to the submerged fence rows for big largemouth." },
+      { name:"Jackson Creek Inlet", type:"bank", lat:33.050, lon:-94.185, notes:"Walk-in bank at the creek mouth. Jigs and craws near the channel edge." }
+    ]
+  },
+  "Lake O' the Pines": {
+    summary: "Corps lake in East Texas with exceptional timber structure. Multiple parks give bank access near the flooded forests.",
+    points: [
+      { name:"Buckhorn Creek Park Pier", type:"pier", lat:32.762, lon:-94.600, notes:"Fishing pier with parking and restrooms. Work lures parallel to the flooded timber line visible from the end." },
+      { name:"Johnson Creek Cove", type:"wade", lat:32.780, lon:-94.610, notes:"Shallow sandy cove inside the timber. Wade to cast jigs at the base of cypress and tupelo trees." },
+      { name:"Lone Star Park Bank", type:"bank", lat:32.755, lon:-94.590, notes:"Corps day-use area with open bank. Good for beginners — bass stack near the boat ramp pilings at dawn." }
+    ]
+  },
+  "Lake Murvaul": {
+    summary: "Hidden gem in Panola County — very low pressure, lush aquatic vegetation. Excellent wade fishing. Buy a permit from Panola County.",
+    points: [
+      { name:"Murvaul County Pier", type:"pier", lat:32.056, lon:-94.132, notes:"Small county pier, very basic. Weedless frogs over the lily pads immediately surrounding the pier are deadly." },
+      { name:"East Cove Wade Area", type:"wade", lat:32.060, lon:-94.140, notes:"Sandy-bottomed cove with 2-3 ft depths over grass beds. Best wading in East Texas for trophy largemouth." },
+      { name:"Main Boat Landing Bank", type:"ramp", lat:32.050, lon:-94.130, notes:"Gravel bank beside the county ramp. Flip jigs into the hydrilla edge at dawn." }
+    ]
+  }
+};
+
+var BANK_DATA = (function() {
+  var defaults = { shoreAccess:5, parking:5, depth:5, structure:5, crowd:6, wade:false, family:false };
+
+  var overrides = {
+    "White Rock Lake":            { shoreAccess:9, parking:9, depth:7, structure:7, crowd:4, wade:true,  family:true  },
+    "Lake Ray Roberts":           { shoreAccess:8, parking:8, depth:6, structure:7, crowd:6, wade:true,  family:true  },
+    "Benbrook Lake":              { shoreAccess:8, parking:8, depth:6, structure:6, crowd:6, wade:false, family:true  },
+    "Lake Grapevine":             { shoreAccess:8, parking:8, depth:6, structure:6, crowd:5, wade:false, family:true  },
+    "Joe Pool Lake":              { shoreAccess:8, parking:8, depth:6, structure:6, crowd:5, wade:false, family:true  },
+    "Lake Lewisville":            { shoreAccess:7, parking:7, depth:6, structure:6, crowd:5, wade:false, family:true  },
+    "Lake Whitney":               { shoreAccess:7, parking:7, depth:6, structure:7, crowd:7, wade:true,  family:true  },
+    "Waco Lake":                  { shoreAccess:7, parking:7, depth:5, structure:6, crowd:6, wade:false, family:true  },
+    "Lake Nasworthy":             { shoreAccess:8, parking:8, depth:8, structure:7, crowd:6, wade:true,  family:true  },
+    "Possum Kingdom Lake":        { shoreAccess:6, parking:6, depth:5, structure:7, crowd:6, wade:true,  family:false },
+    "Lake Texoma":                { shoreAccess:8, parking:8, depth:7, structure:7, crowd:6, wade:true,  family:true  },
+    "Lake Ray Hubbard":           { shoreAccess:6, parking:6, depth:6, structure:5, crowd:5, wade:false, family:false },
+    "Lake Arlington":             { shoreAccess:6, parking:7, depth:6, structure:5, crowd:5, wade:false, family:true  },
+    "Lake Granbury":              { shoreAccess:6, parking:6, depth:5, structure:6, crowd:6, wade:false, family:false },
+    "Eagle Mountain Lake":        { shoreAccess:6, parking:6, depth:5, structure:6, crowd:6, wade:false, family:false },
+    "Lake Worth":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:5, wade:true,  family:true  },
+    "Lake Brownwood":             { shoreAccess:7, parking:7, depth:6, structure:6, crowd:7, wade:true,  family:true  },
+    "Lake Proctor":               { shoreAccess:7, parking:7, depth:7, structure:7, crowd:8, wade:true,  family:true  },
+    "Lake Fork":                  { shoreAccess:4, parking:5, depth:4, structure:8, crowd:7, wade:false, family:false },
+    "Sam Rayburn Reservoir":      { shoreAccess:5, parking:6, depth:5, structure:8, crowd:7, wade:false, family:false },
+    "Toledo Bend Reservoir":      { shoreAccess:5, parking:5, depth:5, structure:8, crowd:8, wade:false, family:false },
+    "Caddo Lake":                 { shoreAccess:6, parking:6, depth:8, structure:9, crowd:8, wade:false, family:false },
+    "Lake Tawakoni":              { shoreAccess:6, parking:6, depth:6, structure:6, crowd:6, wade:false, family:false },
+    "Lake Palestine":             { shoreAccess:6, parking:6, depth:5, structure:6, crowd:7, wade:false, family:false },
+    "Lake Athens":                { shoreAccess:7, parking:7, depth:7, structure:7, crowd:7, wade:true,  family:true  },
+    "Lake Cedar Creek":           { shoreAccess:6, parking:6, depth:5, structure:6, crowd:6, wade:false, family:false },
+    "Lake Livingston":            { shoreAccess:6, parking:6, depth:5, structure:5, crowd:6, wade:false, family:false },
+    "Conroe Lake":                { shoreAccess:5, parking:6, depth:5, structure:5, crowd:5, wade:false, family:false },
+    "Lake Somerville":            { shoreAccess:8, parking:8, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Granger Lake":               { shoreAccess:8, parking:8, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Stillhouse Hollow Lake":     { shoreAccess:7, parking:7, depth:6, structure:6, crowd:7, wade:false, family:true  },
+    "Belton Lake":                { shoreAccess:7, parking:7, depth:6, structure:6, crowd:7, wade:false, family:true  },
+    "Lake Georgetown":            { shoreAccess:7, parking:8, depth:7, structure:6, crowd:7, wade:true,  family:true  },
+    "Lady Bird Lake":             { shoreAccess:9, parking:7, depth:8, structure:6, crowd:3, wade:false, family:true  },
+    "Lake Travis":                { shoreAccess:5, parking:5, depth:3, structure:4, crowd:5, wade:false, family:false },
+    "Lake Austin":                { shoreAccess:5, parking:5, depth:5, structure:5, crowd:5, wade:false, family:false },
+    "Lake Walter E. Long":        { shoreAccess:7, parking:7, depth:7, structure:6, crowd:6, wade:false, family:true  },
+    "Lake Pflugerville":          { shoreAccess:8, parking:8, depth:8, structure:6, crowd:6, wade:true,  family:true  },
+    "Medina Lake":                { shoreAccess:5, parking:5, depth:4, structure:6, crowd:7, wade:false, family:false },
+    "Canyon Lake":                { shoreAccess:6, parking:7, depth:5, structure:5, crowd:6, wade:true,  family:true  },
+    "Choke Canyon Reservoir":     { shoreAccess:7, parking:7, depth:7, structure:7, crowd:8, wade:false, family:true  },
+    "Falcon Reservoir":           { shoreAccess:6, parking:6, depth:7, structure:7, crowd:9, wade:false, family:false },
+    "Amistad Reservoir":          { shoreAccess:5, parking:5, depth:4, structure:6, crowd:8, wade:false, family:false },
+    "O.H. Ivie Reservoir":        { shoreAccess:6, parking:6, depth:5, structure:6, crowd:9, wade:false, family:false },
+    "E.V. Spence Reservoir":      { shoreAccess:6, parking:6, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Lake Meredith":              { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Lake Alan Henry":            { shoreAccess:6, parking:6, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Twin Buttes Reservoir":      { shoreAccess:6, parking:6, depth:6, structure:5, wade:false, family:false },
+    "Lake Stamford":              { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:true,  family:true  },
+    "Lake Sweetwater":            { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:true,  family:true  },
+    "Lake Colorado City":         { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:false, family:true  },
+    "Lake Fort Phantom Hill":     { shoreAccess:7, parking:7, depth:7, structure:7, crowd:7, wade:true,  family:true  },
+    "Lake Abilene":               { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:true,  family:true  },
+    "Lake Coleman":               { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:true,  family:true  },
+    "Lake Arrowhead":             { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:false, family:true  },
+    "Lake Houston":               { shoreAccess:6, parking:7, depth:6, structure:6, crowd:5, wade:false, family:true  },
+    "Lake Conroe":                { shoreAccess:5, parking:6, depth:5, structure:5, crowd:5, wade:false, family:false },
+    "Lavon Lake":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:5, wade:false, family:true  },
+    "Squaw Creek Reservoir":      { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Richland-Chambers Reservoir":{ shoreAccess:5, parking:5, depth:5, structure:6, crowd:7, wade:false, family:false },
+    "Navarro Mills Lake":         { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Aquilla Lake":               { shoreAccess:7, parking:7, depth:8, structure:6, crowd:9, wade:true,  family:true  },
+    "Lake Limestone":             { shoreAccess:6, parking:6, depth:6, structure:6, crowd:7, wade:false, family:false },
+    "Lake Mexia":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:true,  family:true  },
+    "Lake Bastrop":               { shoreAccess:8, parking:8, depth:8, structure:7, crowd:7, wade:true,  family:true  },
+    "Lake Fayette":               { shoreAccess:7, parking:7, depth:6, structure:6, crowd:8, wade:false, family:true  },
+    "Calaveras Lake":             { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:false, family:true  },
+    "Braunig Lake":               { shoreAccess:8, parking:8, depth:7, structure:7, crowd:6, wade:false, family:true  },
+    "Lake McQueeny":              { shoreAccess:5, parking:5, depth:6, structure:5, crowd:5, wade:false, family:false },
+    "Lake Corpus Christi":        { shoreAccess:7, parking:7, depth:7, structure:6, crowd:6, wade:false, family:true  },
+    "Lake Ellsworth":             { shoreAccess:6, parking:6, depth:6, structure:5, crowd:9, wade:false, family:false },
+    "Gibbons Creek Reservoir":    { shoreAccess:5, parking:5, depth:5, structure:5, crowd:8, wade:false, family:false },
+    "Lake Bob Sandlin":           { shoreAccess:6, parking:6, depth:6, structure:7, crowd:8, wade:false, family:false },
+    "Lake Monticello":            { shoreAccess:6, parking:6, depth:6, structure:6, crowd:9, wade:false, family:false },
+    "Wright Patman Lake":         { shoreAccess:7, parking:7, depth:7, structure:7, crowd:7, wade:false, family:true  },
+    "Lake O' the Pines":          { shoreAccess:7, parking:7, depth:7, structure:7, crowd:8, wade:false, family:true  },
+    "Lake Murvaul":               { shoreAccess:7, parking:7, depth:8, structure:8, crowd:9, wade:false, family:true  },
+    "Lake Striker":               { shoreAccess:7, parking:7, depth:7, structure:7, crowd:8, wade:false, family:false },
+    "Lake Nacogdoches":           { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:false, family:true  },
+    "Lake Kurth":                 { shoreAccess:7, parking:7, depth:7, structure:7, crowd:9, wade:false, family:false },
+    "Lake Pinkston":              { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:false, family:false },
+    "Lake Kickapoo":              { shoreAccess:6, parking:6, depth:6, structure:5, crowd:8, wade:false, family:false },
+    "Lake Diversion":             { shoreAccess:6, parking:6, depth:7, structure:5, crowd:9, wade:false, family:false },
+    "Lake Mackenzie":             { shoreAccess:7, parking:7, depth:7, structure:5, crowd:9, wade:false, family:false },
+    "White River Lake":           { shoreAccess:7, parking:7, depth:7, structure:5, crowd:9, wade:true,  family:false },
+    "Champion Creek Reservoir":   { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "OC Fisher Lake":             { shoreAccess:7, parking:7, depth:7, structure:5, crowd:8, wade:true,  family:true  },
+    "Lake J.B. Thomas":           { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Bluestem Lake":              { shoreAccess:6, parking:6, depth:7, structure:5, crowd:9, wade:true,  family:false },
+    "Lake Throckmorton":          { shoreAccess:6, parking:6, depth:6, structure:5, crowd:9, wade:false, family:false },
+    "Lake Winters":               { shoreAccess:6, parking:6, depth:6, structure:5, crowd:9, wade:false, family:false },
+    "Lake Amon G. Carter":        { shoreAccess:6, parking:6, depth:6, structure:5, crowd:9, wade:false, family:false },
+    "Nocona Lake":                { shoreAccess:7, parking:7, depth:7, structure:6, crowd:9, wade:true,  family:true  },
+    "Lake Palo Pinto":            { shoreAccess:6, parking:6, depth:6, structure:7, crowd:8, wade:false, family:false },
+    "Lake Graham":                { shoreAccess:7, parking:7, depth:7, structure:6, crowd:8, wade:false, family:true  },
+    "Lake Eddleman":              { shoreAccess:6, parking:6, depth:7, structure:5, crowd:9, wade:false, family:false },
+    "Hubbard Creek Reservoir":    { shoreAccess:6, parking:6, depth:6, structure:6, crowd:8, wade:false, family:false },
+    "Lake Daniel":                { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Millers Creek Reservoir":    { shoreAccess:5, parking:5, depth:5, structure:5, crowd:9, wade:false, family:false },
+    "Lake Kirby":                 { shoreAccess:7, parking:7, depth:7, structure:6, crowd:7, wade:true,  family:true  },
+    "Mountain Creek Lake":        { shoreAccess:6, parking:6, depth:6, structure:5, crowd:6, wade:false, family:false },
+    "Lake Weatherford":           { shoreAccess:7, parking:7, depth:6, structure:6, crowd:7, wade:false, family:true  },
+  };
+
+  return function(lake) {
+    var o = overrides[lake.name] || {};
+    var d = defaults;
+    var sa = o.shoreAccess !== undefined ? o.shoreAccess : d.shoreAccess;
+    var pk = o.parking     !== undefined ? o.parking     : d.parking;
+    var dp = o.depth       !== undefined ? o.depth       : d.depth;
+    var st = o.structure   !== undefined ? o.structure   : d.structure;
+    var cr = o.crowd       !== undefined ? o.crowd       : d.crowd;
+    var wade   = o.wade   !== undefined ? o.wade   : d.wade;
+    var family = o.family !== undefined ? o.family : d.family;
+
+    var raw = sa*0.30 + pk*0.15 + dp*0.20 + st*0.20 + cr*0.15;
+    if(wade)   raw += 0.3;
+    if(family) raw += 0.3;
+    raw = Math.min(10, Math.max(1, raw));
+    var score = Math.round(raw * 10) / 10;
+    var grade = score >= 7.5 ? "A" : score >= 6.0 ? "B" : score >= 4.5 ? "C" : "D";
+
+    var tags = [];
+    if(sa >= 7)  tags.push({label:"Good Shore Access", cls:"good"});
+    else if(sa <= 4) tags.push({label:"Limited Access", cls:"bad"});
+    if(pk >= 7)  tags.push({label:"Easy Parking", cls:"good"});
+    if(dp >= 7)  tags.push({label:"Fishable Depth", cls:"good"});
+    else if(dp <= 3) tags.push({label:"Deep Near Shore", cls:"bad"});
+    if(st >= 7)  tags.push({label:"Lots of Structure", cls:"good"});
+    if(cr >= 8)  tags.push({label:"Uncrowded", cls:"good"});
+    else if(cr <= 4) tags.push({label:"Crowded", cls:"warn"});
+    if(wade)     tags.push({label:"Wade-Friendly", cls:"good"});
+    if(family)   tags.push({label:"Family-Friendly", cls:"good"});
+
+    // Access points
+    var accessData = BANK_ACCESS_POINTS[lake.name] || null;
+
+    return { score:score, grade:grade, tags:tags, wade:wade, family:family, access:accessData };
+  };
+})();
+
+var bankFilterMode = "all";
+
+function bankFilter(mode) {
+  bankFilterMode = mode;
+  ["bankAll","bankTop","bankWade","bankFamily"].forEach(function(id) {
+    document.getElementById(id).classList.remove("active");
+  });
+  document.getElementById(mode === "all" ? "bankAll" : mode === "top" ? "bankTop" : mode === "wade" ? "bankWade" : "bankFamily").classList.add("active");
+  renderBankFishing();
+}
+
+function renderBankFishing() {
+  var list = document.getElementById("bankList");
+  if(!list) return;
+
+  var scored = ALL_LAKES.map(function(lake) {
+    var bd = BANK_DATA(lake);
+    return { lake:lake, score:bd.score, grade:bd.grade, tags:bd.tags, wade:bd.wade, family:bd.family, access:bd.access };
+  });
+
+  scored.sort(function(a,b){ return b.score - a.score; });
+
+  var filtered = scored.filter(function(item) {
+    if(bankFilterMode === "top")    return item.score >= 7;
+    if(bankFilterMode === "wade")   return item.wade;
+    if(bankFilterMode === "family") return item.family;
+    return true;
+  });
+
+  document.getElementById("bankSub").textContent = filtered.length + " waters ranked by bank accessibility";
+
+  if(filtered.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--dim);font-size:13px;">No waters match this filter.</div>';
+    return;
+  }
+
+  var html = "";
+  filtered.forEach(function(item, idx) {
+    var rank = idx + 1;
+    var isTop = rank <= 3;
+    var barPct = Math.round((item.score / 10) * 100);
+    var tagsHtml = item.tags.slice(0,4).map(function(t) {
+      return '<span class="bank-tag '+t.cls+'">'+t.label+'</span>';
+    }).join("");
+    var accessNote = item.access ? '<span class="bank-tag good">📍 '+(item.access.points.length)+' Access Point'+(item.access.points.length>1?'s':'')+'</span>' : '';
+
+    html += '<button class="bank-card'+(isTop?" top-3":"")+'" data-lake="'+item.lake.name.replace(/"/g,'&quot;')+'">'
+      + '<div class="bank-rank">'+(isTop?"🏆":"#"+rank)+'</div>'
+      + '<div class="bank-body">'
+        + '<div class="bank-name">'+item.lake.name+'</div>'
+        + '<div class="bank-meta">'+item.lake.type+' · '+item.lake.region+'</div>'
+        + '<div class="bank-tags">'+tagsHtml+accessNote+'</div>'
+      + '</div>'
+      + '<div class="bank-score-wrap">'
+        + '<div class="bank-score-num">'+item.score.toFixed(1)+'<small>/10</small></div>'
+        + '<div class="bank-score-bar"><div class="bank-score-fill" style="width:'+barPct+'%"></div></div>'
+        + '<span class="bank-grade '+item.grade+'">Grade '+item.grade+'</span>'
+      + '</div>'
+      + '</button>';
+  });
+
+  list.innerHTML = html;
+  // Event delegation: handle taps on any bank card
+  list.onclick = function(e) {
+    var btn = e.target.closest('.bank-card');
+    if(btn) bankTap(btn.getAttribute('data-lake'));
+  };
+}
+
+function bankTap(name) {
+  var lake = null;
+  for(var i = 0; i < ALL_LAKES.length; i++) {
+    if(ALL_LAKES[i].name === name) { lake = ALL_LAKES[i]; break; }
+  }
+  if(!lake) return;
+
+  userLat = lake.lat; userLon = lake.lon;
+  userLabel = lake.name + " (" + lake.region + ")";
+  document.getElementById("searchInput").value = userLabel;
+
+  var bd = BANK_DATA(lake);
+  var cid = _storeCard({
+    name: lake.name, type: lake.type, lat: lake.lat, lon: lake.lon,
+    score: bd.score, bd: [], wt: null,
+    srH: lake.srH, ssH: lake.ssH, dist: null,
+    bankAccess: bd.access,   // named access points (26 lakes)
+    bankData: bd             // full scoring data (all lakes)
+  });
+  openDetail(cid);
+}
+
+// Start the swimming fish cycle
+startFishCycle();
