@@ -1899,124 +1899,243 @@ var escHtml = function(s) {
 // TEXAS BASS WATERS — statewide database
 // ═══════════════════════════════════════════
 var ALL_LAKES = [
+
   // PANHANDLE / WEST TEXAS
-  { name:"Lake Meredith",           lat:35.684, lon:-101.6068, type:"Reservoir", region:"Amarillo"      },
-  { name:"Lake Mackenzie",          lat:34.547,  lon:-101.4511, type:"Reservoir", region:"Silverton"     },
+
+  { name:"Lake Meredith",           lat:35.684,  lon:-101.6068, type:"Reservoir", region:"Amarillo"      },
+
+  { name:"Lake Mackenzie",          lat:34.54994,  lon:-101.44419, type:"Reservoir", region:"Silverton"     },
+
   { name:"White River Lake",        lat:33.471506,  lon:-101.086108, type:"Reservoir", region:"Crosbyton"     },
+
   { name:"Lake Alan Henry",         lat:33.036365,  lon:-101.105812, type:"Reservoir", region:"Lubbock"       },
-  { name:"Lake Colorado City",      lat:32.351364,  lon:-100.935321, type:"Reservoir", region:"Colorado City" },
-  { name:"Champion Creek Reservoir",lat:32.2985,  lon:-100.8335, type:"Reservoir", region:"Colorado City" },
+
+  { name:"Lake Colorado City",      lat:32.35653,  lon:-100.9333, type:"Reservoir", region:"Colorado City" },
+
+  { name:"Champion Creek Reservoir",lat:32.30203, lon:-100.83721, type:"Reservoir", region:"Colorado City" },
+
   { name:"E.V. Spence Reservoir",   lat:31.925131,  lon:-100.562171, type:"Reservoir", region:"Robert Lee"    },
+
   { name:"OC Fisher Lake",          lat:31.486869,  lon:-100.498019, type:"Reservoir", region:"San Angelo"    },
-  { name:"Twin Buttes Reservoir",   lat:31.296011,  lon:-100.496193, type:"Reservoir", region:"San Angelo"    },
-  { name:"Lake Nasworthy",          lat:31.37777, lon:-100.504023, type:"Reservoir", region:"San Angelo"    },
-  { name:"O.H. Ivie Reservoir",     lat:31.4689, lon:-100.4689, type:"Reservoir", region:"Ballinger"     },
+
+  { name:"Twin Buttes Reservoir",   lat:31.38414,  lon:-100.55003, type:"Reservoir", region:"San Angelo"    },
+
+  { name:"Lake Nasworthy",          lat:31.3746,  lon:-100.5154, type:"Reservoir", region:"San Angelo"    },
+
+  { name:"O.H. Ivie Reservoir",     lat:31.4689,  lon:-100.4689, type:"Reservoir", region:"Ballinger"     },
+
   { name:"Lake J.B. Thomas",        lat:32.598719,  lon:-101.212962, type:"Reservoir", region:"Snyder"        },
+
   { name:"Lake Sweetwater",         lat:32.422217,  lon:-100.309401, type:"Reservoir", region:"Sweetwater"    },
+
   // NORTH CENTRAL / ABILENE
+
   { name:"Lake Stamford",           lat:33.053132,  lon:-99.610694,  type:"Reservoir", region:"Haskell"       },
+
   { name:"Lake Fort Phantom Hill",  lat:32.5755,  lon:-99.6868,  type:"Reservoir", region:"Abilene"       },
+
   { name:"Lake Kirby",              lat:32.3712,  lon:-99.7325,  type:"Reservoir", region:"Abilene"       },
+
   { name:"Lake Abilene",            lat:32.238246,  lon:-99.899007,  type:"Reservoir", region:"Abilene"       },
-  { name:"Lake Brownwood",          lat:31.877676, lon:-99.062398,  type:"Reservoir", region:"Brownwood"     },
-  { name:"Lake Coleman",            lat:31.8221,  lon:-99.4441,  type:"Reservoir", region:"Coleman"       },
+
+  { name:"Lake Brownwood",          lat:31.83098,  lon:-99.10087,  type:"Reservoir", region:"Brownwood"     },
+
+  { name:"Lake Coleman",            lat:32.0272,  lon:-99.4795,  type:"Reservoir", region:"Coleman"       },
+
   { name:"Lake Proctor",            lat:32.0052,  lon:-98.498,  type:"Reservoir", region:"Comanche"      },
-  { name:"Possum Kingdom Lake",     lat:32.912062, lon:-98.505152,  type:"Reservoir", region:"Mineral Wells" },
+
+  { name:"Possum Kingdom Lake",     lat:32.912062,  lon:-98.505152,  type:"Reservoir", region:"Mineral Wells" },
+
   { name:"Lake Palo Pinto",         lat:32.6425,  lon:-98.3006,  type:"Reservoir", region:"Palo Pinto"    },
+
   { name:"Lake Graham",             lat:33.1631,  lon:-98.6339,  type:"Reservoir", region:"Graham"        },
-  { name:"Lake Eddleman",           lat:33.149057,  lon:-98.598515,  type:"Reservoir", region:"Graham"        },
-  { name:"Hubbard Creek Reservoir", lat:32.780213,  lon:-99.02121,  type:"Reservoir", region:"Breckenridge"  },
+
+  { name:"Lake Eddleman",           lat:33.15335,  lon:-98.60112,  type:"Reservoir", region:"Graham"        },
+
+  { name:"Hubbard Creek Reservoir", lat:32.81002,  lon:-98.98174,  type:"Reservoir", region:"Breckenridge"  },
+
   { name:"Lake Daniel",             lat:32.6416,  lon:-98.862,  type:"Reservoir", region:"Breckenridge"  },
+
   { name:"Millers Creek Reservoir", lat:33.399556,  lon:-99.391292,  type:"Reservoir", region:"Munday"        },
+
   { name:"Bluestem Lake",           lat:32.5283,  lon:-99.2967,  type:"Reservoir", region:"Albany"        },
+
   { name:"Lake Throckmorton",       lat:33.164869,  lon:-99.194581,  type:"Reservoir", region:"Throckmorton"  },
+
   { name:"Lake Winters",            lat:31.963053,  lon:-99.86961,  type:"Reservoir", region:"Winters"       },
+
   // NORTH TEXAS / DFW / WICHITA FALLS
-  { name:"Lake Texoma",             lat:33.938098, lon:-96.791367,  type:"Reservoir", region:"Sherman"       },
-  { name:"Lake Arrowhead",          lat:33.7489,  lon:-98.5089,  type:"Reservoir", region:"Wichita Falls" },
+
+  { name:"Lake Texoma",             lat:33.84777,  lon:-96.84687,  type:"Reservoir", region:"Sherman"       },
+
+  { name:"Lake Arrowhead",          lat:33.73107,  lon:-98.3408,  type:"Reservoir", region:"Wichita Falls" },
+
   { name:"Lake Kickapoo",           lat:33.641471,  lon:-98.834201,  type:"Reservoir", region:"Wichita Falls" },
+
   { name:"Lake Diversion",          lat:33.792505,  lon:-98.975785,  type:"Reservoir", region:"Wichita Falls" },
+
   { name:"Lake Amon G. Carter",     lat:33.472311,  lon:-97.888252,  type:"Reservoir", region:"Bowie"         },
+
   { name:"Nocona Lake",             lat:33.8579,  lon:-97.6552,  type:"Reservoir", region:"Nocona"        },
-  { name:"Lake Ray Roberts",        lat:33.3348, lon:-97.0285,  type:"Reservoir", region:"Denton"        },
-  { name:"Lake Lewisville",         lat:33.134, lon:-97.0225,  type:"Reservoir", region:"Dallas"        },
-  { name:"Lavon Lake",              lat:33.113253, lon:-96.480307,  type:"Reservoir", region:"Dallas"        },
-  { name:"Lake Ray Hubbard",        lat:32.903058, lon:-96.532076,  type:"Reservoir", region:"Dallas"        },
-  { name:"Lake Tawakoni",           lat:32.903104, lon:-96.009968,  type:"Reservoir", region:"Greenville"    },
-  { name:"Lake Grapevine",          lat:32.9944, lon:-97.1211,  type:"Reservoir", region:"Dallas"        },
-  { name:"Eagle Mountain Lake",     lat:32.94406, lon:-97.484392,  type:"Reservoir", region:"Fort Worth"    },
-  { name:"Lake Worth",              lat:32.814693, lon:-97.453827,  type:"Reservoir", region:"Fort Worth"    },
-  { name:"Benbrook Lake",           lat:32.625439, lon:-97.465102,  type:"Reservoir", region:"Fort Worth"    },
+
+  { name:"Lake Ray Roberts",        lat:33.3348,  lon:-97.0285,  type:"Reservoir", region:"Denton"        },
+
+  { name:"Lake Lewisville",         lat:33.134,  lon:-97.0225,  type:"Reservoir", region:"Dallas"        },
+
+  { name:"Lavon Lake",              lat:33.16152,  lon:-96.43389,  type:"Reservoir", region:"Dallas"        },
+
+  { name:"Lake Ray Hubbard",        lat:32.93816,  lon:-96.4881,  type:"Reservoir", region:"Dallas"        },
+
+  { name:"Lake Tawakoni",           lat:32.94185,  lon:-95.98607,  type:"Reservoir", region:"Greenville"    },
+
+  { name:"Lake Grapevine",          lat:32.9944,  lon:-97.1211,  type:"Reservoir", region:"Dallas"        },
+
+  { name:"Eagle Mountain Lake",     lat:32.97637,  lon:-97.50946,  type:"Reservoir", region:"Fort Worth"    },
+
+  { name:"Lake Worth",              lat:32.814693,  lon:-97.453827,  type:"Reservoir", region:"Fort Worth"    },
+
+  { name:"Benbrook Lake",           lat:32.625439,  lon:-97.465102,  type:"Reservoir", region:"Fort Worth"    },
+
   { name:"Lake Weatherford",        lat:32.786961,  lon:-97.68822,  type:"Reservoir", region:"Weatherford"   },
-  { name:"Lake Granbury",           lat:32.455894, lon:-97.759948,  type:"Reservoir", region:"Granbury"      },
-  { name:"White Rock Lake",         lat:32.834983, lon:-96.721875,  type:"Reservoir", region:"Dallas"        },
-  { name:"Joe Pool Lake",           lat:32.59038, lon:-97.021852,  type:"Reservoir", region:"Dallas"        },
-  { name:"Lake Arlington",          lat:32.698208, lon:-97.212824,  type:"Reservoir", region:"Arlington"     },
+
+  { name:"Lake Granbury",           lat:32.49964,  lon:-97.81033,  type:"Reservoir", region:"Granbury"      },
+
+  { name:"White Rock Lake",         lat:32.834983,  lon:-96.721875,  type:"Reservoir", region:"Dallas"        },
+
+  { name:"Joe Pool Lake",           lat:32.59038,  lon:-97.021852,  type:"Reservoir", region:"Dallas"        },
+
+  { name:"Lake Arlington",          lat:32.698208,  lon:-97.212824,  type:"Reservoir", region:"Arlington"     },
+
   { name:"Mountain Creek Lake",     lat:32.715815,  lon:-96.960329,  type:"Reservoir", region:"Dallas"        },
+
   { name:"Squaw Creek Reservoir",   lat:32.2937,  lon:-97.7898,  type:"Reservoir", region:"Glen Rose"     },
-  { name:"Lake Whitney",            lat:31.979873, lon:-97.421046,  type:"Reservoir", region:"Whitney"       },
-  { name:"Aquilla Lake",            lat:31.928939,  lon:-97.199107,  type:"Reservoir", region:"Aquilla"       },
-  { name:"Waco Lake",               lat:31.5526, lon:-97.2443,  type:"Reservoir", region:"Waco"          },
+
+  { name:"Lake Whitney",            lat:31.99479,  lon:-97.38908,  type:"Reservoir", region:"Whitney"       },
+
+  { name:"Aquilla Lake",            lat:31.94027,  lon:-97.22473,  type:"Reservoir", region:"Aquilla"       },
+
+  { name:"Waco Lake",               lat:31.5526,  lon:-97.2443,  type:"Reservoir", region:"Waco"          },
+
   // EAST TEXAS
-  { name:"Lake Fork",               lat:32.886004, lon:-95.614822,  type:"Reservoir", region:"Quitman"       },
+
+  { name:"Lake Fork",               lat:32.886004,  lon:-95.614822,  type:"Reservoir", region:"Quitman"       },
+
   { name:"Lake Bob Sandlin",        lat:33.054806,  lon:-95.079124,  type:"Reservoir", region:"Mt Pleasant"   },
+
   { name:"Lake Cypress Springs",    lat:33.061218,  lon:-95.198515,  type:"Reservoir", region:"Mt Vernon"     },
+
   { name:"Lake O the Pines",        lat:32.820786,  lon:-94.611125,  type:"Reservoir", region:"Jefferson"     },
-  { name:"Caddo Lake",              lat:32.6932, lon:-94.1792,  type:"Lake",      region:"Marshall"      },
+
+  { name:"Caddo Lake",              lat:32.75367,  lon:-94.02878,  type:"Lake",      region:"Marshall"      },
+
   { name:"Lake Cherokee",           lat:32.329099,  lon:-94.704141,  type:"Reservoir", region:"Longview"      },
+
   { name:"Martin Creek Lake",       lat:32.23884,  lon:-94.572241,  type:"Reservoir", region:"Longview"      },
-  { name:"Lake Murvaul",            lat:32.036417,  lon:-94.463653,  type:"Reservoir", region:"Carthage"      },
-  { name:"Lake Palestine",          lat:32.175752, lon:-95.43791,  type:"Reservoir", region:"Tyler"         },
-  { name:"Lake Tyler East",         lat:32.2475,  lon:-95.1293,  type:"Reservoir", region:"Tyler"         },
-  { name:"Lake Tyler West",         lat:32.245,  lon:-95.195,  type:"Reservoir", region:"Tyler"         },
-  { name:"Lake Nacogdoches",        lat:31.62112,  lon:-94.815285,  type:"Reservoir", region:"Nacogdoches"   },
+
+  { name:"Lake Murvaul",            lat:32.03241,  lon:-94.48826,  type:"Reservoir", region:"Carthage"      },
+
+  { name:"Lake Palestine",          lat:32.175752,  lon:-95.43791,  type:"Reservoir", region:"Tyler"         },
+
+  { name:"Lake Tyler East",         lat:32.26588,  lon:-95.11908,  type:"Reservoir", region:"Tyler"         },
+
+  { name:"Lake Tyler West",         lat:32.2447,  lon:-95.1836,  type:"Reservoir", region:"Tyler"         },
+
+  { name:"Lake Nacogdoches",        lat:31.63829,  lon:-94.80439,  type:"Reservoir", region:"Nacogdoches"   },
+
   { name:"Lake Striker",            lat:31.966332,  lon:-94.989193,  type:"Reservoir", region:"Rusk"          },
+
   { name:"Lake Jacksonville",       lat:31.922489,  lon:-95.293792,  type:"Reservoir", region:"Jacksonville"  },
+
   { name:"Lake Athens",             lat:32.215286,  lon:-95.752341,  type:"Reservoir", region:"Athens"        },
-  { name:"Sam Rayburn Reservoir",   lat:31.248253, lon:-94.272372,  type:"Reservoir", region:"Jasper"        },
-  { name:"Toledo Bend Reservoir",   lat:31.1785, lon:-93.5514,  type:"Reservoir", region:"Jasper"        },
+
+  { name:"Sam Rayburn Reservoir",   lat:31.248253,  lon:-94.272372,  type:"Reservoir", region:"Jasper"        },
+
+  { name:"Toledo Bend Reservoir",   lat:31.3500,  lon:-93.6200,  type:"Reservoir", region:"Jasper"        },
+
   { name:"Lake Limestone",          lat:31.403347,  lon:-96.358243,  type:"Reservoir", region:"Groesbeck"     },
-  { name:"Lake Mexia",              lat:31.656241,  lon:-96.600794,  type:"Reservoir", region:"Mexia"         },
+
+  { name:"Lake Mexia",              lat:31.66189,  lon:-96.58646,  type:"Reservoir", region:"Mexia"         },
+
   { name:"Richland Chambers Reservoir",lat:32.0094,lon:-96.2579, type:"Reservoir", region:"Corsicana"     },
-  { name:"Bardwell Lake",           lat:32.28867,  lon:-96.677821,  type:"Reservoir", region:"Ennis"         },
+
+  { name:"Bardwell Lake",           lat:32.26768,  lon:-96.65447,  type:"Reservoir", region:"Ennis"         },
+
   // HOUSTON METRO
-  { name:"Lake Conroe",             lat:30.462544, lon:-95.613129,  type:"Reservoir", region:"Houston"       },
-  { name:"Lake Houston",            lat:30.000104, lon:-95.17697,  type:"Reservoir", region:"Houston"       },
-  { name:"Lake Livingston",         lat:30.81414, lon:-95.229854,  type:"Reservoir", region:"Huntsville"    },
+
+  { name:"Lake Conroe",             lat:30.462544,  lon:-95.613129,  type:"Reservoir", region:"Houston"       },
+
+  { name:"Lake Houston",            lat:30.02421,  lon:-95.21689,  type:"Reservoir", region:"Houston"       },
+
+  { name:"Lake Livingston",         lat:30.8509,  lon:-95.2605,  type:"Reservoir", region:"Huntsville"    },
+
   { name:"Somerville Lake",         lat:30.318095,  lon:-96.598315,  type:"Reservoir", region:"Bryan"         },
+
   { name:"Lake Bryan",              lat:30.712427,  lon:-96.466238,  type:"Reservoir", region:"Bryan"         },
+
   { name:"Gibbons Creek Reservoir", lat:30.632449,  lon:-96.06242,  type:"Reservoir", region:"Navasota"      },
+
   // CENTRAL TEXAS / AUSTIN / HILL COUNTRY
-  { name:"Lake Travis",             lat:30.464591, lon:-98.064577,  type:"Reservoir", region:"Austin"        },
-  { name:"Lake Austin",             lat:30.343489,  lon:-97.852903,  type:"Reservoir", region:"Austin"        },
-  { name:"Lady Bird Lake",          lat:30.268782, lon:-97.750866,  type:"Reservoir", region:"Austin"        },
+
+  { name:"Lake Travis",             lat:30.46711,  lon:-98.03803,  type:"Reservoir", region:"Austin"        },
+
+  { name:"Lake Austin",             lat:30.3200,  lon:-97.8800,  type:"Reservoir", region:"Austin"        },
+
+  { name:"Lady Bird Lake",          lat:30.27618,  lon:-97.77313,  type:"Reservoir", region:"Austin"        },
+
   { name:"Walter E. Long Lake",     lat:30.301154,  lon:-97.603268,  type:"Reservoir", region:"Austin"        },
-  { name:"Lake Georgetown",         lat:30.67682, lon:-97.759682,  type:"Reservoir", region:"Georgetown"    },
-  { name:"Lake Pflugerville",       lat:30.442028,  lon:-97.572422,  type:"Reservoir", region:"Pflugerville"  },
-  { name:"Brushy Creek Lake",       lat:30.506088,  lon:-97.774204,  type:"Reservoir", region:"Cedar Park"    },
+
+  { name:"Lake Georgetown",         lat:30.68182,  lon:-97.7848,  type:"Reservoir", region:"Georgetown"    },
+
+  { name:"Lake Pflugerville",       lat:30.44542,  lon:-97.57038,  type:"Reservoir", region:"Pflugerville"  },
+
+  { name:"Brushy Creek Lake",       lat:30.50705,  lon:-97.76762,  type:"Reservoir", region:"Cedar Park"    },
+
   { name:"Lake Buchanan",           lat:30.845901,  lon:-98.407578,  type:"Reservoir", region:"Llano"         },
+
   { name:"Inks Lake",               lat:30.743593,  lon:-98.388281,  type:"Reservoir", region:"Burnet"        },
+
   { name:"Lake LBJ",                lat:30.6377,  lon:-98.391,  type:"Reservoir", region:"Kingsland"     },
-  { name:"Lake Marble Falls",       lat:30.559598,  lon:-98.297008,  type:"Reservoir", region:"Marble Falls"  },
-  { name:"Canyon Lake",             lat:29.8867, lon:-98.2726,  type:"Reservoir", region:"New Braunfels" },
-  { name:"Stillhouse Hollow Lake",  lat:31.01463, lon:-97.602342,  type:"Reservoir", region:"Belton"        },
-  { name:"Belton Lake",             lat:31.186786, lon:-97.515107,  type:"Reservoir", region:"Belton"        },
+
+  { name:"Lake Marble Falls",       lat:30.56042,  lon:-98.2988,  type:"Reservoir", region:"Marble Falls"  },
+
+  { name:"Canyon Lake",             lat:29.9024,  lon:-98.24464,  type:"Reservoir", region:"New Braunfels" },
+
+  { name:"Stillhouse Hollow Lake",  lat:31.01463,  lon:-97.602342,  type:"Reservoir", region:"Belton"        },
+
+  { name:"Belton Lake",             lat:31.17391,  lon:-97.4999,  type:"Reservoir", region:"Belton"        },
+
   // SAN ANTONIO AREA
-  { name:"Medina Lake",             lat:29.590515,  lon:-98.950533,  type:"Reservoir", region:"San Antonio"   },
-  { name:"Calaveras Lake",          lat:29.307553, lon:-98.319114,  type:"Reservoir", region:"San Antonio"   },
-  { name:"Braunig Lake",            lat:29.255084, lon:-98.376991,  type:"Reservoir", region:"San Antonio"   },
-  { name:"Lake Dunlap",             lat:29.675852,  lon:-98.085103,  type:"Reservoir", region:"New Braunfels" },
+
+  { name:"Medina Lake",             lat:29.59436,  lon:-98.93206,  type:"Reservoir", region:"San Antonio"   },
+
+  { name:"Calaveras Lake",          lat:29.31261,  lon:-98.32514,  type:"Reservoir", region:"San Antonio"   },
+
+  { name:"Braunig Lake",            lat:29.255084,  lon:-98.376991,  type:"Reservoir", region:"San Antonio"   },
+
+  { name:"Lake Dunlap",             lat:29.68054,  lon:-98.08644,  type:"Reservoir", region:"New Braunfels" },
+
   { name:"Lake McQueeney",          lat:29.601549,  lon:-98.03894,  type:"Reservoir", region:"Seguin"        },
+
   { name:"Lake Placid",             lat:29.5598,  lon:-98.0101,  type:"Reservoir", region:"Seguin"        },
+
   // SOUTH / COASTAL TEXAS
-  { name:"Coleto Creek Reservoir",  lat:28.759164,  lon:-97.201725,  type:"Reservoir", region:"Victoria"      },
-  { name:"Lake Texana",             lat:28.96979,  lon:-96.520805,  type:"Reservoir", region:"Edna"          },
-  { name:"Choke Canyon Reservoir",  lat:28.498129, lon:-98.358125,  type:"Reservoir", region:"Three Rivers"  },
-  { name:"Lake Corpus Christi",     lat:28.154682, lon:-97.927672,  type:"Reservoir", region:"Corpus Christi"},
+
+  { name:"Coleto Creek Reservoir",  lat:28.74759,  lon:-97.18816,  type:"Reservoir", region:"Victoria"      },
+
+  { name:"Lake Texana",             lat:28.98954,  lon:-96.53731,  type:"Reservoir", region:"Edna"          },
+
+  { name:"Choke Canyon Reservoir",  lat:28.47875,  lon:-98.38237,  type:"Reservoir", region:"Three Rivers"  },
+
+  { name:"Lake Corpus Christi",     lat:28.154682,  lon:-97.927672,  type:"Reservoir", region:"Corpus Christi"},
+
   // SOUTH TEXAS / RIO GRANDE
-  { name:"Falcon Reservoir",        lat:26.7183, lon:-99.236,  type:"Reservoir", region:"Laredo"        },
+
+  { name:"Falcon Reservoir",        lat:26.7183,  lon:-99.236,  type:"Reservoir", region:"Laredo"        },
+
   { name:"Lake Casa Blanca",        lat:27.551073,  lon:-99.431827,  type:"Reservoir", region:"Laredo"        },
-  { name:"Amistad Reservoir",       lat:29.477393, lon:-101.035842, type:"Reservoir", region:"Del Rio"       },
+
+  { name:"Amistad Reservoir",       lat:29.477393,  lon:-101.035842, type:"Reservoir", region:"Del Rio"       },
+
 ];
 
 // Weather grid — 10 points spread across Texas for map scoring
@@ -5722,216 +5841,427 @@ function hotspotTap(name) {
 // Each entry: { name, type, lat, lon, notes }
 
 var BANK_ACCESS_POINTS = {
+
   "White Rock Lake": {
+
     summary: "Full paved trail circles the entire 9-mile shoreline. Multiple dedicated fishing spots with benches and lighting. No permit needed.",
+
     points: [
+
       { name:"Winfrey Point", type:"park", lat:32.836, lon:-96.718, notes:"Paved lot, restrooms, multiple casting points along the northwest bank." },
+
       { name:"Bath House Cultural Center Pier", type:"pier", lat:32.828, lon:-96.720, notes:"Lighted fishing pier, very beginner-friendly. Best at dawn/dusk." },
+
       { name:"White Rock Lake Park South Shore", type:"wade", lat:32.821, lon:-96.714, notes:"Sandy shallows on the south end — wade to reach submerged structure near old road beds." },
+
       { name:"Mockingbird Lane Cove", type:"bank", lat:32.840, lon:-96.707, notes:"Narrow inlet channel funnels baitfish — excellent ambush point for largemouth." }
+
     ]
+
   },
+
   "Lady Bird Lake": {
+
     summary: "Hike-and-bike trail runs both banks for 10+ miles through downtown Austin. Kayak/canoe access everywhere but much of it is no-wake. No bank fishing permits required.",
+
     points: [
+
       { name:"Auditorium Shores", type:"park", lat:30.26020, lon:-97.7501, notes:"Large open grass bank, paved parking. Popular but bass hold near the far bridge pilings." },
+
       { name:"Roy G. Guerrero Park", type:"park", lat:30.245, lon:-97.711, notes:"Quieter east end, shaded banks, submerged timber — less pressure than downtown." },
+
       { name:"Longhorn Dam Tailrace", type:"bank", lat:30.245, lon:-97.709, notes:"Below the dam — flowing water concentrates fish. Wade carefully on rocky bottom." },
+
       { name:"Tom Miller Dam Bank", type:"bank", lat:30.2939, lon:-97.7848, notes:"West end rocky point. Consistent structure for topwater in early morning." }
+
     ]
+
   },
+
   "Lake Nasworthy": {
+
     summary: "City-owned lake in San Angelo with paved fishing piers and a sandy wade-in shoreline. Texas State Park fishing permit required.",
+
     points: [
-      { name:"San Angelo State Park South Shore", type:"wade", lat:31.398, lon:-100.518, notes:"Gently sloping sandy bank. Wade out 20-30 ft to reach grass edges at 3-4 ft depth." },
-      { name:"Lake Nasworthy Fishing Pier", type:"pier", lat:31.410, lon:-100.503, notes:"Lighted pier off Loop 306. Good for catfish and bass at night. Restrooms on-site." },
-      { name:"Spring Creek Inlet", type:"bank", lat:31.415, lon:-100.512, notes:"Creek mouth that flushes baitfish into the lake. Work a topwater along the channel edge." }
+
+      { name:"San Angelo State Park South Shore", type:"wade", lat:31.3746, lon:-100.5154, notes:"Sandy wade-in bank on the main south arm. Wade out 20-30 ft to reach grass edges at 3-4 ft depth." },
+
+      { name:"Lake Nasworthy Fishing Pier", type:"pier", lat:31.3895, lon:-100.4885, notes:"Lighted pier on the northeast arm of the lake. Good for catfish and bass at night. Restrooms on-site." },
+
+      { name:"Spring Creek Inlet", type:"bank", lat:31.3755, lon:-100.5262, notes:"Creek mouth on the northwest arm that flushes baitfish into the lake. Work a topwater along the channel edge." }
+
     ]
+
   },
+
   "Lake Ray Roberts": {
+
     summary: "State Park surrounds the lake with 30+ miles of accessible shoreline. Multiple fishing piers and wade-friendly coves on the north end.",
+
     points: [
-      { name:"Johnson Branch Unit Pier", type:"pier", lat:33.402, lon:-97.004, notes:"Large covered fishing pier with cleaning station. Plenty of parking. Bass hold near pier pilings at dawn." },
-      { name:"Isle du Bois Unit Cove", type:"wade", lat:33.366, lon:-97.034, notes:"Shallow gravel-bottom cove. Wade to flooded brush on the east side at 2-4 ft depth." },
-      { name:"Greenbelt Corridor Flats", type:"bank", lat:33.340, lon:-97.040, notes:"Flat grassy bank with brush piles — fish parallel to shore with a Texas-rigged worm." }
+
+      { name:"Johnson Branch Unit Pier", type:"pier", lat:33.3340, lon:-97.0280, notes:"Large covered fishing pier with cleaning station. Plenty of parking. Bass hold near pier pilings at dawn." },
+
+      { name:"Isle du Bois Unit Cove", type:"wade", lat:33.3100, lon:-97.0450, notes:"Shallow gravel-bottom cove. Wade to flooded brush on the east side at 2-4 ft depth." },
+
+      { name:"Greenbelt Corridor Flats", type:"bank", lat:33.2900, lon:-97.0430, notes:"Flat grassy bank with brush piles — fish parallel to shore with a Texas-rigged worm." }
+
     ]
+
   },
+
   "Benbrook Lake": {
+
     summary: "US Army Corps of Engineers lake west of Fort Worth with 4 public day-use areas and good bank access. No permit beyond state fishing license.",
+
     points: [
+
       { name:"Mustang Park Day Use", type:"park", lat:32.631, lon:-97.479, notes:"Paved parking, restrooms, riprap bank good for flipping jigs. Bass stack along the rocks." },
+
       { name:"Holiday Park Boat Ramp Bank", type:"ramp", lat:32.647, lon:-97.475, notes:"Gravel bank beside ramp. Shallow flat extends 50 ft — good with a weightless Senko." },
+
       { name:"Bear Creek Cove", type:"bank", lat:32.640, lon:-97.490, notes:"Wooded creek arm with laydowns. Access trail off Dutch Branch Rd. Topwater in the morning." }
+
     ]
+
   },
+
   "Lake Grapevine": {
+
     summary: "Corps of Engineers lake with Meadowmere Park and Murrell Park providing excellent bank access. Riprap and coves around the marina are productive.",
+
     points: [
+
       { name:"Meadowmere Park Shore", type:"park", lat:32.965, lon:-97.066, notes:"Concrete fishing platform and mowed bank. Easy parking, restrooms. Work the riprap with crankbaits." },
+
       { name:"Murrell Park Cove", type:"wade", lat:32.985, lon:-97.073, notes:"Sandy cove near the north campground. Wade out to brush piles at 4-5 ft." },
+
       { name:"Silver Lake Inlet", type:"bank", lat:32.960, lon:-97.055, notes:"Narrow creek channel that drains Silver Lake — concentrates bass near the mouth early morning." }
+
     ]
+
   },
+
   "Joe Pool Lake": {
+
     summary: "Loyd Park and Lynn Creek Park are the go-to bank access spots — paved fishing areas and good structure nearby.",
+
     points: [
+
       { name:"Loyd Park Fishing Area", type:"park", lat:32.6052, lon:-97.066, notes:"Dedicated paved fishing area, restrooms, lots of riprap. Night fishing permitted with permit." },
+
       { name:"Lynn Creek Park Marina Bank", type:"pier", lat:32.63420, lon:-97.03860, notes:"Dock area with ledge structure below. Swimbaits work well along the dock face." },
+
       { name:"Cedar Hill State Park Shoreline", type:"wade", lat:32.60960, lon:-96.99210, notes:"Sandy point on the southwest arm. Wade south along the bank to submerged roadbed structure." }
+
     ]
+
   },
+
   "Lake Whitney": {
+
     summary: "State park and Corps areas give miles of rocky shoreline access. The dam tailrace is walk-in only but loaded with fish.",
+
     points: [
+
       { name:"Lake Whitney State Park Bank", type:"park", lat:31.854, lon:-97.369, notes:"Paved lot, pier, and mowed bank inside state park. Swim jigs near cliff walls are productive." },
+
       { name:"Whitney Dam Tailrace", type:"wade", lat:31.875, lon:-97.357, notes:"Walk the rocky bank below the dam. Flowing water — good for largemouth and spotted bass. Slippery rocks — use felt soles." },
+
       { name:"Lofers Bend West Cove", type:"bank", lat:31.900, lon:-97.380, notes:"Corps campground cove. Gentle gravel slope — good for beginning anglers." }
+
     ]
+
   },
+
   "Lake Proctor": {
+
     summary: "Corps of Engineers lake near Comanche — very low pressure and easy walk-in access to shallow coves. Excellent wade fishing.",
+
     points: [
-      { name:"Copperas Creek Park Shore", type:"wade", lat:31.985, lon:-98.444, notes:"Flat sandy bank on the upper creek arm. Wade to submerged timber at 2-3 ft depth. Extremely low pressure." },
-      { name:"South Bend Park Fishing Area", type:"park", lat:31.975, lon:-98.432, notes:"Paved lot, covered picnic, and rock jetty. Fish the jetty tip at dusk with a swimbait." },
-      { name:"Day Use Area Bank", type:"bank", lat:31.970, lon:-98.450, notes:"Gravel bank beside the main day use area. Popping frogs work along the lily pads in summer." }
+
+      { name:"Copperas Creek Park Shore", type:"wade", lat:31.9672, lon:-98.4980, notes:"Flat sandy bank at Copperas Creek Park. Wade to submerged timber at 2-3 ft depth. Extremely low pressure." },
+
+      { name:"South Bend Park Fishing Area", type:"park", lat:31.9912, lon:-98.4619, notes:"Paved lot, covered picnic, and rock jetty at Sowell Creek Park. Fish the jetty tip at dusk with a swimbait." },
+
+      { name:"Day Use Area Bank", type:"bank", lat:31.9813, lon:-98.4890, notes:"Gravel bank beside the main day use area at Promontory Park. Popping frogs work along the lily pads in summer." }
+
     ]
+
   },
+
   "Lake Brownwood": {
+
     summary: "State park gives 500+ acres of public access and a lighted pier. Good rocky points perfect for bank fishing.",
+
     points: [
+
       { name:"Lake Brownwood State Park Pier", type:"pier", lat:31.856, lon:-99.0298, notes:"Lighted fishing pier inside state park. Bass cruise the pier at night. Camping adjacent." },
+
       { name:"State Park Rocky Point", type:"wade", lat:31.8510, lon:-99.0350, notes:"Gradual rocky slope on the state park's west side. Crank the point at dawn." },
+
       { name:"Big Ridge Park Shore", type:"bank", lat:31.8620, lon:-99.0100, notes:"County park with open grass bank and shaded trees — family-friendly with picnic tables." }
+
     ]
+
   },
+
   "Lake Somerville": {
+
     summary: "State Park covers both sides (Birch Creek and Nails Creek units) with combined miles of fishable shoreline. Shallow, weedy, perfect for bank anglers.",
+
     points: [
+
       { name:"Birch Creek Unit Pier", type:"pier", lat:30.353, lon:-96.554, notes:"Fishing pier and sandy beach in the state park. Bass cruise the weed edge 30-40 ft out — try a buzzbait at first light." },
+
       { name:"Nails Creek Unit Cove", type:"wade", lat:30.362, lon:-96.600, notes:"Shallow clear cove. Wade carefully to avoid spooking fish. Soft plastics on light line excel here." },
+
       { name:"Overlook Park Bank", type:"park", lat:30.350, lon:-96.570, notes:"Free Corp of Engineers day-use area. Grassy bank over a gentle slope — excellent for families." }
+
     ]
+
   },
+
   "Granger Lake": {
+
     summary: "Small Corps lake in Williamson County with exceptional bank access and almost no boat pressure. Shallow lake — nearly every bank is fishable.",
+
     points: [
+
       { name:"Wilson H. Fox Park Shore", type:"park", lat:30.685, lon:-97.390, notes:"Paved parking and a grassy bank that extends 400 ft along the lake. Consistent bass bite near the boat dock pilings." },
+
       { name:"Taylor Park Wade Area", type:"wade", lat:30.700, lon:-97.375, notes:"Sandy flat on the north shore. Wade the shallows at dawn with a popper — Granger bass hit topwater hard." },
+
       { name:"San Gabriel Creek Arm", type:"bank", lat:30.675, lon:-97.410, notes:"Creek inlet. Fish the transition from silty creek bottom to the main lake — largemouth stack here in fall." }
+
     ]
+
   },
+
   "Lake Georgetown": {
+
     summary: "Canyon lake setting with rocky points and cedar bluffs. Corps parks give good bank access though steep banks limit wading.",
+
     points: [
-      { name:"Cedar Breaks Park Pier", type:"pier", lat:30.692, lon:-97.762, notes:"Covered pier and cleaning station. Deep water close to shore — drop a drop-shot along the bluff." },
-      { name:"Jim Hogg Park Rocky Point", type:"bank", lat:30.6846, lon:-97.74350, notes:"Rocky peninsula jutting into the main lake. Cast crankbaits along the rock ledges at 6-10 ft depth." },
-      { name:"Tejas Park Cove", type:"wade", lat:30.6961, lon:-97.8270, notes:"Shallower cove at the park's east end. Gravelly bottom — safe to wade. Finesse plastics on spinning gear." }
+
+      { name:"Cedar Breaks Park Pier", type:"pier", lat:30.6820, lon:-97.7620, notes:"Covered pier and cleaning station. Deep water close to shore — drop a drop-shot along the bluff." },
+
+      { name:"Jim Hogg Park Rocky Point", type:"bank", lat:30.6846, lon:-97.7435, notes:"Rocky peninsula jutting into the main lake. Cast crankbaits along the rock ledges at 6-10 ft depth." },
+
+      { name:"Tejas Park Cove", type:"wade", lat:30.6780, lon:-97.7800, notes:"Shallower cove at the park's west end. Gravelly bottom — safe to wade. Finesse plastics on spinning gear." }
+
     ]
+
   },
+
   "Stillhouse Hollow Lake": {
+
     summary: "Corps lake near Killeen with large parks and a long dam-face bank. Excellent structure bass fishing from shore.",
+
     points: [
+
       { name:"Dana Peak Park Shore", type:"park", lat:30.998, lon:-97.557, notes:"Huge park with miles of mowed bank, fishing piers, and riprap along the dam road. Very family-friendly." },
+
       { name:"Lampasas River Arm", type:"bank", lat:31.050, lon:-97.600, notes:"Walk-in bank on the upper river arm. Clear water, rocky bottom — sight-fish shallow bass in spring." },
+
       { name:"Overlook Riprap", type:"bank", lat:30.990, lon:-97.560, notes:"Rocky riprap on the dam's west face. Carolina-rig a craw along the base — deep fish stack here in summer." }
+
     ]
+
   },
+
   "Lake Bastrop": {
+
     summary: "LCRA lake in Bastrop with Lost Pines access. Sandy pine-forest banks, very light pressure, excellent for wading.",
+
     points: [
+
       { name:"Bastrop State Park Bank", type:"wade", lat:30.116, lon:-97.267, notes:"Sandy bank inside Bastrop State Park. Wade the shallow east end — bass hold in the submerged stumps left by the 2011 fire." },
+
       { name:"Lake Bastrop South Shore", type:"park", lat:30.108, lon:-97.270, notes:"LCRA park with paved access and restrooms. Dock pilings hold fish all year." },
+
       { name:"North Shore Fishing Access", type:"bank", lat:30.120, lon:-97.261, notes:"Gravel bank on the north side of the lake. Light pressure, good morning bite near the cove entrance." }
+
     ]
+
   },
+
   "Caddo Lake": {
+
     summary: "Unique cypress-swamp setting. Wading is not recommended (deep muck, snakes) but the boat ramp banks and state park docks are excellent for casting into the timber.",
+
     points: [
+
       { name:"Caddo Lake State Park Dock", type:"pier", lat:32.691, lon:-94.183, notes:"Fishing dock inside state park. Cast into flooded cypress knees — guaranteed bass cover. Canoe rentals available." },
+
       { name:"Uncertain Landing Bank", type:"bank", lat:32.696, lon:-94.175, notes:"Small gravel bank at the public boat landing. Pitch jigs into the cypress trees on either side." },
+
       { name:"Carters Lake Cove", type:"bank", lat:32.680, lon:-94.200, notes:"Quiet backwater cove accessible by a short walk from the main road. Weedless frogs work over the lily pad mats." }
+
     ]
+
   },
+
   "Choke Canyon Reservoir": {
+
     summary: "State park with an excellent lighted fishing pier and open shoreline. South Texas largemouth — big fish, low pressure.",
+
     points: [
+
       { name:"Calliham Unit Fishing Pier", type:"pier", lat:28.474, lon:-98.342, notes:"150-ft lighted pier inside Calliham Unit state park. Night fishing is exceptional. Big bass cruise the pier at dusk." },
+
       { name:"South Shore Day Use Bank", type:"park", lat:28.470, lon:-98.350, notes:"Riprap bank at the day use area — stable footing, large rocks. Jig the base of the riprap." },
+
       { name:"Tilden Area Cove", type:"wade", lat:28.480, lon:-98.360, notes:"Shallow sandy flat on the north end. Low pressure, excellent wading. Fish Texas-rigged plastics slow in the summer heat." }
+
     ]
+
   },
+
   "Lake Meredith": {
+
     summary: "National Recreation Area — all shorelines are free public access. Rocky canyon walls mean most bank fishing is from ledges above the water, but several sandy coves exist.",
+
     points: [
-      { name:"Sanford-Yake Ramp Bank", type:"ramp", lat:35.396, lon:-101.639, notes:"Wide gravel bank beside the main ramp. Fish the point just north with a crankbait at the rock ledges." },
-      { name:"Blue Creek Cove", type:"wade", lat:35.420, lon:-101.710, notes:"Sandy-bottom cove accessible from the camping area. Good wade-in access at low water. Bass hold in submerged brush." },
-      { name:"Plum Creek Canyon Bank", type:"bank", lat:35.450, lon:-101.680, notes:"Remote canyon arm. Walk down the trail 0.3 miles to a ledge bank — very little pressure." }
+
+      { name:"Sanford-Yake Ramp Bank", type:"ramp", lat:35.7061, lon:-101.5618, notes:"Wide gravel bank beside the main ramp at Sanford-Yake Campground. Fish the point just north with a crankbait at the rock ledges." },
+
+      { name:"Blue Creek Cove", type:"wade", lat:35.7227, lon:-101.6639, notes:"Sandy-bottom cove at Blue Creek Campground on the northwest arm. Good wade-in access at low water. Bass hold in submerged brush." },
+
+      { name:"Plum Creek Canyon Bank", type:"bank", lat:35.680, lon:-101.620, notes:"Remote canyon arm on the west side. Walk down the trail 0.3 miles to a ledge bank — very little pressure." }
+
     ]
+
   },
+
   "Lake Fort Phantom Hill": {
+
     summary: "City of Abilene lake with a paved road around most of it and multiple pull-off bank access spots.",
+
     points: [
+
       { name:"Fort Phantom Hill Park Pier", type:"pier", lat:32.57560, lon:-99.6929, notes:"City-run pier with parking and restrooms. Fish the pilings at first light." },
+
       { name:"Main Dam Bank", type:"bank", lat:32.563, lon:-99.68, notes:"Riprap along the dam face. Cast parallel to the rocks with a jig — bass hold in the cracks." },
+
       { name:"North Cove Wade Area", type:"wade", lat:32.5860, lon:-99.7050, notes:"Shallow gravel cove on the north end. Good wading depth (2-3 ft). Finesse plastics in clear water." }
+
     ]
+
   },
+
   "Braunig Lake": {
+
     summary: "San Antonio city lake with warm water year-round from the power plant. Excellent paved fishing piers and accessible bank — bass fishing 12 months a year.",
+
     points: [
+
       { name:"Main Fishing Pier #1", type:"pier", lat:29.2570, lon:-98.378, notes:"Large paved pier, accessible, wheelchair-friendly. Warm discharge water nearby — bass active all winter." },
+
       { name:"North Shore Pier #2", type:"pier", lat:29.262, lon:-98.375, notes:"Second pier on the north bank. Work swimbaits along the warm-water channel edge." },
+
       { name:"Creek Inlet Bank", type:"bank", lat:29.253, lon:-98.388, notes:"Creek arm on the west side. Flipping jigs into the feeder channel early morning is very productive." }
+
     ]
+
   },
+
   "Lake Corpus Christi": {
+
     summary: "State park with fishing pier and open grassy bank. Good bank access throughout the north end.",
+
     points: [
+
       { name:"Lake Corpus Christi State Park Pier", type:"pier", lat:28.0621, lon:-97.8776, notes:"Long fishing pier inside state park. Bass and drum both caught here. Restrooms and camping adjacent." },
+
       { name:"Matthews Park Shore", type:"park", lat:28.06800, lon:-97.870, notes:"Paved city park with open bank and shade trees. Good for casting Senkos along the bank edge." },
+
       { name:"Mesquite Flat Cove", type:"wade", lat:28.05, lon:-97.89, notes:"Shallow cove on the south side. Sandy bottom — good wading at lower water stages." }
+
     ]
+
   },
+
   "Lake Tawakoni": {
+
     summary: "State park and county access areas provide good bank spots. Timber-filled coves are the main draw.",
+
     points: [
+
       { name:"Lake Tawakoni State Park Pier", type:"pier", lat:32.8468, lon:-95.99880, notes:"Fishing pier and cleaning station inside state park. Launch or fish from bank. Timber nearby." },
+
       { name:"Point Aquarius Shore", type:"bank", lat:32.842, lon:-95.9820, notes:"Community access point near Point Aquarius subdivision. Fish the submerged timber edge." },
+
       { name:"Caddo Creek Arm", type:"wade", lat:32.870, lon:-96.010, notes:"Upper creek arm — shallow enough to wade at normal pool. Isolated timber. Very productive in fall." }
+
     ]
+
   },
+
   "Lake Palestine": {
+
     summary: "Several county parks and the state park access give decent shore options. Heavily timbered with good soft-plastic bass fishing.",
+
     points: [
-      { name:"Dogwood Park Pier", type:"pier", lat:31.978, lon:-95.570, notes:"Paved pier and restrooms at county park. Fish the drop-off just beyond the pier end." },
-      { name:"Jim Hogg County Park Bank", type:"bank", lat:31.952, lon:-95.590, notes:"Open grassy bank. Brush piles were placed along the shore — ask locals for exact locations." },
-      { name:"Kickapoo Creek Arm", type:"bank", lat:32.000, lon:-95.610, notes:"Upper creek arm with flooded timber. Walk-in access from FM 279. Best early season." }
+
+      { name:"Dogwood Park Pier", type:"pier", lat:32.2010, lon:-95.4617, notes:"Paved pier and restrooms at county park on the east shore. Fish the drop-off just beyond the pier end." },
+
+      { name:"Jim Hogg County Park Bank", type:"bank", lat:32.1709, lon:-95.5022, notes:"Open grassy bank on the west shore. Brush piles were placed along the shore — ask locals for exact locations." },
+
+      { name:"Kickapoo Creek Arm", type:"bank", lat:32.2860, lon:-95.5120, notes:"Upper Kickapoo Creek inlet arm with flooded timber. Walk-in access from FM 279. Best early season." }
+
     ]
+
   },
+
   "Wright Patman Lake": {
+
     summary: "Corps lake near Texarkana with multiple parks and miles of timbered shoreline accessible on foot.",
+
     points: [
+
       { name:"Atlanta State Park Shore", type:"park", lat:33.2297, lon:-94.244300, notes:"State park with fishing pier and 200 ft of open bank. Excellent topwater action near the timbered points." },
+
       { name:"Sulphur River Arm", type:"wade", lat:33.2450, lon:-94.260, notes:"Shallow upper river arm — wade to the submerged fence rows for big largemouth." },
+
       { name:"Jackson Creek Inlet", type:"bank", lat:33.210, lon:-94.22, notes:"Walk-in bank at the creek mouth. Jigs and craws near the channel edge." }
+
     ]
+
   },
+
   "Lake O' the Pines": {
+
     summary: "Corps lake in East Texas with exceptional timber structure. Multiple parks give bank access near the flooded forests.",
+
     points: [
+
       { name:"Buckhorn Creek Park Pier", type:"pier", lat:32.762, lon:-94.600, notes:"Fishing pier with parking and restrooms. Work lures parallel to the flooded timber line visible from the end." },
+
       { name:"Johnson Creek Cove", type:"wade", lat:32.780, lon:-94.610, notes:"Shallow sandy cove inside the timber. Wade to cast jigs at the base of cypress and tupelo trees." },
+
       { name:"Lone Star Park Bank", type:"bank", lat:32.755, lon:-94.590, notes:"Corps day-use area with open bank. Good for beginners — bass stack near the boat ramp pilings at dawn." }
+
     ]
+
   },
+
   "Lake Murvaul": {
+
     summary: "Hidden gem in Panola County — very low pressure, lush aquatic vegetation. Excellent wade fishing. Buy a permit from Panola County.",
+
     points: [
+
       { name:"Murvaul County Pier", type:"pier", lat:32.056, lon:-94.44, notes:"Small county pier, very basic. Weedless frogs over the lily pads immediately surrounding the pier are deadly." },
+
       { name:"East Cove Wade Area", type:"wade", lat:32.0620, lon:-94.4480, notes:"Sandy-bottomed cove with 2-3 ft depths over grass beds. Best wading in East Texas for trophy largemouth." },
+
       { name:"Main Boat Landing Bank", type:"ramp", lat:32.0490, lon:-94.4350, notes:"Gravel bank beside the county ramp. Flip jigs into the hydrilla edge at dawn." }
+
     ]
+
   }
+
 };
 
 var BANK_DATA = (function() {
