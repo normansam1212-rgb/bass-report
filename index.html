@@ -424,6 +424,8 @@ header .swim-fish-wrap .swim-fish {
   padding:10px 8px 10px;
   text-align:center;
   cursor:pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition:all .2s var(--ease);
   position:relative;
 }
@@ -462,6 +464,42 @@ header .swim-fish-wrap .swim-fish {
   padding:2px 7px; border-radius:8px;
   text-transform:uppercase; white-space:nowrap;
 }
+.forecast-day.fc-active {
+  border-color:rgba(245,245,232,0.55);
+  background:rgba(245,245,232,0.1);
+  box-shadow:0 0 16px rgba(245,245,232,0.1);
+}
+.forecast-day.fc-active .fc-label { color:var(--text); }
+.fc-meta {
+  display:flex; align-items:center; justify-content:center;
+  gap:3px; flex-wrap:wrap; margin-top:3px;
+}
+.fc-meta-pill {
+  font-size:7px; font-weight:700; letter-spacing:.2px;
+  background:rgba(245,245,232,0.05); border:1px solid rgba(245,245,232,0.08);
+  border-radius:5px; padding:1px 4px; color:var(--dim); white-space:nowrap;
+}
+.fc-meta-pill.rain { color:#6ab0f5; }
+
+/* ── Forecast Mode Banner ── */
+.forecast-mode-bar {
+  display:none; align-items:center; justify-content:space-between;
+  margin:8px 20px 0;
+  background:rgba(212,196,64,0.08);
+  border:1px solid rgba(212,196,64,0.25);
+  border-radius:12px; padding:9px 14px;
+  gap:10px;
+}
+.forecast-mode-bar.visible { display:flex; }
+.fmb-label { font-size:11px; font-weight:700; color:var(--mid); flex:1; min-width:0; }
+.fmb-label b { color:var(--text); }
+.fmb-reset {
+  font-size:10px; font-weight:800; color:var(--bg);
+  background:var(--mid); border:none; border-radius:10px;
+  padding:5px 11px; cursor:pointer; white-space:nowrap;
+  transition:all .15s; flex-shrink:0;
+}
+.fmb-reset:active { opacity:.7; transform:scale(.96); }
 
 /* ═══ Refresh ═══ */
 .refresh-bar { padding:14px 20px 0; text-align:center; }
@@ -1547,6 +1585,12 @@ a.bait-chip, a.detail-bait-chip {
   <div class="forecast-strip" id="forecastStrip">
     <div class="forecast-hdr">📅 7-Day Best Spot Forecast</div>
     <div class="forecast-scroll" id="forecastScroll"></div>
+  </div>
+
+  <!-- Forecast Mode Banner -->
+  <div class="forecast-mode-bar" id="forecastModeBar">
+    <div class="fmb-label">📅 Viewing forecast for <b id="fmbDayLabel">—</b></div>
+    <button class="fmb-reset" onclick="resetForecastDay()">↩ Return to Live</button>
   </div>
 
   <!-- Refresh -->
@@ -2851,7 +2895,7 @@ function fetchForecast(lat, lon) {
 
 function scoreDayForecast(dayWeather, dayIdx, month, lakes) {
   // dayWeather: one day's slice of the daily response
-  // Returns best lake + score for that day
+  // Returns best lake + score for that day (plus top-5 ranked list)
   var airAvg = (dayWeather.tmax + dayWeather.tmin) / 2;
   var wind   = dayWeather.wind;
   var clouds = dayWeather.cloud;
@@ -2876,14 +2920,22 @@ function scoreDayForecast(dayWeather, dayIdx, month, lakes) {
   var sun = {sunrise:"6:30:00 AM", sunset:"8:00:00 PM"};
   var moon = getMoonForDate(dayIdx);
 
-  var bestLake = null, bestScore = -1;
+  var ranked = [];
   for(var i=0;i<lakes.length;i++){
     var lake=lakes[i];
-    // scoreLake needs sun as sunrise/sunset strings — pass fake but consistent
     var res = scoreLakeForecast(lake, w, t, 12, month, moon);
-    if(res.score > bestScore){ bestScore=res.score; bestLake=lake; }
+    ranked.push({lake:lake, score:res.score});
   }
-  return {lake:bestLake, score:bestScore, trend:trend, wind:wind, clouds:clouds, moon:moon};
+  ranked.sort(function(a,b){return b.score-a.score;});
+
+  var bestLake = ranked.length ? ranked[0].lake : null;
+  var bestScore = ranked.length ? ranked[0].score : 0;
+  return {
+    lake:bestLake, score:bestScore, trend:trend, wind:wind, clouds:clouds, moon:moon,
+    tmax:dayWeather.tmax, tmin:dayWeather.tmin, rain:dayWeather.rain,
+    w:w, t:t, month:month,
+    top: ranked.slice(0,5)
+  };
 }
 
 function scoreLakeForecast(lake, w, trend, hour, month, moon) {
@@ -2975,7 +3027,8 @@ function renderForecast(dailyRaw, nearestLakes) {
       wind: dailyRaw.wind_speed_10m_max[i],
       cloud: dailyRaw.cloud_cover_mean ? dailyRaw.cloud_cover_mean[i] : 50,
       pressure: dailyRaw.pressure_msl_mean ? dailyRaw.pressure_msl_mean[i] : 1013,
-      prevPressure: i>0 && dailyRaw.pressure_msl_mean ? dailyRaw.pressure_msl_mean[i-1] : (dailyRaw.pressure_msl_mean ? dailyRaw.pressure_msl_mean[0] : 1013)
+      prevPressure: i>0 && dailyRaw.pressure_msl_mean ? dailyRaw.pressure_msl_mean[i-1] : (dailyRaw.pressure_msl_mean ? dailyRaw.pressure_msl_mean[0] : 1013),
+      rain: dailyRaw.precipitation_sum ? dailyRaw.precipitation_sum[i] : 0
     };
     var res = scoreDayForecast(dayData, i, month, nearestLakes);
     results.push({dateStr:dateStr, dt:dt, i:i, res:res});
@@ -2986,6 +3039,9 @@ function renderForecast(dailyRaw, nearestLakes) {
   for(var j=1;j<results.length;j++){
     if(results[j].res.score > bestFutureScore){ bestFutureScore=results[j].res.score; bestFutureIdx=j; }
   }
+  // If today is the best overall, mark it
+  var todayScore = results.length ? results[0].res.score : -1;
+  var todayIsBest = todayScore > bestFutureScore;
 
   var dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   var monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -2993,19 +3049,28 @@ function renderForecast(dailyRaw, nearestLakes) {
   var html = "";
   results.forEach(function(r, idx){
     var isToday = idx===0;
-    var isBest = idx===bestFutureIdx;
+    var isBest = (todayIsBest && idx===0) || (!todayIsBest && idx===bestFutureIdx);
     var lbl = isToday ? "Today" : (idx===1 ? "Tomorrow" : dayNames[r.dt.getDay()]);
     var dateLbl = monthNames[r.dt.getMonth()]+" "+r.dt.getDate();
     var sc = r.res.score;
     var hex = scoreHex(sc);
     var cls = "forecast-day" + (isToday?" is-today":"") + (isBest?" is-best":"");
-    var badge = isBest ? '<div class="fc-best-badge">🔥 Best</div>' : "";
+    var badgeTxt = isBest ? (isToday ? "🔥 Fish Now" : "🔥 Best") : "";
+    var badge = isBest ? '<div class="fc-best-badge">'+badgeTxt+'</div>' : "";
     var lakeName = r.res.lake ? r.res.lake.name.replace("Reservoir","Res.").replace("Lake","Lk.") : "—";
     var moonIcon = r.res.moon ? r.res.moon.icon : "";
     var circumference = 2*Math.PI*18;
     var dashArr = (circumference * sc / 10).toFixed(1) + " 999";
 
-    html += '<div class="'+cls+'" onclick="forecastDayTap('+idx+')">'
+    // Meta pills: wind + rain
+    var windTxt = Math.round(r.res.wind||0)+"mph";
+    var rainMm = r.res.rain || 0;
+    var rainPill = rainMm > 0.5
+      ? '<span class="fc-meta-pill rain">🌧 '+rainMm.toFixed(1)+'"</span>'
+      : "";
+    var metaHtml = '<div class="fc-meta"><span class="fc-meta-pill">💨 '+windTxt+'</span>'+rainPill+'<span class="fc-meta-pill">'+moonIcon+'</span></div>';
+
+    html += '<div class="'+cls+'" ontouchend="event.preventDefault();forecastDayTap('+idx+')" onclick="forecastDayTap('+idx+')">'
       + badge
       + '<div class="fc-label">'+lbl+'</div>'
       + '<div class="fc-date">'+dateLbl+'</div>'
@@ -3019,7 +3084,7 @@ function renderForecast(dailyRaw, nearestLakes) {
         + '</svg>'
       + '</div>'
       + '<div class="fc-lake">'+escHtml(lakeName)+'</div>'
-      + '<div class="fc-score-line">'+moonIcon+'</div>'
+      + metaHtml
       + '</div>';
   });
 
@@ -3030,17 +3095,142 @@ function renderForecast(dailyRaw, nearestLakes) {
   window._forecastResults = results;
 }
 
+// ═══════════════════════════════════════════
+// FORECAST DAY FILTER MODE
+// ═══════════════════════════════════════════
+var _forecastDayIdx = null; // null = live mode
+var _forecastTapTs  = 0;    // timestamp of last tap (ghost-click guard)
+
 function forecastDayTap(idx) {
+  // Debounce: ignore if called again within 400ms (iOS ghost click)
+  var now = Date.now();
+  if(now - _forecastTapTs < 400) return;
+  _forecastTapTs = now;
+
   if(!window._forecastResults) return;
   var r = window._forecastResults[idx];
-  if(!r||!r.res.lake) return;
-  // Navigate to that lake in the report
-  var lake = r.res.lake;
-  var cid = _storeCard({
-    name:lake.name, type:lake.type, lat:lake.lat, lon:lake.lon,
-    score:r.res.score, bd:[], wt:null, srH:6, ssH:20, dist:null
+  if(!r) return;
+
+  // Tapping the already-active day toggles back to live
+  if(_forecastDayIdx === idx) {
+    resetForecastDay();
+    return;
+  }
+
+  _forecastDayIdx = idx;
+
+  // Mark active card
+  document.querySelectorAll(".forecast-day").forEach(function(el, i){
+    el.classList.toggle("fc-active", i === idx);
   });
-  openDetail(cid);
+
+  // Show mode banner
+  var dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  var monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var lbl = idx===0 ? "Today" : (idx===1 ? "Tomorrow" : dayNames[r.dt.getDay()]);
+  var dateLbl = lbl + ", " + monthNames[r.dt.getMonth()]+" "+r.dt.getDate();
+  document.getElementById("fmbDayLabel").textContent = dateLbl;
+  document.getElementById("forecastModeBar").classList.add("visible");
+
+  // Build fake weather/trend from that day's forecast data so scoreLake-compatible
+  var res = r.res;
+  var fakeWeather = res.w;            // {temperature_f, wind_speed_mph, cloud_cover_pct, pressure_inhg}
+  var fakeTrend   = res.t;            // {trend, delta}
+  // scoreLake also needs: humidity_pct, wind_direction_deg — fill neutral values
+  fakeWeather = Object.assign({
+    humidity_pct: 60,
+    wind_direction_deg: 180
+  }, fakeWeather);
+  // sun: use static midday values (forecast doesn't fetch per-lake sun times)
+  var fakeSun = {sunrise:"6:30:00 AM", sunset:"8:00:00 PM"};
+  var moon = res.moon || getMoon();
+
+  // Re-score all lakes using forecast conditions and re-render the page
+  renderForecastDay(fakeWeather, fakeTrend, fakeSun, moon, res.month || (new Date().getMonth()+1), dateLbl);
+}
+
+function renderForecastDay(weather, trend, sun, moon, month, dayLabel) {
+  var container = document.getElementById("lakesList");
+  var sectionLbl = document.getElementById("sectionLbl");
+
+  if(!userLat || !userLon) return;
+
+  // Re-score every lake using the forecast conditions (use scoreLakeForecast-style)
+  // We pass to scoreLake which expects the full weather object
+  var scored = ALL_LAKES.map(function(lake){
+    var dist = haversine(userLat, userLon, lake.lat, lake.lon);
+    var res = scoreLake(lake, weather, trend, sun, moon);
+    return Object.assign({}, lake, {dist:dist}, res);
+  });
+  scored.sort(function(a,b){ return a.dist - b.dist; });
+
+  var nearest = scored.slice(0, MAX_SHOWN);
+  nearest.sort(function(a,b){ return b.score - a.score || a.dist - b.dist; });
+
+  // Update section label
+  sectionLbl.style.display = "block";
+  sectionLbl.textContent = "Forecast for " + dayLabel + " — Ranked by Score";
+
+  // Re-render hero with forecast top lake
+  var srH = 6, ssH = 20, hour = 12; // use midday for forecasts
+  var _wa = waterAttributes(nearest[0]);
+  var baits = getBaits(weather, trend, nearest[0].wt, moon, hour, srH, ssH, _wa.c, _wa.d);
+  var heroEl = document.getElementById("heroCard");
+  var heroSc = scoreColor(nearest[0].score), heroHex = scoreHex(nearest[0].score);
+  var chips = baits.slice(0,3).map(function(b){
+    return '<span class="hero-chip bait-link" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span></span>';
+  }).join("");
+  var dist0 = nearest[0].dist < 10 ? nearest[0].dist.toFixed(1) : Math.round(nearest[0].dist);
+  heroEl.innerHTML =
+    '<div class="hero-lbl"><span style="width:18px;height:18px;display:inline-block;vertical-align:middle">'+IC.trophy+'</span> Best Bet '+dayLabel+'</div>'+
+    '<div class="hero-body">'+
+      '<div class="hero-info">'+
+        '<div class="hero-name">'+nearest[0].name+'</div>'+
+        '<div class="hero-sub">'+dist0+'mi · '+nearest[0].type+' · '+moon.icon+' '+moon.name+'</div>'+
+        '<div class="hero-baits">'+chips+'</div>'+
+      '</div>'+
+      '<div class="hero-ring">'+
+        '<svg width="76" height="76" viewBox="0 0 76 76">'+
+          '<circle cx="38" cy="38" r="32" fill="none" stroke="var(--border)" stroke-width="6"/>'+
+          '<circle cx="38" cy="38" r="32" fill="none" stroke="'+heroHex+'" stroke-width="6"'+
+            ' stroke-dasharray="'+(2*Math.PI*32*nearest[0].score/10).toFixed(1)+' 999"'+
+            ' stroke-linecap="round" transform="rotate(-90 38 38)"/>'+
+          '<text x="38" y="38" text-anchor="middle" dominant-baseline="central"'+
+            ' fill="'+heroHex+'" font-size="32" font-weight="900" font-family="-apple-system">'+nearest[0].score+'</text>'+
+        '</svg>'+
+      '</div>'+
+    '</div>';
+  heroEl.style.display = "block";
+
+  // Re-render bait strip for forecast day
+  var baitsEl = document.getElementById("baitsStrip");
+  var bchips = baits.map(function(b){
+    return '<a class="bait-chip bait-link" href="'+b.url+'" target="_blank" rel="noopener" onclick="return openLureGuide(\''+escapeQuote(b.name)+'\',\''+escapeQuote(b.color)+'\',\''+escapeQuote(b.why)+'\',event)">'+IC.hook+' '+b.name+' <span class="bait-color">'+b.color+'</span> <span class="bait-why">'+b.why+'</span> <span class="bait-buy">Guide →</span></a>';
+  }).join("");
+  baitsEl.innerHTML = '<div class="baits-hdr">'+IC.target+' Recommended Baits for '+dayLabel+' <span class="baits-hdr-sub">tap for how-to</span></div><div class="baits-row">'+bchips+'</div>';
+  baitsEl.style.display = "block";
+
+  // Store for filter/sort (same pattern as renderLakes)
+  window._lastNearest = nearest;
+  window._lastWeather = weather;
+  window._lastTrend = trend;
+  window._lastMoon = moon;
+  renderFilteredCards(nearest, weather, trend, moon);
+}
+
+function resetForecastDay() {
+  _forecastDayIdx = null;
+  document.querySelectorAll(".forecast-day").forEach(function(el){
+    el.classList.remove("fc-active");
+  });
+  document.getElementById("forecastModeBar").classList.remove("visible");
+  // Re-render with live data (already stored)
+  if(weatherData && pressureTrend && sunData) {
+    var moon = getMoon();
+    renderLakes(weatherData, pressureTrend, sunData, moon);
+    renderHero(window._lastNearest[0], getBaits(weatherData, pressureTrend, window._lastNearest[0].wt, moon, new Date().getHours(), window._lastNearest[0].srH||6, window._lastNearest[0].ssH||20, waterAttributes(window._lastNearest[0]).c, waterAttributes(window._lastNearest[0]).d), moon);
+    renderBaits(getBaits(weatherData, pressureTrend, window._lastNearest[0].wt, moon, new Date().getHours(), window._lastNearest[0].srH||6, window._lastNearest[0].ssH||20, waterAttributes(window._lastNearest[0]).c, waterAttributes(window._lastNearest[0]).d));
+  }
 }
 
 function fetchSun(lat, lon) {
@@ -3538,6 +3728,10 @@ function refreshData() {
   btn.classList.add("loading");
   btn.innerHTML='<span class="ri">↻</span> Refreshing…';
   hotspotLiveScores = null; // invalidate cache
+  // Reset forecast filter mode on refresh
+  _forecastDayIdx = null;
+  document.querySelectorAll(".forecast-day").forEach(function(el){ el.classList.remove("fc-active"); });
+  document.getElementById("forecastModeBar").classList.remove("visible");
   loadReport().then(function(){
     btn.classList.remove("loading");
     btn.innerHTML='<span class="ri">↻</span> Refresh Conditions';
@@ -3975,6 +4169,9 @@ function openDetail(lake) {
   // Accept a store key string or a raw object
   if (typeof lake === "string") lake = _cardData[lake];
   if (!lake) return;
+  // Ghost-click guard: if a forecast day was just tapped, ignore any detail open
+  // within 400ms (iOS fires a synthetic click after touchend)
+  if(Date.now() - _forecastTapTs < 400) return;
   _detailLat = lake.lat;
   _detailLon = lake.lon;
 

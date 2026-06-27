@@ -1,11 +1,617 @@
 <!DOCTYPE html>
-<html><head><style>
-body { background: #1a2535; display: flex; gap: 20px; padding: 40px; justify-content: center; }
-.icon { text-align: center; }
-img { width: 200px; height: 200px; border-radius: 40px; }
-p { color: #f5f5e8; font-family: sans-serif; margin-top: 10px; font-size: 18px; }
-</style></head><body>
-<div class="icon"><img src="report-icon.png"><p>Report</p></div>
-<div class="icon"><img src="map-icon.png"><p>Map</p></div>
-<div class="icon"><img src="hotspots-icon.png"><p>Hotspots</p></div>
-</body></html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bass Report — Icon Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #f0efe8;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 24px 20px 60px;
+    min-height: 100vh;
+  }
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #f5c842;
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #8899aa;
+    margin-bottom: 32px;
+  }
+  .tab-section {
+    max-width: 960px;
+    margin: 0 auto 44px;
+  }
+  .tab-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(245,200,66,0.25);
+  }
+  .tab-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f5c842;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .tab-desc {
+    font-size: 12px;
+    color: #667788;
+  }
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+  .icon-card {
+    background: #1a2535;
+    border: 2px solid rgba(74,107,133,0.3);
+    border-radius: 14px;
+    padding: 20px 12px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+    position: relative;
+  }
+  .icon-card:hover {
+    border-color: #f5c842;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(245,200,66,0.15);
+  }
+  .icon-card.selected {
+    border-color: #f5c842;
+    background: #1e2d1a;
+    box-shadow: 0 0 0 1px #f5c842, 0 4px 20px rgba(245,200,66,0.2);
+  }
+  .icon-card.selected::after {
+    content: '✓ SELECTED';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #f5c842;
+    letter-spacing: 0.06em;
+  }
+  .icon-preview-wrap {
+    width: 80px;
+    height: 80px;
+    background: #0c0e08;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .icon-preview-wrap img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    mix-blend-mode: screen;
+    opacity: 0.9;
+  }
+  /* Simulate tab bar */
+  .tab-sim {
+    background: #0c0e08;
+    border-radius: 10px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab-sim img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    mix-blend-mode: screen;
+    opacity: 0.9;
+    filter: brightness(1.1);
+  }
+  .tab-sim .sim-label {
+    font-size: 10px;
+    color: #f5f5e8;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .variant-num {
+    font-size: 11px;
+    color: #556677;
+    font-weight: 600;
+  }
+  .card-prompt {
+    font-size: 10px;
+    color: #445566;
+    text-align: center;
+    line-height: 1.4;
+    max-width: 150px;
+  }
+
+  /* Bottom preview bar mockup */
+  .bottom-bar-preview {
+    max-width: 480px;
+    margin: 0 auto 36px;
+    background: rgba(12,14,8,0.9);
+    border: 1px solid rgba(74,107,133,0.3);
+    border-radius: 18px;
+    padding: 12px 8px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+  .bar-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+  .bar-tab.active { opacity: 1; }
+  .bar-tab img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    mix-blend-mode: screen;
+    opacity: 0.85;
+  }
+  .bar-tab span {
+    font-size: 9px;
+    color: #f5f5e8;
+    font-weight: 600;
+  }
+  .bar-preview-title {
+    text-align: center;
+    font-size: 12px;
+    color: #667788;
+    margin-bottom: 8px;
+  }
+
+  .selection-summary {
+    max-width: 960px;
+    margin: 0 auto 32px;
+    background: #141a24;
+    border: 1px solid rgba(245,200,66,0.2);
+    border-radius: 14px;
+    padding: 20px 24px;
+  }
+  .selection-summary h2 {
+    font-size: 15px;
+    color: #f5c842;
+    margin-bottom: 14px;
+  }
+  .summary-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #aabbcc;
+  }
+  .summary-row .s-icon {
+    width: 32px;
+    height: 32px;
+    background: #0c0e08;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .summary-row .s-icon img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    mix-blend-mode: screen;
+  }
+  .summary-row .s-choice {
+    color: #f5c842;
+    font-weight: 700;
+  }
+  .summary-row .s-none {
+    color: #556677;
+    font-style: italic;
+  }
+
+  .copy-btn {
+    background: #f5c842;
+    color: #0d1117;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-top: 14px;
+  }
+  .copy-btn:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<h1>🎣 Texas Bass Report — Icon Options</h1>
+<p class="subtitle">Click any icon to select it for that tab. Your choices appear in the summary below.</p>
+
+<!-- LIVE TAB BAR PREVIEW -->
+<div class="bar-preview-title">Live Tab Bar Preview (updates as you pick)</div>
+<div class="bottom-bar-preview" id="liveBar">
+  <div class="bar-tab active" id="live_report">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" width="22" height="22"><rect x="3" y="4" width="18" height="16" rx="3" fill="white" fill-opacity="0.08"/><path d="M7 8h2.5M7 12h2.5M7 16h2.5" stroke-width="2.2"/><path d="M12.5 8h5M12.5 12h5M12.5 16h3" stroke-opacity="0.6"/></svg>
+    <span>Report</span>
+  </div>
+  <div class="bar-tab" id="live_map">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" width="22" height="22"><path d="M1 6l7-4 8 4 7-4v16l-7 4-8-4-7 4z" fill="white" fill-opacity="0.08"/><path d="M8 2v16M16 6v16" stroke-opacity="0.5"/></svg>
+    <span>Map</span>
+  </div>
+  <div class="bar-tab" id="live_nearby">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" width="22" height="22"><path d="M4.5 10a11 11 0 0 1 15 0" stroke-opacity="0.4"/><path d="M7 13.5a7 7 0 0 1 10 0" stroke-opacity="0.6"/><circle cx="12" cy="19.5" r="1.8" fill="white" stroke="none"/></svg>
+    <span>Nearby</span>
+  </div>
+  <div class="bar-tab" id="live_hotspots">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" width="22" height="22"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="white" fill-opacity="0.08"/></svg>
+    <span>Hotspots</span>
+  </div>
+  <div class="bar-tab" id="live_bank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" width="22" height="22"><path d="M2 20h20M4 20V10l8-7 8 7v10" fill="white" fill-opacity="0.08"/><path d="M9 20v-5h6v5" stroke-opacity="0.8"/></svg>
+    <span>Bank</span>
+  </div>
+</div>
+
+<!-- SELECTION SUMMARY -->
+<div class="selection-summary">
+  <h2>Your Selections</h2>
+  <div class="summary-row" id="sum_report"><div class="s-icon" id="si_report"></div><span><b>Report:</b> <span id="sc_report" class="s-none">none chosen</span></span></div>
+  <div class="summary-row" id="sum_map"><div class="s-icon" id="si_map"></div><span><b>Map:</b> <span id="sc_map" class="s-none">none chosen</span></span></div>
+  <div class="summary-row" id="sum_nearby"><div class="s-icon" id="si_nearby"></div><span><b>Nearby:</b> <span id="sc_nearby" class="s-none">none chosen</span></span></div>
+  <div class="summary-row" id="sum_hotspots"><div class="s-icon" id="si_hotspots"></div><span><b>Hotspots:</b> <span id="sc_hotspots" class="s-none">none chosen</span></span></div>
+  <div class="summary-row" id="sum_bank"><div class="s-icon" id="si_bank"></div><span><b>Bank:</b> <span id="sc_bank" class="s-none">none chosen</span></span></div>
+  <br>
+  <button class="copy-btn" onclick="copySummary()">📋 Copy Selections to Clipboard</button>
+</div>
+
+<!-- REPORT ICONS -->
+<div class="tab-section">
+  <div class="tab-header">
+    <span class="tab-label">📋 Report</span>
+    <span class="tab-desc">Bass catch log / list view</span>
+  </div>
+  <div class="icon-grid" id="grid_report">
+    <div class="icon-card" data-tab="report" data-variant="1" data-file="report_01_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="report_01_00001_.png"></div>
+      <div class="tab-sim"><img src="report_01_00001_.png"><span class="sim-label">Report</span></div>
+      <span class="variant-num">Variant 1</span>
+      <span class="card-prompt">Bass fish silhouette</span>
+    </div>
+    <div class="icon-card" data-tab="report" data-variant="2" data-file="report_02_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="report_02_00001_.png"></div>
+      <div class="tab-sim"><img src="report_02_00001_.png"><span class="sim-label">Report</span></div>
+      <span class="variant-num">Variant 2</span>
+      <span class="card-prompt">Fish jumping out of water</span>
+    </div>
+    <div class="icon-card" data-tab="report" data-variant="3" data-file="report_03_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="report_03_00001_.png"></div>
+      <div class="tab-sim"><img src="report_03_00001_.png"><span class="sim-label">Report</span></div>
+      <span class="variant-num">Variant 3</span>
+      <span class="card-prompt">Fishing rod with reel</span>
+    </div>
+    <div class="icon-card" data-tab="report" data-variant="4" data-file="report_04_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="report_04_00001_.png"></div>
+      <div class="tab-sim"><img src="report_04_00001_.png"><span class="sim-label">Report</span></div>
+      <span class="variant-num">Variant 4</span>
+      <span class="card-prompt">Clipboard with fish</span>
+    </div>
+    <div class="icon-card" data-tab="report" data-variant="5" data-file="report_05_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="report_05_00001_.png"></div>
+      <div class="tab-sim"><img src="report_05_00001_.png"><span class="sim-label">Report</span></div>
+      <span class="variant-num">Variant 5</span>
+      <span class="card-prompt">Notebook log with fin</span>
+    </div>
+    <div class="icon-card" data-tab="report" data-variant="6" data-file="report_06_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="report_06_00001_.png"></div>
+      <div class="tab-sim"><img src="report_06_00001_.png"><span class="sim-label">Report</span></div>
+      <span class="variant-num">Variant 6</span>
+      <span class="card-prompt">Bass with hook</span>
+    </div>
+    <div class="icon-card" data-tab="report" data-variant="7" data-file="report_07_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="report_07_00001_.png"></div>
+      <div class="tab-sim"><img src="report_07_00001_.png"><span class="sim-label">Report</span></div>
+      <span class="variant-num">Variant 7</span>
+      <span class="card-prompt">Fishing creel basket</span>
+    </div>
+    <div class="icon-card" data-tab="report" data-variant="8" data-file="report_08_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="report_08_00001_.png"></div>
+      <div class="tab-sim"><img src="report_08_00001_.png"><span class="sim-label">Report</span></div>
+      <span class="variant-num">Variant 8</span>
+      <span class="card-prompt">Fish jumping at hook</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAP ICONS -->
+<div class="tab-section">
+  <div class="tab-header">
+    <span class="tab-label">🗺 Map</span>
+    <span class="tab-desc">Lake map view</span>
+  </div>
+  <div class="icon-grid" id="grid_map">
+    <div class="icon-card" data-tab="map" data-variant="1" data-file="map_01_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="map_01_00001_.png"></div>
+      <div class="tab-sim"><img src="map_01_00001_.png"><span class="sim-label">Map</span></div>
+      <span class="variant-num">Variant 1</span>
+      <span class="card-prompt">Topo map + location pin</span>
+    </div>
+    <div class="icon-card" data-tab="map" data-variant="2" data-file="map_02_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="map_02_00001_.png"></div>
+      <div class="tab-sim"><img src="map_02_00001_.png"><span class="sim-label">Map</span></div>
+      <span class="variant-num">Variant 2</span>
+      <span class="card-prompt">Folded map with lake</span>
+    </div>
+    <div class="icon-card" data-tab="map" data-variant="3" data-file="map_03_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="map_03_00001_.png"></div>
+      <div class="tab-sim"><img src="map_03_00001_.png"><span class="sim-label">Map</span></div>
+      <span class="variant-num">Variant 3</span>
+      <span class="card-prompt">Location pin + water ripples</span>
+    </div>
+    <div class="icon-card" data-tab="map" data-variant="4" data-file="map_04_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="map_04_00001_.png"></div>
+      <div class="tab-sim"><img src="map_04_00001_.png"><span class="sim-label">Map</span></div>
+      <span class="variant-num">Variant 4</span>
+      <span class="card-prompt">Compass rose</span>
+    </div>
+    <div class="icon-card" data-tab="map" data-variant="5" data-file="map_05_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="map_05_00001_.png"></div>
+      <div class="tab-sim"><img src="map_05_00001_.png"><span class="sim-label">Map</span></div>
+      <span class="variant-num">Variant 5</span>
+      <span class="card-prompt">Map with fish marker pin</span>
+    </div>
+    <div class="icon-card" data-tab="map" data-variant="6" data-file="map_06_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="map_06_00001_.png"></div>
+      <div class="tab-sim"><img src="map_06_00001_.png"><span class="sim-label">Map</span></div>
+      <span class="variant-num">Variant 6</span>
+      <span class="card-prompt">Lake aerial outline</span>
+    </div>
+    <div class="icon-card" data-tab="map" data-variant="7" data-file="map_07_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="map_07_00001_.png"></div>
+      <div class="tab-sim"><img src="map_07_00001_.png"><span class="sim-label">Map</span></div>
+      <span class="variant-num">Variant 7</span>
+      <span class="card-prompt">GPS crosshair</span>
+    </div>
+    <div class="icon-card" data-tab="map" data-variant="8" data-file="map_08_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="map_08_00001_.png"></div>
+      <div class="tab-sim"><img src="map_08_00001_.png"><span class="sim-label">Map</span></div>
+      <span class="variant-num">Variant 8</span>
+      <span class="card-prompt">Treasure map + spot X</span>
+    </div>
+  </div>
+</div>
+
+<!-- NEARBY ICONS -->
+<div class="tab-section">
+  <div class="tab-header">
+    <span class="tab-label">📡 Nearby</span>
+    <span class="tab-desc">Local spots near you</span>
+  </div>
+  <div class="icon-grid" id="grid_nearby">
+    <div class="icon-card" data-tab="nearby" data-variant="1" data-file="nearby_01_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="nearby_01_00001_.png"></div>
+      <div class="tab-sim"><img src="nearby_01_00001_.png"><span class="sim-label">Nearby</span></div>
+      <span class="variant-num">Variant 1</span>
+      <span class="card-prompt">Sonar radar pulse</span>
+    </div>
+    <div class="icon-card" data-tab="nearby" data-variant="2" data-file="nearby_02_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="nearby_02_00001_.png"></div>
+      <div class="tab-sim"><img src="nearby_02_00001_.png"><span class="sim-label">Nearby</span></div>
+      <span class="variant-num">Variant 2</span>
+      <span class="card-prompt">Concentric location rings</span>
+    </div>
+    <div class="icon-card" data-tab="nearby" data-variant="3" data-file="nearby_03_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="nearby_03_00001_.png"></div>
+      <div class="tab-sim"><img src="nearby_03_00001_.png"><span class="sim-label">Nearby</span></div>
+      <span class="variant-num">Variant 3</span>
+      <span class="card-prompt">GPS pin + signal waves</span>
+    </div>
+    <div class="icon-card" data-tab="nearby" data-variant="4" data-file="nearby_04_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="nearby_04_00001_.png"></div>
+      <div class="tab-sim"><img src="nearby_04_00001_.png"><span class="sim-label">Nearby</span></div>
+      <span class="variant-num">Variant 4</span>
+      <span class="card-prompt">WiFi-style signal upward</span>
+    </div>
+    <div class="icon-card" data-tab="nearby" data-variant="5" data-file="nearby_05_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="nearby_05_00001_.png"></div>
+      <div class="tab-sim"><img src="nearby_05_00001_.png"><span class="sim-label">Nearby</span></div>
+      <span class="variant-num">Variant 5</span>
+      <span class="card-prompt">Radar scan with fish dot</span>
+    </div>
+    <div class="icon-card" data-tab="nearby" data-variant="6" data-file="nearby_06_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="nearby_06_00001_.png"></div>
+      <div class="tab-sim"><img src="nearby_06_00001_.png"><span class="sim-label">Nearby</span></div>
+      <span class="variant-num">Variant 6</span>
+      <span class="card-prompt">Location bullseye target</span>
+    </div>
+    <div class="icon-card" data-tab="nearby" data-variant="7" data-file="nearby_07_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="nearby_07_00001_.png"></div>
+      <div class="tab-sim"><img src="nearby_07_00001_.png"><span class="sim-label">Nearby</span></div>
+      <span class="variant-num">Variant 7</span>
+      <span class="card-prompt">Signal pulse ripple pin</span>
+    </div>
+    <div class="icon-card" data-tab="nearby" data-variant="8" data-file="nearby_08_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="nearby_08_00001_.png"></div>
+      <div class="tab-sim"><img src="nearby_08_00001_.png"><span class="sim-label">Nearby</span></div>
+      <span class="variant-num">Variant 8</span>
+      <span class="card-prompt">Antenna broadcast</span>
+    </div>
+  </div>
+</div>
+
+<!-- HOTSPOTS ICONS -->
+<div class="tab-section">
+  <div class="tab-header">
+    <span class="tab-label">🔥 Hotspots</span>
+    <span class="tab-desc">Top fishing locations</span>
+  </div>
+  <div class="icon-grid" id="grid_hotspots">
+    <div class="icon-card" data-tab="hotspots" data-variant="1" data-file="hotspots_01_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="hotspots_01_00001_.png"></div>
+      <div class="tab-sim"><img src="hotspots_01_00001_.png"><span class="sim-label">Hotspots</span></div>
+      <span class="variant-num">Variant 1</span>
+      <span class="card-prompt">Fire flame</span>
+    </div>
+    <div class="icon-card" data-tab="hotspots" data-variant="2" data-file="hotspots_02_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="hotspots_02_00001_.png"></div>
+      <div class="tab-sim"><img src="hotspots_02_00001_.png"><span class="sim-label">Hotspots</span></div>
+      <span class="variant-num">Variant 2</span>
+      <span class="card-prompt">Lightning bolt</span>
+    </div>
+    <div class="icon-card" data-tab="hotspots" data-variant="3" data-file="hotspots_03_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="hotspots_03_00001_.png"></div>
+      <div class="tab-sim"><img src="hotspots_03_00001_.png"><span class="sim-label">Hotspots</span></div>
+      <span class="variant-num">Variant 3</span>
+      <span class="card-prompt">Flame + fish silhouette</span>
+    </div>
+    <div class="icon-card" data-tab="hotspots" data-variant="4" data-file="hotspots_04_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="hotspots_04_00001_.png"></div>
+      <div class="tab-sim"><img src="hotspots_04_00001_.png"><span class="sim-label">Hotspots</span></div>
+      <span class="variant-num">Variant 4</span>
+      <span class="card-prompt">Sun burst rays</span>
+    </div>
+    <div class="icon-card" data-tab="hotspots" data-variant="5" data-file="hotspots_05_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="hotspots_05_00001_.png"></div>
+      <div class="tab-sim"><img src="hotspots_05_00001_.png"><span class="sim-label">Hotspots</span></div>
+      <span class="variant-num">Variant 5</span>
+      <span class="card-prompt">Hot flame drop</span>
+    </div>
+    <div class="icon-card" data-tab="hotspots" data-variant="6" data-file="hotspots_06_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="hotspots_06_00001_.png"></div>
+      <div class="tab-sim"><img src="hotspots_06_00001_.png"><span class="sim-label">Hotspots</span></div>
+      <span class="variant-num">Variant 6</span>
+      <span class="card-prompt">Fire campfire</span>
+    </div>
+    <div class="icon-card" data-tab="hotspots" data-variant="7" data-file="hotspots_07_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="hotspots_07_00001_.png"></div>
+      <div class="tab-sim"><img src="hotspots_07_00001_.png"><span class="sim-label">Hotspots</span></div>
+      <span class="variant-num">Variant 7</span>
+      <span class="card-prompt">Electric spark bolt</span>
+    </div>
+    <div class="icon-card" data-tab="hotspots" data-variant="8" data-file="hotspots_08_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="hotspots_08_00001_.png"></div>
+      <div class="tab-sim"><img src="hotspots_08_00001_.png"><span class="sim-label">Hotspots</span></div>
+      <span class="variant-num">Variant 8</span>
+      <span class="card-prompt">Rising heat waves</span>
+    </div>
+  </div>
+</div>
+
+<!-- BANK ICONS -->
+<div class="tab-section">
+  <div class="tab-header">
+    <span class="tab-label">🏞 Bank</span>
+    <span class="tab-desc">Shore / bank fishing spots</span>
+  </div>
+  <div class="icon-grid" id="grid_bank">
+    <div class="icon-card" data-tab="bank" data-variant="1" data-file="bank_01_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="bank_01_00001_.png"></div>
+      <div class="tab-sim"><img src="bank_01_00001_.png"><span class="sim-label">Bank</span></div>
+      <span class="variant-num">Variant 1</span>
+      <span class="card-prompt">Angler from shoreline bank</span>
+    </div>
+    <div class="icon-card" data-tab="bank" data-variant="2" data-file="bank_02_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="bank_02_00001_.png"></div>
+      <div class="tab-sim"><img src="bank_02_00001_.png"><span class="sim-label">Bank</span></div>
+      <span class="variant-num">Variant 2</span>
+      <span class="card-prompt">Man casting from river bank</span>
+    </div>
+    <div class="icon-card" data-tab="bank" data-variant="3" data-file="bank_03_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="bank_03_00001_.png"></div>
+      <div class="tab-sim"><img src="bank_03_00001_.png"><span class="sim-label">Bank</span></div>
+      <span class="variant-num">Variant 3</span>
+      <span class="card-prompt">Shore + cast line</span>
+    </div>
+    <div class="icon-card" data-tab="bank" data-variant="4" data-file="bank_04_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="bank_04_00001_.png"></div>
+      <div class="tab-sim"><img src="bank_04_00001_.png"><span class="sim-label">Bank</span></div>
+      <span class="variant-num">Variant 4</span>
+      <span class="card-prompt">Fisherman at water edge</span>
+    </div>
+    <div class="icon-card" data-tab="bank" data-variant="5" data-file="bank_05_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="bank_05_00001_.png"></div>
+      <div class="tab-sim"><img src="bank_05_00001_.png"><span class="sim-label">Bank</span></div>
+      <span class="variant-num">Variant 5</span>
+      <span class="card-prompt">Shoreline + rod cast</span>
+    </div>
+    <div class="icon-card" data-tab="bank" data-variant="6" data-file="bank_06_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="bank_06_00001_.png"></div>
+      <div class="tab-sim"><img src="bank_06_00001_.png"><span class="sim-label">Bank</span></div>
+      <span class="variant-num">Variant 6</span>
+      <span class="card-prompt">Fishing pier dock</span>
+    </div>
+    <div class="icon-card" data-tab="bank" data-variant="7" data-file="bank_07_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="bank_07_00001_.png"></div>
+      <div class="tab-sim"><img src="bank_07_00001_.png"><span class="sim-label">Bank</span></div>
+      <span class="variant-num">Variant 7</span>
+      <span class="card-prompt">Bank cast silhouette</span>
+    </div>
+    <div class="icon-card" data-tab="bank" data-variant="8" data-file="bank_08_00001_.png" onclick="select(this)">
+      <div class="icon-preview-wrap"><img src="bank_08_00001_.png"></div>
+      <div class="tab-sim"><img src="bank_08_00001_.png"><span class="sim-label">Bank</span></div>
+      <span class="variant-num">Variant 8</span>
+      <span class="card-prompt">Riverside + line in water</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const selections = { report: null, map: null, nearby: null, hotspots: null, bank: null };
+
+function select(card) {
+  const tab = card.dataset.tab;
+  const file = card.dataset.file;
+  const variant = card.dataset.variant;
+
+  // Deselect all in this tab's grid
+  document.querySelectorAll(`[data-tab="${tab}"]`).forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selections[tab] = { file, variant };
+
+  // Update summary
+  const sc = document.getElementById(`sc_${tab}`);
+  sc.textContent = `Variant ${variant} (${file})`;
+  sc.className = 's-choice';
+
+  // Update summary icon
+  const si = document.getElementById(`si_${tab}`);
+  si.innerHTML = `<img src="${file}" style="width:24px;height:24px;object-fit:contain;mix-blend-mode:screen;">`;
+
+  // Update live bar
+  const barTab = document.getElementById(`live_${tab}`);
+  if (barTab) {
+    barTab.innerHTML = `<img src="${file}" style="width:22px;height:22px;object-fit:contain;mix-blend-mode:screen;opacity:0.9;"><span>${tab.charAt(0).toUpperCase()+tab.slice(1)}</span>`;
+  }
+}
+
+function copySummary() {
+  let text = 'Bass Report Icon Selections:\n';
+  for (const [tab, sel] of Object.entries(selections)) {
+    text += sel
+      ? `  ${tab}: Variant ${sel.variant} → ${sel.file}\n`
+      : `  ${tab}: (none chosen)\n`;
+  }
+  navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+}
+</script>
+</body>
+</html>
