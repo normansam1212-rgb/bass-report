@@ -36,7 +36,7 @@ var ALL_LAKES = [
 
   { name:"Lake Colorado City",      lat:32.351364,  lon:-100.935321, type:"Reservoir", region:"Colorado City" },
 
-  { name:"Champion Creek Reservoir",lat:32.16,  lon:-100.74, type:"Reservoir", region:"Colorado City" },
+  { name:"Champion Creek Reservoir",lat:32.2985, lon:-100.8335, type:"Reservoir", region:"Colorado City" },
 
   { name:"E.V. Spence Reservoir",   lat:31.925131,  lon:-100.562171, type:"Reservoir", region:"Robert Lee"    },
 
@@ -162,7 +162,7 @@ var ALL_LAKES = [
 
   { name:"Lake Tyler East",         lat:32.244738,  lon:-95.183628,  type:"Reservoir", region:"Tyler"         },
 
-  { name:"Lake Tyler West",         lat:32.245,  lon:-95.195,  type:"Reservoir", region:"Tyler"         },
+  { name:"Lake Tyler West",         lat:32.2447,  lon:-95.1836,  type:"Reservoir", region:"Tyler"         },
 
   { name:"Lake Nacogdoches",        lat:31.62112,  lon:-94.815285,  type:"Reservoir", region:"Nacogdoches"   },
 
@@ -180,7 +180,7 @@ var ALL_LAKES = [
 
   { name:"Lake Mexia",              lat:31.656241,  lon:-96.600794,  type:"Reservoir", region:"Mexia"         },
 
-  { name:"Richland Chambers Reservoir",lat:31.86,lon:-96.11, type:"Reservoir", region:"Corsicana"     },
+  { name:"Richland Chambers Reservoir",lat:32.0094,lon:-96.2579, type:"Reservoir", region:"Corsicana"     },
 
   { name:"Bardwell Lake",           lat:32.28867,  lon:-96.677821,  type:"Reservoir", region:"Ennis"         },
 
