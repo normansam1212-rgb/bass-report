@@ -4265,7 +4265,7 @@ function _storeCard(obj) {
 var detailMap = null;
 var detailMarker = null;
 var detailPulse = null;
-var _detailLat = null, _detailLon = null;
+var _detailLat = null, _detailLon = null, _detailRegion = null;
 
 function noPhotos(name, cont, score) {
   var label = '';
@@ -4382,6 +4382,7 @@ function openDetail(lake) {
   if(Date.now() - _forecastTapTs < 400) return;
   _detailLat = lake.lat;
   _detailLon = lake.lon;
+  _detailRegion = lake.region || null;
 
   var moon = getMoon();
   var hex  = scoreHex(lake.score);
@@ -4503,7 +4504,8 @@ function openDetail(lake) {
       });
       if(rows.length === 0) rows.push({ icon:"📍", type:"bank", label:"General Bank Access", note:"Search for public parks, boat ramps, and fishing piers around this lake for shore access." });
       rows.slice(0,4).forEach(function(r, i) {
-        var navUrl = "https://maps.google.com/?q="+escHtml(lake.name)+"+fishing+"+r.type+"+Texas";
+        var q = lake.name + (lake.region ? ", " + lake.region : "") + ", TX";
+        var navUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
         html += '<div class="bank-access-point">'
           + '<div class="bap-icon">'+r.icon+'</div>'
           + '<div class="bap-body">'
@@ -4667,14 +4669,20 @@ function initDetailMap(lat, lon, name, hex, score, bankAccess) {
 
 function openAppleMaps() {
   if (_detailLat == null) return;
-  var name = encodeURIComponent(document.getElementById("detailName").textContent);
-  window.open("https://maps.apple.com/?ll=" + _detailLat + "," + _detailLon + "&q=" + name + "&t=m", "_blank");
+  // Route to the lake by name + region so Maps lands on the real place/boat-ramp
+  // address rather than a pin floating on the water. Coordinates kept as fallback.
+  var nm = document.getElementById("detailName").textContent;
+  var q  = nm + (_detailRegion ? ", " + _detailRegion : "") + ", TX";
+  window.open("https://maps.apple.com/?q=" + encodeURIComponent(q) +
+    "&sll=" + _detailLat + "," + _detailLon + "&t=m", "_blank");
 }
 
 function openGoogleMaps() {
   if (_detailLat == null) return;
-  var name = encodeURIComponent(document.getElementById("detailName").textContent);
-  window.open("https://www.google.com/maps/dir/?api=1&destination=" + _detailLat + "," + _detailLon + "&destination_place_id=" + name, "_blank");
+  var nm = document.getElementById("detailName").textContent;
+  var q  = nm + (_detailRegion ? ", " + _detailRegion : "") + ", TX";
+  window.open("https://www.google.com/maps/dir/?api=1&destination=" +
+    encodeURIComponent(q), "_blank");
 }
 
 // Swipe-left or Escape to close detail / lure guide
