@@ -7046,11 +7046,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"San Angelo State Park South Shore", type:"wade", lat:31.398, lon:-100.518, notes:"Gently sloping sandy bank. Wade out 20-30 ft to reach grass edges at 3-4 ft depth." },
+      { name:"San Angelo State Park South Shore", type:"wade", lat:31.362, lon:-100.516, notes:"Gently sloping sandy bank on the south shore. Wade out 20-30 ft to reach grass edges at 3-4 ft depth." },
 
-      { name:"Lake Nasworthy Fishing Pier", type:"pier", lat:31.410, lon:-100.503, notes:"Lighted pier off Loop 306. Good for catfish and bass at night. Restrooms on-site." },
+      { name:"Lake Nasworthy Fishing Pier", type:"pier", lat:31.3772, lon:-100.4905, notes:"Lighted pier on the east side of the lake. Good for catfish and bass at night. Restrooms on-site." },
 
-      { name:"Spring Creek Inlet", type:"bank", lat:31.415, lon:-100.512, notes:"Creek mouth that flushes baitfish into the lake. Work a topwater along the channel edge." }
+      { name:"Spring Creek Inlet", type:"bank", lat:31.374, lon:-100.521, notes:"Creek mouth on the northwest arm that flushes baitfish into the lake. Work a topwater along the channel edge." }
 
     ]
 
@@ -7062,11 +7062,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Johnson Branch Unit Pier", type:"pier", lat:33.402, lon:-97.004, notes:"Large covered fishing pier with cleaning station. Plenty of parking. Bass hold near pier pilings at dawn." },
+      { name:"Johnson Branch Unit Pier", type:"pier", lat:33.3340, lon:-97.0280, notes:"Large covered fishing pier with cleaning station. Plenty of parking. Bass hold near pier pilings at dawn." },
 
-      { name:"Isle du Bois Unit Cove", type:"wade", lat:33.366, lon:-97.034, notes:"Shallow gravel-bottom cove. Wade to flooded brush on the east side at 2-4 ft depth." },
+      { name:"Isle du Bois Unit Cove", type:"wade", lat:33.3100, lon:-97.0450, notes:"Shallow gravel-bottom cove. Wade to flooded brush on the east side at 2-4 ft depth." },
 
-      { name:"Greenbelt Corridor Flats", type:"bank", lat:33.340, lon:-97.040, notes:"Flat grassy bank with brush piles — fish parallel to shore with a Texas-rigged worm." }
+      { name:"Greenbelt Corridor Flats", type:"bank", lat:33.2900, lon:-97.0430, notes:"Flat grassy bank with brush piles — fish parallel to shore with a Texas-rigged worm." }
 
     ]
 
@@ -7142,11 +7142,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Copperas Creek Park Shore", type:"wade", lat:31.985, lon:-98.444, notes:"Flat sandy bank on the upper creek arm. Wade to submerged timber at 2-3 ft depth. Extremely low pressure." },
+      { name:"Copperas Creek Park Shore", type:"wade", lat:31.9672, lon:-98.4980, notes:"Flat sandy bank at Copperas Creek Park. Wade to submerged timber at 2-3 ft depth. Extremely low pressure." },
 
-      { name:"South Bend Park Fishing Area", type:"park", lat:31.975, lon:-98.432, notes:"Paved lot, covered picnic, and rock jetty. Fish the jetty tip at dusk with a swimbait." },
+      { name:"South Bend Park Fishing Area", type:"park", lat:31.9912, lon:-98.4619, notes:"Paved lot, covered picnic, and rock jetty at Sowell Creek Park. Fish the jetty tip at dusk with a swimbait." },
 
-      { name:"Day Use Area Bank", type:"bank", lat:31.970, lon:-98.450, notes:"Gravel bank beside the main day use area. Popping frogs work along the lily pads in summer." }
+      { name:"Day Use Area Bank", type:"bank", lat:31.9813, lon:-98.4890, notes:"Gravel bank beside the main day use area at Promontory Park. Popping frogs work along the lily pads in summer." }
 
     ]
 
@@ -7206,11 +7206,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Cedar Breaks Park Pier", type:"pier", lat:30.692, lon:-97.762, notes:"Covered pier and cleaning station. Deep water close to shore — drop a drop-shot along the bluff." },
+      { name:"Cedar Breaks Park Pier", type:"pier", lat:30.6820, lon:-97.7620, notes:"Covered pier and cleaning station. Deep water close to shore — drop a drop-shot along the bluff." },
 
-      { name:"Jim Hogg Park Rocky Point", type:"bank", lat:30.6846, lon:-97.74350, notes:"Rocky peninsula jutting into the main lake. Cast crankbaits along the rock ledges at 6-10 ft depth." },
+      { name:"Jim Hogg Park Rocky Point", type:"bank", lat:30.6846, lon:-97.7435, notes:"Rocky peninsula jutting into the main lake. Cast crankbaits along the rock ledges at 6-10 ft depth." },
 
-      { name:"Tejas Park Cove", type:"wade", lat:30.6961, lon:-97.8270, notes:"Shallower cove at the park's east end. Gravelly bottom — safe to wade. Finesse plastics on spinning gear." }
+      { name:"Tejas Park Cove", type:"wade", lat:30.6780, lon:-97.7800, notes:"Shallower cove at the park's west end. Gravelly bottom — safe to wade. Finesse plastics on spinning gear." }
 
     ]
 
@@ -7286,11 +7286,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Sanford-Yake Ramp Bank", type:"ramp", lat:35.396, lon:-101.639, notes:"Wide gravel bank beside the main ramp. Fish the point just north with a crankbait at the rock ledges." },
+      { name:"Sanford-Yake Ramp Bank", type:"ramp", lat:35.7061, lon:-101.5618, notes:"Wide gravel bank beside the main ramp at Sanford-Yake Campground. Fish the point just north with a crankbait at the rock ledges." },
 
-      { name:"Blue Creek Cove", type:"wade", lat:35.420, lon:-101.710, notes:"Sandy-bottom cove accessible from the camping area. Good wade-in access at low water. Bass hold in submerged brush." },
+      { name:"Blue Creek Cove", type:"wade", lat:35.7227, lon:-101.6639, notes:"Sandy-bottom cove at Blue Creek Campground on the northwest arm. Good wade-in access at low water. Bass hold in submerged brush." },
 
-      { name:"Plum Creek Canyon Bank", type:"bank", lat:35.450, lon:-101.680, notes:"Remote canyon arm. Walk down the trail 0.3 miles to a ledge bank — very little pressure." }
+      { name:"Plum Creek Canyon Bank", type:"bank", lat:35.680, lon:-101.620, notes:"Remote canyon arm on the west side. Walk down the trail 0.3 miles to a ledge bank — very little pressure." }
 
     ]
 
@@ -7366,11 +7366,11 @@ var BANK_ACCESS_POINTS = {
 
     points: [
 
-      { name:"Dogwood Park Pier", type:"pier", lat:31.978, lon:-95.570, notes:"Paved pier and restrooms at county park. Fish the drop-off just beyond the pier end." },
+      { name:"Dogwood Park Pier", type:"pier", lat:32.2010, lon:-95.4617, notes:"Paved pier and restrooms at county park on the east shore. Fish the drop-off just beyond the pier end." },
 
-      { name:"Jim Hogg County Park Bank", type:"bank", lat:31.952, lon:-95.590, notes:"Open grassy bank. Brush piles were placed along the shore — ask locals for exact locations." },
+      { name:"Jim Hogg County Park Bank", type:"bank", lat:32.1709, lon:-95.5022, notes:"Open grassy bank on the west shore. Brush piles were placed along the shore — ask locals for exact locations." },
 
-      { name:"Kickapoo Creek Arm", type:"bank", lat:32.000, lon:-95.610, notes:"Upper creek arm with flooded timber. Walk-in access from FM 279. Best early season." }
+      { name:"Kickapoo Creek Arm", type:"bank", lat:32.2860, lon:-95.5120, notes:"Upper Kickapoo Creek inlet arm with flooded timber. Walk-in access from FM 279. Best early season." }
 
     ]
 
