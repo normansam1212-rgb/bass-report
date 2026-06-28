@@ -621,6 +621,45 @@ svg[style*="width"] { width:auto; height:auto; }
   box-shadow:var(--inner-glow);
 }
 
+/* ═══ Report Sub-Nav (segmented control) ═══ */
+.seg-nav {
+  display:flex; gap:4px; margin:16px 20px 4px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:13px; padding:4px;
+  box-shadow:var(--inner-glow);
+  position:sticky; top:calc(var(--st) + 4px); z-index:120;
+  -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px);
+}
+.seg-btn {
+  flex:1; border:none; background:transparent; cursor:pointer;
+  font-family:inherit; font-size:11.5px; font-weight:700;
+  color:var(--dim); letter-spacing:-.2px;
+  padding:8px 4px; border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  transition:color .2s var(--ease), background .25s var(--ease);
+  position:relative; min-width:0;
+}
+.seg-btn svg { width:17px; height:17px; object-fit:contain; flex-shrink:0; }
+.seg-btn span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.seg-btn.active {
+  color:var(--bg);
+  background:var(--accent);
+  box-shadow:0 2px 8px rgba(0,0,0,0.25);
+}
+.seg-btn:active { transform:scale(0.96); }
+/* Report sub-pages live inside listView */
+.report-seg-page { display:none; }
+.report-seg-page.active { display:block; }
+/* Embedded views drop their own outer padding (listView provides rhythm) */
+#listView .nearby-view,
+#listView .bank-view,
+#listView .hotspots-view { padding:0; }
+@media (max-width:375px) {
+  .seg-nav { margin:14px 14px 4px; gap:2px; }
+  .seg-btn { font-size:10px; padding:7px 2px; }
+  .seg-btn svg { width:16px; height:16px; }
+}
+
 /* ═══ Map ═══ */
 .map-view { display:none; flex-direction:column; padding:14px 20px; }
 .map-view.active { display:flex; }
@@ -749,6 +788,136 @@ img[src^="icons/"] { mix-blend-mode:screen; opacity:0.85; }
   box-shadow:0 0 10px rgba(245,245,232,0.4);
 }
 .tab-btn:active { opacity:.6; }
+
+
+/* ═══ Baits of the Day ═══ */
+.baits-view { display:none; flex-direction:column; padding:14px 20px; }
+.baits-view.active { display:flex; }
+.baits-tab-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
+.baits-tab-hdr h3 { font-size:14px; font-weight:800; color:var(--text); letter-spacing:-.2px; display:flex; align-items:center; gap:5px; }
+.baits-tab-hdr .baits-tab-sub { font-size:11px; color:var(--dim); font-weight:500; text-align:right; flex-shrink:0; }
+
+/* Location selector */
+.baits-loc-bar { margin-bottom:14px; }
+.baits-loc-current {
+  display:flex; align-items:center; gap:7px;
+  background:linear-gradient(160deg, var(--card), var(--card2));
+  border:1px solid var(--border); border-radius:12px;
+  padding:10px 13px; margin-bottom:9px;
+  font-size:13px; font-weight:700; color:var(--text);
+}
+.baits-loc-current svg { width:16px; height:16px; color:var(--good); flex-shrink:0; }
+.baits-loc-current #baitsLocName { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.baits-loc-chips {
+  display:flex; gap:7px; overflow-x:auto; padding-bottom:3px;
+  -webkit-overflow-scrolling:touch; scrollbar-width:none;
+}
+.baits-loc-chips::-webkit-scrollbar { display:none; }
+.baits-loc-chip {
+  flex:0 0 auto; border:1px solid var(--border); background:var(--card);
+  color:var(--mid); border-radius:999px; padding:7px 13px;
+  font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;
+  transition:all .2s var(--ease);
+}
+.baits-loc-chip:active { transform:scale(.95); }
+.baits-loc-chip.active { background:var(--good); border-color:var(--good); color:#1a1a10; }
+
+/* Empty state */
+.baits-empty {
+  text-align:center; padding:48px 24px; color:var(--dim);
+  font-size:13px; line-height:1.6;
+}
+.baits-empty .be-ico { font-size:40px; opacity:.4; margin-bottom:12px; display:block; }
+.baits-empty b { color:var(--mid); }
+
+/* Condition summary strip */
+.baits-cond-strip {
+  display:flex; gap:7px; overflow-x:auto; margin-bottom:16px; padding-bottom:3px;
+  -webkit-overflow-scrolling:touch; scrollbar-width:none;
+}
+.baits-cond-strip::-webkit-scrollbar { display:none; }
+.baits-cond-pill {
+  flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:1px;
+  background:var(--card); border:1px solid var(--border); border-radius:11px;
+  padding:8px 12px; min-width:62px;
+}
+.baits-cond-pill .bcp-lbl { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--dim); }
+.baits-cond-pill .bcp-val { font-size:13px; font-weight:800; color:var(--text); }
+
+/* Hero "Bait of the Day" */
+.bait-hero {
+  position:relative; border-radius:var(--radius); overflow:hidden;
+  background:linear-gradient(150deg, #22221a 0%, #1a1a12 55%, #15150f 100%);
+  border:1px solid var(--border-hi);
+  box-shadow:var(--shadow-lg), var(--shadow-glow);
+  padding:18px; margin-bottom:18px; cursor:pointer;
+  transition:transform .2s var(--ease);
+}
+.bait-hero:active { transform:scale(.985); }
+.bait-hero::before {
+  content:''; position:absolute; top:-40%; right:-20%;
+  width:60%; height:160%; border-radius:50%;
+  background:radial-gradient(circle, rgba(212,196,64,0.12), transparent 70%);
+  pointer-events:none;
+}
+.bh-ribbon {
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--good); color:#1a1a10;
+  font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.6px;
+  padding:4px 10px; border-radius:999px; margin-bottom:12px;
+}
+.bh-name { font-size:24px; font-weight:800; color:var(--text); letter-spacing:-.5px; line-height:1.1; margin-bottom:6px; }
+.bh-color-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.bh-swatch { width:18px; height:18px; border-radius:50%; border:2px solid rgba(255,255,255,.25); flex-shrink:0; box-shadow:0 1px 4px rgba(0,0,0,.4); }
+.bh-color-name { font-size:13px; font-weight:700; color:var(--good); }
+.bh-why {
+  font-size:12.5px; color:var(--mid); line-height:1.5; margin-bottom:14px;
+  background:rgba(0,0,0,.22); border-radius:10px; padding:9px 12px;
+  border-left:3px solid var(--good);
+}
+.bh-cta {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  background:var(--good); color:#1a1a10; border:none; width:100%;
+  padding:12px; border-radius:11px; font-size:13px; font-weight:800; cursor:pointer;
+}
+.bh-cta:active { opacity:.8; }
+
+/* Ranked alternates */
+.baits-list-lbl { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--dim); margin:0 2px 10px; }
+.bait-alt-card {
+  display:flex; align-items:center; gap:12px;
+  background:linear-gradient(160deg, var(--card), var(--card2));
+  border:1px solid var(--border); border-radius:14px;
+  padding:13px 14px; margin-bottom:9px; cursor:pointer;
+  transition:transform .15s var(--ease), border-color .2s var(--ease);
+}
+.bait-alt-card:active { transform:scale(.98); border-color:var(--border-hi); }
+.bac-rank {
+  flex:0 0 auto; width:26px; height:26px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--adim); color:var(--mid); font-size:13px; font-weight:800;
+}
+.bac-body { flex:1; min-width:0; }
+.bac-name { font-size:14px; font-weight:800; color:var(--text); margin-bottom:3px; }
+.bac-meta { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--dim); }
+.bac-swatch { width:11px; height:11px; border-radius:50%; border:1px solid rgba(255,255,255,.2); flex-shrink:0; }
+.bac-color { font-weight:700; color:var(--mid); }
+.bac-why { color:var(--dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bac-arrow { flex:0 0 auto; color:var(--dim); font-size:18px; opacity:.6; }
+
+/* Seasonal note */
+.baits-season-note {
+  background:linear-gradient(160deg, var(--card), var(--card2));
+  border:1px solid var(--border); border-left:3px solid var(--good);
+  border-radius:12px; padding:11px 14px; margin-bottom:16px;
+  font-size:12px; color:var(--mid); line-height:1.5;
+}
+
+@media (max-width:375px) {
+  .baits-view { padding:14px 16px; }
+  .bh-name { font-size:21px; }
+  .baits-tab-hdr .baits-tab-sub { display:none; }
+}
 
 
 /* ═══ Bank Fishing ═══ */
@@ -1663,6 +1832,29 @@ a.bait-chip, a.detail-bait-chip {
     </div>
   </div>
 
+  <!-- ═══ Report sub-nav (segmented control) ═══ -->
+  <div class="seg-nav" id="segNav">
+    <button class="seg-btn active" id="segBtnBest" onclick="segSwitch('best')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V4a2 2 0 0 0-4 0v10.76a4.5 4.5 0 1 0 4 0z" fill="currentColor" fill-opacity="0.1"/><circle cx="12" cy="18" r="2.5" fill="currentColor"/></svg>
+      <span>Best Now</span>
+    </button>
+    <button class="seg-btn" id="segBtnNear" onclick="segSwitch('near')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10a11 11 0 0 1 15 0" stroke-opacity="0.4"/><path d="M7 13.5a7 7 0 0 1 10 0" stroke-opacity="0.6"/><path d="M9.5 17a3 3 0 0 1 5 0"/><circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none"/></svg>
+      <span>Near Me</span>
+    </button>
+    <button class="seg-btn" id="segBtnState" onclick="segSwitch('state')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.12"/></svg>
+      <span>Statewide</span>
+    </button>
+    <button class="seg-btn" id="segBtnBank" onclick="segSwitch('bank')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20V10l8-7 8 7v10" fill="currentColor" fill-opacity="0.08"/><path d="M9 20v-5h6v5" stroke-opacity="0.8"/></svg>
+      <span>Bank</span>
+    </button>
+  </div>
+
+  <!-- ═══ SUB-PAGE: Best Now ═══ -->
+  <div class="report-seg-page active" id="segBest">
+
   <!-- Hero card -->
   <div class="hero-card" id="heroCard" style="display:none"></div>
 
@@ -1715,15 +1907,7 @@ a.bait-chip, a.detail-bait-chip {
 
   <div id="noNearby" class="no-nearby" style="display:none"></div>
   <div class="lakes-list" id="lakesList"></div>
-
-  <footer>Weather: Open-Meteo · Sun: SunriseSunset.io · Geo: OpenStreetMap · Built for SmokeLasher</footer>
-</div>
-
-<!-- Map -->
-<div class="map-view" id="mapView">
-  <div class="map-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l7-4 8 4 7-4v16l-7 4-8-4-7 4z" fill="currentColor" fill-opacity="0.08"/><path d="M8 2v16M16 6v16" stroke-opacity="0.5"/><circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none" opacity="0.5"/></svg style="width:18px;height:18px;vertical-align:middle;margin-right:4px;object-fit:contain"> Texas Hot Spots — Statewide</div>
-  <div id="map"></div>
-</div>
+  </div><!-- /segBest -->
 
 <!-- Nearby -->
 <div class="nearby-view" id="nearbyView">
@@ -1791,22 +1975,44 @@ a.bait-chip, a.detail-bait-chip {
   <div id="hotspotsList"></div>
 </div>
 
+  <footer>Weather: Open-Meteo · Sun: SunriseSunset.io · Geo: OpenStreetMap · Built for SmokeLasher</footer>
+</div>
+
+<!-- Map -->
+<div class="map-view" id="mapView">
+  <div class="map-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l7-4 8 4 7-4v16l-7 4-8-4-7 4z" fill="currentColor" fill-opacity="0.08"/><path d="M8 2v16M16 6v16" stroke-opacity="0.5"/><circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none" opacity="0.5"/></svg style="width:18px;height:18px;vertical-align:middle;margin-right:4px;object-fit:contain"> Texas Hot Spots — Statewide</div>
+  <div id="map"></div>
+</div>
+
+<!-- Baits of the Day -->
+<div class="baits-view" id="baitsView">
+  <div class="baits-tab-hdr">
+    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px"><ellipse cx="10" cy="8.5" rx="4.6" ry="5.8" transform="rotate(35 10 8.5)" fill="currentColor" fill-opacity="0.14"/><circle cx="6.6" cy="5" r="1.2" fill="currentColor" stroke="none"/><path d="M13 12.5c1.4 1.4 2.4 3.3 2.4 5.3" stroke-opacity="0.7"/><path d="M15.4 17.8c0 1-.8 1.9-1.9 1.9M15.4 17.8c1.1 0 1.9.8 1.9 1.9" stroke-opacity="0.7"/></svg> Baits of the Day</h3>
+    <span class="baits-tab-sub" id="baitsTabSub">pick a lake to see what's biting</span>
+  </div>
+
+  <!-- Location selector -->
+  <div class="baits-loc-bar">
+    <div class="baits-loc-current" id="baitsLocCurrent">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" fill="currentColor" fill-opacity="0.12"/><circle cx="12" cy="9" r="2.4"/></svg>
+      <span id="baitsLocName">No location chosen</span>
+    </div>
+    <div class="baits-loc-chips" id="baitsLocChips"></div>
+  </div>
+
+  <div id="baitsTabBody"></div>
+</div>
+
 <!-- Tab bar -->
 <nav class="tab-bar">
   <button class="tab-btn active" id="tabList" onclick="switchView('list')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" fill="currentColor" fill-opacity="0.08"/><path d="M7 8h2.5M7 12h2.5M7 16h2.5" stroke-width="2.2"/><path d="M12.5 8h5M12.5 12h5M12.5 16h3" stroke-opacity="0.6"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Report
   </button>
+  <button class="tab-btn" id="tabBaits" onclick="switchView('baits')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="8.5" rx="4.6" ry="5.8" transform="rotate(35 10 8.5)" fill="currentColor" fill-opacity="0.14"/><circle cx="6.6" cy="5" r="1.2" fill="currentColor" stroke="none"/><path d="M13 12.5c1.4 1.4 2.4 3.3 2.4 5.3" stroke-opacity="0.7"/><path d="M15.4 17.8c0 1-.8 1.9-1.9 1.9M15.4 17.8c1.1 0 1.9.8 1.9 1.9" stroke-opacity="0.7"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Baits
+  </button>
   <button class="tab-btn" id="tabMap" onclick="switchView('map')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l7-4 8 4 7-4v16l-7 4-8-4-7 4z" fill="currentColor" fill-opacity="0.08"/><path d="M8 2v16M16 6v16" stroke-opacity="0.5"/><circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none" opacity="0.5"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Map
-  </button>
-  <button class="tab-btn" id="tabNearby" onclick="switchView('nearby')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10a11 11 0 0 1 15 0" stroke-opacity="0.4"/><path d="M7 13.5a7 7 0 0 1 10 0" stroke-opacity="0.6"/><path d="M9.5 17a3 3 0 0 1 5 0"/><circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none"/><path d="M12 19.5v-3" stroke-opacity="0.3" stroke-dasharray="1.5 1.5"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Nearby
-  </button>
-  <button class="tab-btn" id="tabHotspots" onclick="switchView('hotspots')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="currentColor" fill-opacity="0.08"/></svg class="ti" style="width:22px;height:22px;object-fit:contain">Hotspots
-  </button>
-  <button class="tab-btn" id="tabBank" onclick="switchView('bank')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;object-fit:contain"><path d="M2 20h20M4 20V10l8-7 8 7v10" fill="currentColor" fill-opacity="0.08"/><path d="M9 20v-5h6v5" stroke-opacity="0.8"/><circle cx="12" cy="8" r="1.5" fill="currentColor" stroke="none" opacity="0.6"/></svg>Bank
   </button>
 
 </nav>
@@ -3854,35 +4060,52 @@ function renderOverpassWaterBodies(elements) {
 function switchView(v) {
   currentView=v;
   document.getElementById("tabList").classList.toggle("active",v==="list");
+  document.getElementById("tabBaits").classList.toggle("active",v==="baits");
   document.getElementById("tabMap").classList.toggle("active",v==="map");
-  document.getElementById("tabNearby").classList.toggle("active",v==="nearby");
-  document.getElementById("tabHotspots").classList.toggle("active",v==="hotspots");
-  document.getElementById("tabBank").classList.toggle("active",v==="bank");
   document.getElementById("listView").style.display=v==="list"?"block":"none";
+  document.getElementById("baitsView").classList.toggle("active",v==="baits");
   document.getElementById("mapView").classList.toggle("active",v==="map");
-  document.getElementById("nearbyView").classList.toggle("active",v==="nearby");
-  document.getElementById("hotspotsView").classList.toggle("active",v==="hotspots");
-  document.getElementById("bankView").classList.toggle("active",v==="bank");
   if(v==="map"){
     if(map)setTimeout(function(){map.invalidateSize();},100);
     loadGridWeather();
     // Trigger Overpass water body overlay after map is ready
     setTimeout(fetchMapWaterBodies, 500);
   }
-  if(v==="hotspots"){
+}
+
+// ═══════════════════════════════════════════
+// REPORT SUB-NAV (Best Now / Near Me / Statewide / Bank)
+// ═══════════════════════════════════════════
+var currentSeg = "best";
+function segSwitch(seg) {
+  currentSeg = seg;
+  // Pill highlight
+  document.getElementById("segBtnBest").classList.toggle("active",seg==="best");
+  document.getElementById("segBtnNear").classList.toggle("active",seg==="near");
+  document.getElementById("segBtnState").classList.toggle("active",seg==="state");
+  document.getElementById("segBtnBank").classList.toggle("active",seg==="bank");
+  // Page visibility (all live inside listView)
+  document.getElementById("segBest").classList.toggle("active",seg==="best");
+  document.getElementById("nearbyView").classList.toggle("active",seg==="near");
+  document.getElementById("hotspotsView").classList.toggle("active",seg==="state");
+  document.getElementById("bankView").classList.toggle("active",seg==="bank");
+  // Make sure we're on the Report tab
+  if(currentView!=="list") switchView("list");
+  // Lazy render per sub-page
+  if(seg==="state"){
     renderHotspots();
-    // Load grid weather for live scoring if not already cached
     var remaining = GRID.filter(function(g){ return !gridWeather[g.key]; });
     if(remaining.length > 0) {
       loadGridWeatherForHotspots();
     } else if(weatherData) {
-      // Grid already loaded, re-render with scores
       renderHotspots();
     }
   }
-  if(v==="bank"){
+  if(seg==="bank"){
     renderBankFishing();
   }
+  // Jump to top of the list area so the new sub-page starts in view
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 // ═══════════════════════════════════════════
