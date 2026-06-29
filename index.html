@@ -4696,16 +4696,12 @@ function openDetail(lake) {
       ba.points.forEach(function(pt, i) {
         var icon = typeIcon[pt.type] || "📍";
         var lbl  = typeLabel[pt.type] || pt.type;
-        // Real named places (parks/ramps/piers) → navigate to the address by name so
-        // Google Maps routes to the actual entrance/parking lot, not a pin in the water.
-        // Generic "Main Lake Access" fallback pins have no real address → use coordinates.
-        var navUrl;
-        if (/Main Lake Access/i.test(pt.name)) {
-          navUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(pt.lat + "," + pt.lon);
-        } else {
-          var q = pt.name + (lake.region ? ", " + lake.region : "") + ", TX";
-          navUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
-        }
+        // Always drop the pin on the EXACT verified coordinates of this access point.
+        // Text searches by name route to the wrong place (a same-named park in another
+        // town, a business listing, etc.), so we never search by name — we use lat,lon.
+        // Format: ".../search/?api=1&query=LAT,LON" pins Google Maps precisely on the spot.
+        var navUrl = "https://www.google.com/maps/search/?api=1&query="
+                   + pt.lat + "," + pt.lon;
         html += '<div class="bank-access-point">'
           + '<div class="bap-icon">'+icon+'</div>'
           + '<div class="bap-body">'
