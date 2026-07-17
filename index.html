@@ -8,8 +8,23 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Bass Report">
 <meta name="theme-color" content="#252518">
-<title>Bass Report</title>
-<link rel="icon" type="image/png" href="icon-64.png">
+<meta name="description" content="Live Texas bass fishing conditions, lake scores, bank-access picks, and bait recommendations for largemouth across the state.">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Texas Bass Report">
+<meta property="og:title" content="Texas Bass Report — Live fishing conditions &amp; bait picks">
+<meta property="og:description" content="Live Texas bass fishing conditions, lake scores, bank-access picks, and bait recommendations.">
+<meta property="og:url" content="https://texasbassreport.com/">
+<meta property="og:image" content="https://texasbassreport.com/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Texas Bass Report">
+<meta name="twitter:description" content="Live Texas bass fishing conditions, lake scores, bank access, and bait picks.">
+<meta name="twitter:image" content="https://texasbassreport.com/icon-512.png">
+<title>Texas Bass Report — Live fishing conditions &amp; bait picks</title>
+<link rel="icon" type="image/png" sizes="64x64" href="icon-64.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -1773,10 +1788,10 @@ a.bait-chip, a.detail-bait-chip {
 <body>
 
 <header>
-  <div class="swim-fish-wrap"><img class="swim-fish" src="fish-swim-64.png?v=3" alt=""></div>
-  <div class="hdr-icon-side">
-    <img id="staticIcon" src="fish-swim-64.png?v=3" alt="Bass" style="width:68px;height:68px;vertical-align:middle;border-radius:14px;object-fit:contain;padding:4px;transition:opacity 0.4s ease">
-  </div>
+  <div class="swim-fish-wrap"><img class="swim-fish" src="fish-swim-64.png?v=4" alt=""></div>
+    <div class="hdr-icon-side">
+      <img id="staticIcon" src="fish-swim-64.png?v=4" alt="Bass" style="width:68px;height:68px;vertical-align:middle;border-radius:14px;object-fit:contain;padding:4px;transition:opacity 0.4s ease">
+    </div>
   <div class="hdr-center">
     <div class="hdr-title"><span class="title-fx blocking"><span class="title-inner">Texas</span></span> <span class="title-fx"><span class="title-inner">Bass</span></span> <span class="title-fx blocking"><span class="title-inner">Report</span></span></div>
   </div>
@@ -2362,6 +2377,7 @@ var GRID = [
 // ═══════════════════════════════════════════
 var userLat = null, userLon = null;
 var userLabel = null;
+var locIsDefault = false;
 var weatherData = null, pressureTrend = null, sunData = null;
 var gridWeather = {};
 var currentView = "list";
@@ -2431,6 +2447,7 @@ function clearSearch() {
 
 function selectLocation(lat, lon, name) {
   userLat = lat; userLon = lon; userLabel = name;
+  locIsDefault = false;
   document.getElementById("searchInput").value = name;
   document.getElementById("searchClear").classList.add("visible");
   closeDropdown();
@@ -2449,6 +2466,7 @@ function useMyLocation() {
     function(pos) {
       userLat = pos.coords.latitude; userLon = pos.coords.longitude;
       userLabel = "My Location";
+      locIsDefault = false;
       document.getElementById("searchInput").value = "My Location";
       document.getElementById("searchClear").classList.add("visible");
       try { localStorage.setItem("bass-loc", JSON.stringify({lat:userLat,lon:userLon,label:userLabel})); } catch(e){}
@@ -3720,12 +3738,14 @@ function renderLakes(weather, trend, sun, moon) {
   }
 
   // Update location pill
-  var pill=document.getElementById("locPill");
-  var pillName=document.getElementById("locPillName");
-  var pillDist=document.getElementById("locPillDist");
-  pill.classList.add("visible");
-  pillName.textContent=userLabel||"Custom Location";
-  pillDist.textContent="Showing "+nearest.length+" nearest waters";
+    var pill=document.getElementById("locPill");
+    var pillName=document.getElementById("locPillName");
+    var pillDist=document.getElementById("locPillDist");
+    pill.classList.add("visible");
+    pillName.textContent=userLabel||"Custom Location";
+    pillDist.textContent=locIsDefault
+      ? ("Default area — search or GPS · "+nearest.length+" waters")
+      : ("Showing "+nearest.length+" nearest waters");
 
   // Save history
   saveHistory(nearest.map(function(l){return{name:l.name,score:l.score};}));
@@ -5100,15 +5120,32 @@ document.getElementById("sortSelect").addEventListener("change", function(e) {
 // ═══════════════════════════════════════════
 // BOOT
 // ═══════════════════════════════════════════
-// Restore last location from localStorage
+// Soft-default hub so first paint isn't an empty "search to start" wall.
+// Central Texas (Austin) is a sensible statewide midpoint; GPS/search replace it.
+var DEFAULT_LOC = {lat:30.2672, lon:-97.7431, label:"Austin, TX"};
+
+// Restore last location from localStorage; otherwise seed Austin.
 try {
   var saved=JSON.parse(localStorage.getItem("bass-loc")||"null");
   if(saved&&saved.lat&&saved.lon){
     userLat=saved.lat; userLon=saved.lon; userLabel=saved.label||"Saved Location";
-    document.getElementById("searchInput").value=userLabel;
-    document.getElementById("searchClear").classList.add("visible");
+    locIsDefault=!!saved.defaulted;
+  } else {
+    userLat=DEFAULT_LOC.lat; userLon=DEFAULT_LOC.lon; userLabel=DEFAULT_LOC.label;
+    locIsDefault=true;
+    try {
+      localStorage.setItem("bass-loc", JSON.stringify({
+        lat:userLat, lon:userLon, label:userLabel, defaulted:true
+      }));
+    } catch(e2){}
   }
-} catch(e){}
+  document.getElementById("searchInput").value=userLabel;
+  document.getElementById("searchClear").classList.add("visible");
+} catch(e){
+  userLat=DEFAULT_LOC.lat; userLon=DEFAULT_LOC.lon; userLabel=DEFAULT_LOC.label;
+  locIsDefault=true;
+  try { document.getElementById("searchInput").value=userLabel; } catch(e3){}
+}
 
 loadReport();
 setInterval(function(){if(document.visibilityState==="visible"&&userLat)loadReport();},15*60*1000);
@@ -6022,10 +6059,11 @@ function hotspotTap(name) {
   if (!lake) return;
 
   // Set location context (so closing the detail lands on the right spot)
-  userLat = lake.lat;
-  userLon = lake.lon;
-  userLabel = lake.name + " (" + lake.region + ")";
-  document.getElementById("searchInput").value = userLabel;
+    userLat = lake.lat;
+    userLon = lake.lon;
+    userLabel = lake.name + " (" + lake.region + ")";
+    locIsDefault = false;
+    document.getElementById("searchInput").value = userLabel;
 
   // Get score data — prefer cached live scores, else compute from grid weather
   var score = 5, bd = [], wt = null;
@@ -7008,8 +7046,9 @@ function bankTap(name) {
   if(!lake) return;
 
   userLat = lake.lat; userLon = lake.lon;
-  userLabel = lake.name + " (" + lake.region + ")";
-  document.getElementById("searchInput").value = userLabel;
+    userLabel = lake.name + " (" + lake.region + ")";
+    locIsDefault = false;
+    document.getElementById("searchInput").value = userLabel;
 
   var bd = BANK_DATA(lake);
   var cid = _storeCard({

@@ -1,11 +1,11 @@
 {
-  "name": "Bass Report",
-  "short_name": "BassReport",
-  "description": "Texas bass fishing conditions and forecasts",
+  "name": "Texas Bass Report",
+  "short_name": "Bass Report",
+  "description": "Live Texas bass fishing conditions, lake scores, bank-access picks, and bait recommendations.",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#1B2A3A",
-  "theme_color": "#2B4F6E",
+  "background_color": "#0a0a08",
+  "theme_color": "#252518",
   "orientation": "portrait",
   "icons": [
     {
@@ -18,13 +18,19 @@
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
