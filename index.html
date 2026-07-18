@@ -3704,6 +3704,259 @@ function renderBaits(baits) {
 }
 
 // ═══════════════════════════════════════════
+// BAITS TAB — full "Baits of the Day" page
+// ═══════════════════════════════════════════
+var _baitsLocIdx = 0;
+
+function baitColorHex(name) {
+  var n = String(name || "").toLowerCase();
+  var map = [
+    ["watermelon", "#4a7c3f"],
+    ["green pumpkin", "#3d5c2e"],
+    ["june bug", "#2a1a3a"],
+    ["black neon", "#1a1a22"],
+    ["black/blue", "#1a1a2e"],
+    ["black blue", "#1a1a2e"],
+    ["brown/orange", "#8b5a2b"],
+    ["brown orange", "#8b5a2b"],
+    ["firetiger", "#d4c040"],
+    ["chartreuse", "#c8e000"],
+    ["sexy shad", "#c8b89a"],
+    ["pearl", "#f0ebe0"],
+    ["bone", "#e8e0d0"],
+    ["white", "#f5f5f0"],
+    ["gold", "#d4a84b"],
+    ["silver", "#c0c0c0"],
+    ["red", "#c04040"],
+    ["blue", "#3a5a8a"],
+    ["black", "#1a1a1a"],
+    ["natural", "#8a7a5a"],
+    ["shad", "#b8c4c8"],
+    ["craw", "#a05030"]
+  ];
+  for (var i = 0; i < map.length; i++) {
+    if (n.indexOf(map[i][0]) !== -1) return map[i][1];
+  }
+  return "#8a8a70";
+}
+
+function baitsSeasonNote(waterTemp) {
+  var m = new Date().getMonth(); // 0-11
+  var wt = waterTemp != null ? waterTemp : 70;
+  if (m <= 1 || m === 11) {
+    return "Winter pattern — slow presentations, deeper water, and compact baits win when temps sit in the " + Math.round(wt) + "°F range.";
+  }
+  if (m <= 3) {
+    return "Pre-spawn / early spring — fish push shallow on warm afternoons. Reaction baits and craw imitations around staging cover.";
+  }
+  if (m <= 5) {
+    return "Spawn / post-spawn — beds, bushes, and secondary points. Sight-fish when clear; power-fish stained banks.";
+  }
+  if (m <= 7) {
+    return "Summer heat — early/late windows matter. Target shade, deeper structure, and oxygenated water near wind-blown banks.";
+  }
+  if (m <= 9) {
+    return "Fall transition — baitfish schools and shad-imitators shine. Follow the forage as water cools from the " + Math.round(wt) + "°F range.";
+  }
+  return "Late fall / early winter — slow down, fish steeper breaks, and lean on natural colors in clearer water.";
+}
+
+function getBaitsLocList() {
+  var list = (window._lastNearest && window._lastNearest.length)
+    ? window._lastNearest.slice()
+    : [];
+  if (!list.length && typeof ALL_LAKES !== "undefined" && ALL_LAKES.length) {
+    // Fallback: nearest TX waters from user pin (or default area)
+    var lat = userLat, lon = userLon;
+    if (lat == null || lon == null) {
+      // No location yet — top popular waters alphabetically-ish by name length not ideal;
+      // show a short statewide sample so the tab isn't empty.
+      list = ALL_LAKES.slice(0, 12).map(function(l) {
+        return Object.assign({}, l, { dist: null, score: l.score != null ? l.score : 0 });
+      });
+    } else {
+      list = ALL_LAKES.map(function(l) {
+        return Object.assign({}, l, { dist: haversine(lat, lon, l.lat, l.lon) });
+      }).sort(function(a, b) { return a.dist - b.dist; }).slice(0, MAX_SHOWN || 15);
+    }
+  }
+  return list;
+}
+
+function ensureBaitFields(b, weather, wt, hour, srH, ssH) {
+  if (!b.color) {
+    b.color = bestColor(b.name, weather || { wind_speed_mph: 5, cloud_cover_pct: 30 }, wt || 70, hour, srH, ssH);
+  }
+  if (!b.shop) {
+    var info = BAIT_SHOP[b.name] || { brand: "", query: b.name + " bass lure" };
+    b.shop = info;
+  }
+  if (!b.url) {
+    b.url = "https://www.amazon.com/s?k=" + encodeURIComponent((b.shop.query || b.name) + " " + b.color);
+  }
+  return b;
+}
+
+function renderBaitsTab() {
+  var chipsEl = document.getElementById("baitsLocChips");
+  var nameEl = document.getElementById("baitsLocName");
+  var bodyEl = document.getElementById("baitsTabBody");
+  var subEl = document.getElementById("baitsTabSub");
+  if (!chipsEl || !bodyEl) return;
+
+  var lakes = getBaitsLocList();
+  if (!lakes.length) {
+    nameEl.textContent = "No location chosen";
+    chipsEl.innerHTML = "";
+    if (subEl) subEl.textContent = "search a spot on Report first";
+    bodyEl.innerHTML = '<div class="baits-empty"><span class="be-ico">' + (IC.hook || "🎣") + '</span>Set a location on the <b>Report</b> tab (search or GPS), then come back for baits matched to conditions.</div>';
+    return;
+  }
+
+  if (_baitsLocIdx < 0 || _baitsLocIdx >= lakes.length) _baitsLocIdx = 0;
+
+  chipsEl.innerHTML = lakes.map(function(l, i) {
+    var short = (l.name || "Lake").replace(/\s*\(.*?\)\s*/g, " ").trim();
+    if (short.length > 22) short = short.slice(0, 20) + "…";
+    return '<button type="button" class="baits-loc-chip' + (i === _baitsLocIdx ? " active" : "") + '" onclick="selectBaitsLoc(' + i + ')">' + escHtml(short) + "</button>";
+  }).join("");
+
+  renderBaitsTabBody(lakes[_baitsLocIdx], lakes);
+}
+
+function selectBaitsLoc(idx) {
+  _baitsLocIdx = idx | 0;
+  var lakes = getBaitsLocList();
+  // refresh chip active state cheaply
+  var chips = document.querySelectorAll("#baitsLocChips .baits-loc-chip");
+  for (var i = 0; i < chips.length; i++) chips[i].classList.toggle("active", i === _baitsLocIdx);
+  if (lakes[_baitsLocIdx]) renderBaitsTabBody(lakes[_baitsLocIdx], lakes);
+}
+
+function renderBaitsTabBody(lake, lakes) {
+  var nameEl = document.getElementById("baitsLocName");
+  var bodyEl = document.getElementById("baitsTabBody");
+  var subEl = document.getElementById("baitsTabSub");
+  if (!bodyEl || !lake) return;
+
+  nameEl.textContent = lake.name || "Selected water";
+  if (subEl) {
+    var bits = [];
+    if (lake.score != null) bits.push(lake.score + "/10");
+    if (lake.dist != null) bits.push((lake.dist < 10 ? lake.dist.toFixed(1) : Math.round(lake.dist)) + " mi");
+    if (lake.wt != null) bits.push("~" + lake.wt + "°F");
+    subEl.textContent = bits.length ? bits.join(" · ") : "condition-matched baits";
+  }
+
+  bodyEl.innerHTML = '<div class="baits-empty"><span class="be-ico">⏳</span>Loading conditions…</div>';
+
+  var moon = window._lastMoon || getMoon();
+  var hour = new Date().getHours();
+  var gw = null;
+
+  // Prefer global weather if this is the primary scored area; else grid cache / fetch
+  if (weatherData && window._lastNearest && window._lastNearest[0] && window._lastNearest[0].name === lake.name) {
+    gw = { weather: weatherData, trend: pressureTrend, sun: sunData };
+  } else {
+    var g = nearestGrid(lake.lat, lake.lon);
+    gw = gridWeather[g.key] || null;
+  }
+
+  function paint(gwData) {
+    var w = (gwData && gwData.weather) || weatherData || { wind_speed_mph: 6, cloud_cover_pct: 40, temperature_f: 72, pressure_mb: 1013 };
+    var trend = (gwData && gwData.trend) || pressureTrend || "steady";
+    var sun = (gwData && gwData.sun) || sunData || {};
+    var srH = sun.srH != null ? sun.srH : (lake.srH != null ? lake.srH : 6);
+    var ssH = sun.ssH != null ? sun.ssH : (lake.ssH != null ? lake.ssH : 20);
+    var wt = lake.wt != null ? lake.wt : (w.temperature_f != null ? Math.round(w.temperature_f) : 70);
+    var _wa = waterAttributes(lake);
+    var baits = getBaits(w, trend, wt, moon, hour, srH, ssH, _wa.c, _wa.d).map(function(b) {
+      return ensureBaitFields(b, w, wt, hour, srH, ssH);
+    });
+    if (!baits.length) {
+      bodyEl.innerHTML = '<div class="baits-empty"><span class="be-ico">' + (IC.hook || "🎣") + '</span>No bait picks for these conditions — try another water.</div>';
+      return;
+    }
+
+    var tempF = w.temperature_f != null ? Math.round(w.temperature_f) : wt;
+    var wind = w.wind_speed_mph != null ? Math.round(w.wind_speed_mph) : "—";
+    var clouds = w.cloud_cover_pct != null ? Math.round(w.cloud_cover_pct) + "%" : "—";
+    var press = typeof trend === "string" ? trend : ((trend && trend.trend) || "steady");
+    var moonName = (moon && moon.name) ? moon.name.replace(" Moon", "").replace(" Crescent", " Cres.").replace(" Gibbous", " Gib.") : "—";
+
+    var cond = '<div class="baits-cond-strip">' +
+      '<div class="baits-cond-pill"><span class="bcp-lbl">Air</span><span class="bcp-val">' + escHtml(String(tempF)) + '°</span></div>' +
+      '<div class="baits-cond-pill"><span class="bcp-lbl">Water</span><span class="bcp-val">~' + escHtml(String(wt)) + '°</span></div>' +
+      '<div class="baits-cond-pill"><span class="bcp-lbl">Wind</span><span class="bcp-val">' + escHtml(String(wind)) + (wind === "—" ? "" : "mph") + '</span></div>' +
+      '<div class="baits-cond-pill"><span class="bcp-lbl">Sky</span><span class="bcp-val">' + escHtml(String(clouds)) + '</span></div>' +
+      '<div class="baits-cond-pill"><span class="bcp-lbl">Pressure</span><span class="bcp-val" style="text-transform:capitalize">' + escHtml(press) + '</span></div>' +
+      '<div class="baits-cond-pill"><span class="bcp-lbl">Moon</span><span class="bcp-val">' + escHtml(moonName) + '</span></div>' +
+      '</div>';
+
+    var top = baits[0];
+    var hero = '<div class="bait-hero" onclick="openLureGuide(\'' + escapeQuote(top.name) + '\',\'' + escapeQuote(top.color) + '\',\'' + escapeQuote(top.why) + '\',event)">' +
+      '<div class="bh-ribbon">Bait of the Day</div>' +
+      '<div class="bh-name">' + escHtml(top.name) + '</div>' +
+      '<div class="bh-color-row">' +
+        '<span class="bh-swatch" style="background:' + baitColorHex(top.color) + '"></span>' +
+        '<span class="bh-color-name">' + escHtml(top.color) + '</span>' +
+      '</div>' +
+      '<div class="bh-why">' + escHtml(top.why) + '</div>' +
+      '<button type="button" class="bh-cta" onclick="event.stopPropagation();openLureGuide(\'' + escapeQuote(top.name) + '\',\'' + escapeQuote(top.color) + '\',\'' + escapeQuote(top.why) + '\',event)">How to fish it →</button>' +
+      '</div>';
+
+    var alts = "";
+    if (baits.length > 1) {
+      alts = '<div class="baits-list-lbl">Also working now</div>' + baits.slice(1).map(function(b, i) {
+        return '<div class="bait-alt-card" onclick="openLureGuide(\'' + escapeQuote(b.name) + '\',\'' + escapeQuote(b.color) + '\',\'' + escapeQuote(b.why) + '\',event)">' +
+          '<div class="bac-rank">' + (i + 2) + '</div>' +
+          '<div class="bac-body">' +
+            '<div class="bac-name">' + escHtml(b.name) + '</div>' +
+            '<div class="bac-meta">' +
+              '<span class="bac-swatch" style="background:' + baitColorHex(b.color) + '"></span>' +
+              '<span class="bac-color">' + escHtml(b.color) + '</span>' +
+              '<span class="bac-why">· ' + escHtml(b.why) + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="bac-arrow">›</div>' +
+        '</div>';
+      }).join("");
+    }
+
+    var season = '<div class="baits-season-note">' + escHtml(baitsSeasonNote(wt)) + '</div>';
+
+    bodyEl.innerHTML = cond + hero + season + alts;
+  }
+
+  if (gw && gw.weather) {
+    paint(gw);
+    return;
+  }
+
+  // Fetch weather for this lake's grid cell
+  var g2 = nearestGrid(lake.lat, lake.lon);
+  if (typeof fetchWeatherBundle === "function") {
+    fetchWeatherBundle(g2.lat, g2.lon).then(function(res) {
+      gridWeather[g2.key] = { weather: res[0], trend: res[1], sun: res[2] };
+      paint(gridWeather[g2.key]);
+    }).catch(function() { paint(null); });
+  } else if (typeof fetchWeather === "function") {
+    // Legacy multi-call path if present
+    Promise.all([
+      fetchWeather(g2.lat, g2.lon),
+      typeof fetchTrend === "function" ? fetchTrend(g2.lat, g2.lon) : Promise.resolve("steady"),
+      typeof fetchSun === "function" ? fetchSun(g2.lat, g2.lon) : Promise.resolve({})
+    ]).then(function(res) {
+      gridWeather[g2.key] = { weather: res[0], trend: res[1], sun: res[2] };
+      paint(gridWeather[g2.key]);
+    }).catch(function() { paint(null); });
+  } else {
+    // Use whatever global weather we have
+    paint(weatherData ? { weather: weatherData, trend: pressureTrend, sun: sunData } : null);
+  }
+}
+
+// ═══════════════════════════════════════════
 // RENDERING — LAKE LIST
 // ═══════════════════════════════════════════
 function renderLakes(weather, trend, sun, moon) {
@@ -4085,6 +4338,9 @@ function switchView(v) {
   document.getElementById("listView").style.display=v==="list"?"block":"none";
   document.getElementById("baitsView").classList.toggle("active",v==="baits");
   document.getElementById("mapView").classList.toggle("active",v==="map");
+  if(v==="baits"){
+    renderBaitsTab();
+  }
   if(v==="map"){
     if(map)setTimeout(function(){map.invalidateSize();},100);
     loadGridWeather();
